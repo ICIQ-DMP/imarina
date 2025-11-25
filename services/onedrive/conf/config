@@ -1,0 +1,10 @@
+sync_dir = "/onedrive/data"
+drive_id = "b!KJ1B2DCzSkuCoY3RpzAwFygN2jp0uu1LuLHdfD8wx_3n_8Rkg41LSY25TQTmrzYb"
+
+log_dir = "/onedrive/logs/"
+
+sync_dir_permissions = "755"
+sync_file_permissions = "644"
+
+#download_only = "true"
+#cleanup_local_files = "true"
