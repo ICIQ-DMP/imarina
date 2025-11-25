@@ -211,10 +211,10 @@ def parse_a3_row_data(row, translator):
     born_country = translator_countries.get(born_country_clean, born_country_clean.capitalize())
 
 
-    print("Raw country:", born_country_raw)
+    print("Raw country:", row.values[A3_Field.COUNTRY.value],)
     print("Clean country:", born_country_clean)
     print("Translated country,", born_country)
-    #input()
+    input()
 
 
 
