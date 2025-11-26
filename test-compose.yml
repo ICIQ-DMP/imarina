@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: test.Dockerfile
+    container_name: iMarina_test
+    volumes:
+    - ./input:/app/input
+    - ./output:/app/output
+    - ./uploads:/app/uploads
+
+
+

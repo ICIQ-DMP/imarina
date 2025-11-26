@@ -1,0 +1,69 @@
+services:
+  app:
+    image: mariopique/imarina-load:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iMarina_docker
+    user: "${UID:-1002}:${GID:-1002}"  # Make the container run as the user 1000:1000 or load values from UID/GID
+    volumes:
+    - ./input:/app/input
+    - ./output:/app/output
+    - ./logs:/app/logs  # folder logs of the process
+
+    secrets:
+      - FTP_HOST
+      - FTP_PASSWORD
+      - FTP_PORT
+      - FTP_USER
+      - CLIENT_ID
+      - CLIENT_SECRET
+      - TENANT_ID
+      - SHAREPOINT_DOMAIN
+      - SITE_NAME
+    stdin_open: true
+    tty: true
+    working_dir: /app
+    #command: >
+    #  sh -c "python /app/src/main.py --imarina-input /app/input/iMarina.xlsx --a3-input /app/input/A3.xlsx --countries-dict /app/input/countries.xlsx --jobs-dict /app/input/Job_Descriptions.xlsx --step build"
+
+
+
+secrets:
+  FTP_HOST:
+    file: ./secrets/FTP_HOST
+  FTP_PASSWORD:
+    file: ./secrets/FTP_PASSWORD
+  FTP_PORT:
+    file: ./secrets/FTP_PORT
+  FTP_USER:
+    file: ./secrets/FTP_USER
+
+
+  CLIENT_ID:
+    file: ./secrets/CLIENT_ID
+  CLIENT_SECRET:
+    file: ./secrets/CLIENT_SECRET
+  TENANT_ID:
+    file: ./secrets/TENANT_ID
+  SHAREPOINT_DOMAIN:
+    file: ./secrets/SHAREPOINT_DOMAIN
+  SITE_NAME:
+    file: ./secrets/SITE_NAME
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: test.Dockerfile
+    container_name: iMarina_docker_test
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

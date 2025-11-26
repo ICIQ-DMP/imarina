@@ -1,0 +1,16 @@
+venv/
+uploads/
+logs/
+secrets/
+output/
+input/
+images/
+data/
+LICENSE
+README.md
+Dockerfile
+compose.yml
+
+!src/
+!secrets/
+

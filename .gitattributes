@@ -1,0 +1,10 @@
+# Force GitHub to count Python and Docker properly
+*.py linguist-detectable=true
+Dockerfile linguist-detectable=true
+
+# Ignore documentation or output folders
+docs/* linguist-detectable=false
+*.1 linguist-detectable=false
+*.man linguist-detectable=false
+*.log linguist-detectable=false
+
