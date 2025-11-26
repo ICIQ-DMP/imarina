@@ -408,7 +408,7 @@ Distributed under the GNU GPL v3. See [LICENSE](https://github.com/ICIQ-DMP/iMar
 [forks-url]: https://img.shields.io/badge/Forks-blue?style=for-the-badge
 [stars-shield]: https://img.shields.io/github/stars/ICIQ-DMP/imarina.svg?style=for-the-badge&color=yellow
 [stars-url]: https://github.com/ICIQ-DMP/imarina/stargazers
-[issues-shield]: https://img.shields.io/github/issues/ICIQ-DMP/imarina.svg?style=for-the-badge&color=blue
+[issues-shield]: https://img.shields.io/github/issues/ICIQ-DMP/imarina.svg?style=for-the-badge&color=brightgreen
 [issues-url]: https://github.com/ICIQ-DMP/imarina/issues
 [issues-url]: https://img.shields.io/badge/Issues-red?style=for-the-badge&logo=github&logoColor=white
 [license-shield]: https://img.shields.io/github/license/ICIQ-DMP/imarina.svg?style=for-the-badge
