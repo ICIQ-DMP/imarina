@@ -370,12 +370,6 @@ The maintainers will try to integrate it into the `master` branch.
 
 
 
-
-
-
-
-
-
 ### Top contributors:
 
 <a href="https://github.com/AleixMT">
