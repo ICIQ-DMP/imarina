@@ -305,7 +305,7 @@ def read_dataframe(path, skiprows, header):
     # Read the Excel file, skipping the first 3 rows
     return pd.read_excel(path, skiprows=skiprows, header=header)
 
-
+# function to build the translator
 def build_translator(path, skiprows=0):
     df = read_dataframe(path, skiprows, None)
 
