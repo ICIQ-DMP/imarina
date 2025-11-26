@@ -19,7 +19,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="[https://github.com/ICIQ-DMP/iMarina-load](https://github.com/ICIQ-DMP/iMarina-load)">
+  <a href="[https://github.com/ICIQ-DMP/imarina](https://github.com/ICIQ-DMP/imarina)">
     <img src="https://raw.githubusercontent.com/ICIQ-DMP/ICIQ-DMP.github.io/refs/heads/master/assets/images/logo-ICIQ-horizontal-catalan.png" alt="Logo" width="all" height="all">
   </a>
 
@@ -31,11 +31,11 @@
     <a href="https://iciq-dmp.github.io/_posts/iMarina/2025-07-07-iMarina-load.html"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/ICIQ-DMP/iMarina-load">View Demo</a>
+    <a href="https://github.com/ICIQ-DMP/imarina">View Demo</a>
     &middot;
-    <a href="https://github.com/ICIQ-DMP/iMarina-load/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/ICIQ-DMP/imarina/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
-    <a href="https://github.com/ICIQ-DMP/iMarina-load/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/ICIQ-DMP/imarina/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
