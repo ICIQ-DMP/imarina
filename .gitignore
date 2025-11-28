@@ -205,3 +205,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# My own gitignore rules
+*.xlsx
+data
+input
+logs
+output
+secrets
+services/onedrive/conf
+services/onedrive/data
+services/onedrive/logs
+uploads
+!uploads/.gitignore
+sensibles
+!sensibles/.gitignore

@@ -10,7 +10,8 @@ import time
 
 from arguments import process_parse_arguments
 
-
+import re
+import unicodedata
 
 import os
 from enum import Enum
@@ -169,6 +170,23 @@ def sanitize_date(date_dirty):
 
 
 
+# normalitzar el nom del researcher
+def normalize_name(name: str) -> str:
+    if not isinstance(name, str) or not name.strip():
+        return ""
+
+    name = name.strip()
+
+    if name.isupper() or name.islower():
+        fixed = name.title()
+
+    else:
+        fixed = name
+
+
+    return fixed
+
+
 def parse_imarina_row_data(row, translator):
     data = Researcher(dni=row.values[IMarina_Field.DNI.value], email=row.values[IMarina_Field.EMAIL.value],
                       orcid=row.values[IMarina_Field.ORCID.value], name=normalize_name(row.values[IMarina_Field.NAME.value]),
@@ -180,46 +198,74 @@ def parse_imarina_row_data(row, translator):
                       personal_web=row.values[IMarina_Field.PERSONAL_WEB.value],
                       signature=row.values[IMarina_Field.SIGNATURE.value],
                       signature_custom=row.values[IMarina_Field.SIGNATURE_CUSTOM.value],
-                      country=row.values[IMarina_Field.COUNTRY.value],
-                      born_country = str(row.values[IMarina_Field.COUNTRY.value]).strip(),
+                      country=str(row.values[IMarina_Field.COUNTRY.value]).strip(),
+                      born_country =str(row.values[IMarina_Field.COUNTRY.value]).strip(),
                       job_description=row.values[IMarina_Field.JOB_DESCRIPTION.value]
                       )
 
     return data
 
 
+
 def parse_a3_row_data(row, translator):
 
     default_web = "https://www.iciq.org"
 
+    # function per normalitzar el nom del country
+    def normalize_country_name(name: str) -> str:
+        if not isinstance(name, str):
+            return ""
+        name = (
+            name.replace("\xa0", " ")
+            .replace("\u200b", " ")
+            .replace("(", "")
+            .replace(")", "")
+            .strip()
+        )
+        name = re.sub(r"\d+", "", name)  # eliminar números
+        name = ''.join(
+            c for c in unicodedata.normalize('NFD', name)   #elimina accents
+            if unicodedata.category(c) != 'Mn'
+        )
+        return name.lower().strip()
 
-    born_country_raw = str(row.values[A3_Field.BORN_COUNTRY.value]).strip()
-
-    born_country_clean = (
-        born_country_raw.replace("\xa0", " ")
-        .replace("\u200b", "")
-        .replace("  ", " ")
-        .lower()
-    )
-    born_country_clean = ''.join([c for c in born_country_clean if not c.isdigit()]).strip()
-
+    #exceptions translate country alias
+    manual_country_aliases = {
+        "iran republica islamica de": "iran",
+        "alemania, republica federal": "alemania",
+        "alemania republica federal": "alemania",
+        "mejico": "mexico",
+    }
     translator_countries = {
-        str(k).replace("\xa0", " ").replace("\u200b", "").strip().lower(): str(v).strip()
+        normalize_country_name(k): v.strip()
         for k, v in translator[A3_Field.COUNTRY].items()
     }
 
-    born_country = translator_countries.get(born_country_clean, born_country_clean.capitalize())
+    born_country_raw = str(row.values[A3_Field.BORN_COUNTRY.value]).strip() # llegeix el value de la row(row.values) del excel A3 i el Field.BORN_COUNTRY.value  .strip delete whitespaces
+    born_country_clean = normalize_country_name(born_country_raw)  #born country ja normalitzat i el busca al translator_countries
 
+    born_country_clean = manual_country_aliases.get(born_country_clean, born_country_clean)
 
-    print("Raw country:", row.values[A3_Field.COUNTRY.value],)
-    print("Clean country:", born_country_clean)
-    print("Translated country,", born_country)
-    input()
+    born_country = translator_countries.get(born_country_clean, born_country_clean.capitalize())  #born country completament traduit
 
+    country_raw = str(row.values[A3_Field.COUNTRY.value]).strip()  #llegeix la row.values del Country del field de A3
+    country_clean = normalize_country_name(country_raw)  # el country normalitzat
+
+    country_clean = manual_country_aliases.get(country_clean, country_clean)
+
+    country = translator_countries.get(country_clean, country_clean.capitalize()) # el country completament traduit
+
+    print("Raw born_country:", born_country_raw)
+    print("Clean born_country:", born_country_clean)
+    print("Translated born_country:", born_country)
+    print("Raw country:", country_raw)
+    print("Clean country:", country_clean)
+    print("Translated country:", country)
 
 
     job_description_raw = str(row.values[A3_Field.JOB_DESCRIPTION.value]).strip().lower()
     translator_jobs = {str(k).strip().lower(): v for k, v in translator[A3_Field.JOB_DESCRIPTION].items()}
+
 
     data = Researcher(code_center=row.values[A3_Field.CODE_CENTER.value],
                       dni=row.values[A3_Field.DNI.value], email=row.values[A3_Field.EMAIL.value],
@@ -238,30 +284,14 @@ def parse_a3_row_data(row, translator):
                       ),
                       signature="",
                       signature_custom=row.values[A3_Field.SIGNATURE_CUSTOM.value],
-                      country=row.values[A3_Field.COUNTRY.value],
-                      born_country = born_country,
+                      country=country,
+                      born_country=born_country,
                       job_description=translator_jobs.get(job_description_raw, row.values[A3_Field.JOB_DESCRIPTION.value])
 
                       )
-
-
     return data
 
-# normalitzar el nom del researcher
-def normalize_name(name: str) -> str:
-    if not isinstance(name, str) or not name.strip():
-        return ""
 
-    name = name.strip()
-
-    if name.isupper() or name.islower():
-        fixed = name.title()
-
-    else:
-        fixed = name
-
-
-    return fixed
 
 
 def unparse_date(date):
@@ -311,17 +341,9 @@ def build_translator(path, skiprows=0):
 
     df.iloc[:, 0] = (
         df.iloc[:, 0]
-        .astype(str)
-        .str.replace(r"\s*\d+$", "", regex=True)
-        .str.replace("\xa0", " ")
-        .str.replace("\u200b", "")
-        .str.strip()
-        .str.lower()
     )
     df.iloc[:, 1] = (
         df.iloc[:, 1]
-        .astype(str)
-        .str.strip()
     )
 
     return parse_two_columns(df, 0, 1)

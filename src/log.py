@@ -16,6 +16,8 @@ def setup_logger(name: str, log_file: str, level=logging.INFO):
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
+
+
     # Console handler
     ch = logging.StreamHandler()
     ch.setFormatter(formatter)
