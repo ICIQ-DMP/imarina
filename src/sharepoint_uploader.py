@@ -61,7 +61,7 @@ def upload_file(token_manager, drive_id, remote_path, local_file_path):
     print("✅ Upload Done")
 
 
-# Uploads a file to the SharePoint site 'Institutional Strengthening'. TODO: two functions, one for uploading files generically and other that sets the config that you need
+# Uploads a file to the SharePoint site 'Institutional Strengthening'.
 def upload_file_sharepoint(file_path: Path, target_folder: str = ""):   #Args: file_path: Local file path to upload.  target_folder: Relative path inside drive(ex:'Uploads/2025-10').
     if isinstance(file_path, str):
         file_path = Path(file_path)
@@ -118,7 +118,7 @@ def download_input_to_sharepoint(local_input_folder: str = "/app/input"):
 
     for file_path in files:
         try:
-            # TODO from this point extract this function and create a new
+
             print(f"  ⬆️ Subiendo: {file_path.name}")
             remote_path = f"{sharepoint_input_folder}/{file_path.name}".strip("/")
 

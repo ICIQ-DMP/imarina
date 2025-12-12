@@ -45,7 +45,6 @@ def parse_arguments():
     parser.add_argument("--a3-input", type=parse_path, required=False, default=os.path.join(root_dir, "input", "A3.xlsx"),
                         help="Path to A3 input file(.xlsx)")
 
-
     args = parser.parse_args()
     return args
 

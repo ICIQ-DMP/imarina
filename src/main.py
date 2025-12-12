@@ -8,6 +8,8 @@ from datetime import date
 import datetime
 import time
 
+from attr.validators import matches_re
+
 from arguments import process_parse_arguments
 
 import re
@@ -292,8 +294,6 @@ def parse_a3_row_data(row, translator):
     return data
 
 
-
-
 def unparse_date(date):
     if date is None:
         return ""
@@ -361,6 +361,11 @@ def build_translations(countries_path, jobs_path, personal_web_path):
 
     r[A3_Field.COUNTRY] = {}
     countries = build_translator(countries_path)
+    print("=== LOADED COUNTRIES FROM EXCEL ===")
+    print("Path:", countries_path)
+    print("Countries dict:", countries)
+    print("Number of entries:", len(countries))
+
     for key in countries.keys():
         r[A3_Field.COUNTRY][key] = countries[key]
 
@@ -375,17 +380,142 @@ def build_translations(countries_path, jobs_path, personal_web_path):
         r[A3_Field.PERSONAL_WEB][key] = personal_webs[key]
     return r
 
+# function to normalize names of researchers
+def normalize_name_str(s):
+    import re
+    import unicodedata # importem regular expressions and unicodedata
+    if not s:
+        return s
+    s = str(s).lower().strip()
+    s = ''.join(
+        c for c in unicodedata.normalize("NFD", s)
+        if unicodedata.category(c) != "Mn"
+    )
 
+    s = s.replace("-", " ")  #replace - to spaces " "
+    s = re.sub(r"[^a-zñç ]", "", s)  #replace characters not alphabetic except spaces
+    s = re.sub(r"\s+", " ", s).strip()  # unify spaces
+    return s
+
+
+
+def normalize_string(s):
+    if not s:
+        return ""
+    s = str(s).strip().lower()
+    s = unicodedata.normalize("NFD", s)
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    s = s.replace("-", "").replace(" ", "")
+    return s
+
+
+def normalized_dni(dni):
+    if not dni:
+        return ""
+    dni = re.sub(r"[^0-9A-Za-z]", "", str(dni)).upper()
+    dni = dni.lstrip("0")   # remove leading zeros
+    return dni
+
+
+
+
+
+# is same person in iMarina_row & A3_row
 def is_same_person(imarina_row, a3_row):
-    if isinstance(imarina_row.orcid, str) and isinstance(a3_row.orcid, str):
-        if imarina_row.orcid.replace("-", "") == a3_row.orcid:
+
+    # this  small function clean
+    def clean(s):
+        if not s:
+            return ""
+        return str(s).replace("-", "").replace(".", "").strip().lower()
+
+
+    # ORCID imarina and a3 clean
+    im_orcid = clean(getattr(imarina_row, "orcid", ""))
+    a3_orcid = clean(getattr(a3_row, "orcid", ""))
+
+    if im_orcid and a3_orcid and im_orcid == a3_orcid:
+        return True
+
+    #DNI
+    im_dni = clean(getattr(imarina_row, "dni", None))
+    a3_dni = clean(getattr(a3_row, "dni", None))
+
+    if im_dni and a3_dni and im_dni == a3_dni:
+        return True
+
+    #email
+    im_email = clean(getattr(imarina_row, "email", ""))
+    a3_email = clean(getattr(a3_row, "email", ""))
+
+    if im_email and a3_email and im_email == a3_email:
+        return True
+
+    # per si fallen els altres comparem NAME i SURNAME
+    im_name = normalize_name_str(getattr(imarina_row, "name", None))
+    a3_name = normalize_name_str(getattr(a3_row, "name", None))
+    im_surn = normalize_name_str(getattr(imarina_row, "surname", None))
+    a3_surn = normalize_name_str(getattr(a3_row, "surname", None))
+
+    if im_surn and a3_surn and im_surn == a3_surn:
+        if im_name[:1] == a3_name[:1]:  # misma inicial
             return True
-    if imarina_row.dni == a3_row.dni:
-        return True
-    if imarina_row.email == a3_row.email:
-        return True
+        if im_name in a3_name or a3_name in im_name:
+            return True
+
+    # prints  temporals per comparar
+    print("[COMPARE]", imarina_row.name, " <-> ", a3_row.name)
+    print(" ORCID:", im_orcid, "<->", a3_orcid)
+    print(" DNI:", im_dni, "<->", a3_dni)
+    print(" EMAIL:", im_email, "<->", a3_email)
+    print(" NAME+SURNAME:", im_name, im_surn, "<->", a3_name, a3_surn)
 
     return False
+
+
+
+
+# function to find duplicates in excel A3
+def find_duplicates_in_a3(a3_data):
+    # small function to clean
+    def clean(x):
+        if pd.isna(x) or not x:  #isna = None or nan
+            return ""
+        return str(x).strip().lower().replace("-", "").replace(" ", "")
+
+    #clean the columns to compare
+    df_clean = a3_data.copy()
+    df_clean['orcid_clean'] = df_clean.iloc[:, A3_Field.ORCID.value].apply(clean)  # clean the ORCID Field
+    df_clean['dni_clean'] = df_clean.iloc[:, A3_Field.DNI.value].apply(clean)   # clean the DNI Field
+    df_clean['email_clean'] = df_clean.iloc[:, A3_Field.EMAIL.value].apply(clean) #clean the EMAIL Field
+    df_clean['name'] = df_clean.iloc[:, A3_Field.NAME.value]
+
+    # duplicates ORCID
+    orcid_dups = df_clean[df_clean['orcid_clean'] != '']['orcid_clean'].duplicated(keep=False)
+    if orcid_dups.any():
+        print(" ORCID duplicados encontrados:")
+        dup_rows = df_clean[orcid_dups][['orcid_clean', 'name']]
+        for idx, row in dup_rows.iterrows():
+            print(f"   Fila {idx}: ORCID={row['orcid_clean']}, Name={row['name']}")
+        print()
+
+    # duplicates DNI
+    dni_dups = df_clean[df_clean['dni_clean'] != '']['dni_clean'].duplicated(keep=False)
+    if dni_dups.any():
+        print("️ DNI duplicados encontrados:")
+        dup_rows = df_clean[dni_dups][['dni_clean', 'name']]
+        for idx, row in dup_rows.iterrows():
+            print(f"   Fila {idx}: DNI={row['dni_clean']}, Name={row['name']}")
+        print()
+
+    # duplicates EMAIL
+    email_dups = df_clean[df_clean['email_clean'] != '']['email_clean'].duplicated(keep=False)
+    if email_dups.any():
+        print(" EMAIL duplicados encontrados:")
+        dup_rows = df_clean[email_dups][['email_clean', 'name']]
+        for idx, row in dup_rows.iterrows():
+            print(f"   Fila {idx}: EMAIL={row['email_clean']}, Name={row['name']}")
+        print()
 
 
 def is_in_a3(search_data, a3):
@@ -396,17 +526,44 @@ def is_in_a3(search_data, a3):
     return False
 
 
+
 def search_data(query, search_data, parser, translator):
     matches = []
+    strict_matches = []
     for index, row in search_data.iterrows():
         row_data = parser(row, translator)
-        if is_same_person(query, row_data):
-            matches.append(row_data)
+
+        if is_same_person(query, row_data):  #compare strict ORCID/ DNI & email
+            strict_matches.append(row_data)
             #print("Match!!!!!!!!!!!!!!!!!!!!")
         else:
-            pass
+            if normalize_name(query.name) == normalize_name(row_data.name): #comparacion por nombre normalizado
+                matches.append(row_data)
             #print(f"No match {query.name} with {row_data.name}")
+
+    if len(strict_matches) > 0:  #coincidencias estrictas
+        return strict_matches
+
+    # same ini_date
+    same_ini = [r for r in matches if r.ini_date == query.ini_date]
+    if len(same_ini) == 1:
+        return [same_ini[0]]
+
+    #same job_description
+    same_job = [r for r in matches if r.job_description == query.job_description]
+    if len(same_job) == 1:
+        return [same_job[0]]
+
+    #detect multiple matches found
+    if len(matches) > 1:
+        print("\n⚠️ [DEBUG] MULTIPLE MATCHES FOUND")
+        print(" Query:", query.name, query.orcid, query.email)
+
+        for m in matches:
+            print("   →", m.name, m.orcid, m.email)
+
     return matches
+
 
 
 def build_empty_row(imarina_dataframe):
@@ -442,19 +599,47 @@ def upload_excel(excel_path):
         logger.exception(e)
     logger.info('Closed connection.')
 
-
+# TODO review logic for researchers have_changed job, left and new
 def has_changed_jobs(researcher_a3, researcher_imarina, translator):
     from datetime import date, datetime  # importem això per les dates
 
-    # translate a3 job_description
-    a3_job = translator[A3_Field.JOB_DESCRIPTION].get(
-        researcher_a3.job_description, researcher_a3.job_description
-    )
+     # clean text with strip, tiny and others
+    def clean_text(s):
+     if not  s:
+         return ""
+     import re
+     import unicodedata
 
-    # if job_description has changed
-    if a3_job != researcher_imarina.job_description:
-        print(f"[CAMBIO] El puesto cambió de: '{a3_job}' a '{researcher_imarina.job_description}'")
+     s = str(s).lower().strip()
+     s = ''.join(
+         c for c in unicodedata.normalize("NFD", s)
+         if unicodedata.category(c) != "Mn"
+     )
+     s = re.sub(r"\s+", " ", s)  #replace spaces and characters invisible
+     s = s.replace("/", " / ")
+
+     s = " ".join(s.split())
+
+     return s
+
+
+     # normalitza i tradueix el job_description
+    raw_a3_job = clean_text(researcher_a3.job_description)
+    a3_job = clean_text(translator[A3_Field.JOB_DESCRIPTION].get(raw_a3_job, raw_a3_job))
+    im_job = clean_text(researcher_imarina.job_description)
+
+    # prints per veure jobs_description
+    print("===")
+    print(f"A3 raw job: '{researcher_a3.job_description}'")
+    print(f"A3 translated job: '{a3_job}'")
+    print(f"iMarina job: '{researcher_imarina.job_description}'")
+
+
+    # if job_description has changed  compara A3 con iMarina (im) si no es el mismo puesto significa que el puesto cambió
+    if a3_job != im_job:
+        print(f"[CAMBIO] El puesto cambió de: '{a3_job}' a '{im_job}'")
         return True
+
 
     # Normalitzar fechas si posa a la data fi de contracte 2099 o None => None (contracte indefinit) fecha indefinida
     def norm(d):
@@ -471,11 +656,13 @@ def has_changed_jobs(researcher_a3, researcher_imarina, translator):
             return None
 
     # fechas importantes del A3 (ini_date, end_date, ini_prorrog, end_prorrog, date_termination)   getattr access at attribute of researcher_a3
-    a3_ini          = norm(getattr(researcher_a3, "ini_date", None))
+    a3_ini = norm(getattr(researcher_a3, "ini_date", None))
     a3_fin_contrato = norm(getattr(researcher_a3, "end_date", None))
-    a3_ini_prorrog  = norm(getattr(researcher_a3, "ini_prorrog", None))
-    a3_fin_prorrog  = norm(getattr(researcher_a3, "end_prorrog", None))
-    a3_baja         = norm(getattr(researcher_a3, "date_termination", None))
+    a3_fin_prorrog = norm(getattr(researcher_a3, "end_prorrog", None))
+    a3_baja = norm(getattr(researcher_a3, "date_termination", None))
+    fin_pre = a3_fin_prorrog or a3_fin_contrato
+
+
 
     # si hay una fecha de prorroga (end_prorrog) esa es la fecha final. sino es la de fin del contrato normal (end_Date)
     fin_pre = a3_fin_prorrog or a3_fin_contrato
@@ -501,25 +688,25 @@ def has_changed_jobs(researcher_a3, researcher_imarina, translator):
     im_ini = norm(getattr(researcher_imarina, "ini_date", None))
     im_fin = norm(getattr(researcher_imarina, "end_date", None))
 
-    #  Comparación de fechas (mismo puesto) (si hay fin de prorroga, si hay baja o cambio de fechas)
-    if (a3_ini != im_ini) or (a3_fin != im_fin):
-        if motivo == "BAJA":
-            tag = "[BAJA]"
-        elif motivo == "PRÓRROGA":
-            tag = "[PRÓRROGA]"
-        else:
-            tag = "[FECHAS]"
+    #  funcion que Compara las fechas solo si hay diferencia real (más de 3 días)
+    def date_diff(d1, d2):
+        if not d1 or not d2:
+            return d1 != d2
+        return abs((d1 - d2).days) > 3  # margen de tolerancia de ±3 días
+
+    if date_diff(a3_ini, im_ini) or date_diff(a3_fin, im_fin):
         print(
-            f"{tag} Mismo puesto, fechas distintas:\n"
-            f"  A3: inicio={a3_ini}, fin={a3_fin} "
-            f"(ini_prorrog={a3_ini_prorrog}, end_prorrog={a3_fin_prorrog}, baja={a3_baja})\n"
+            f"[FECHAS] Mismo puesto pero fechas distintas:\n"
+            f"  A3: inicio={a3_ini}, fin={a3_fin}\n"
             f"  iMarina: inicio={im_ini}, fin={im_fin}"
         )
-        return True
+        # ⚠️ No se considera cambio de puesto, solo diferencia de fechas
+        return False
 
-    #  Sin cambios
+        # Sin cambios, no hay ningun cambio, el puesto y las fechas son iguales y no han cambiado
     print("[SIN CAMBIO] El puesto y las fechas son iguales y no han cambiado.")
     return False
+
 
 
 def is_visitor(researcher_a3: Researcher,) -> bool:
@@ -536,6 +723,7 @@ def is_visitor(researcher_a3: Researcher,) -> bool:
 
 
 def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarina_path, a3_path,):
+
     logger = setup_logger(":", "./logs/log.log", level=logging.DEBUG)
 
     today = date.today()
@@ -543,8 +731,13 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
     # Get A3 data
     a3_data = pd.read_excel(a3_path, skiprows=2, header=0)
 
+    print("\n=== CHECKING FOR DUPLICATES IN A3 ===")
+    find_duplicates_in_a3(a3_data)
+    print("=== END DUPLICATES CHECK ===\n")
+
     # Get iMarina last upload data
     im_data = pd.read_excel(imarina_path, header=0)
+
 
     output_data = im_data[0:0]  # retains columns, types, and headers if any
     added_researchers = set()
@@ -554,12 +747,19 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
     num_new = 0
     num_visitors = 0
 
+
     date_str = "31/12/2099"
     permanent_contract_date = datetime.datetime.strptime(date_str, "%d/%m/%Y")
 
     personal_web_path = "input/Personal_web.xlsx"
 
-    translator = build_translations(countries_path, jobs_path, personal_web_path)
+    # load the translators fields: country, job_description
+    translator = {}
+    translator[A3_Field.COUNTRY] = build_translator(countries_path)
+    translator[A3_Field.JOB_DESCRIPTION] = build_translator(jobs_path)
+    translator[A3_Field.PERSONAL_WEB] = build_translator(personal_web_path)
+
+    # translator = build_translations(countries_path, jobs_path, personal_web_path)
 
     logger.info("Phase 1: Check if the researchers in last upload to iMarina are still in A3")
     not_present = 0
@@ -568,9 +768,27 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
         researcher_imarina = parse_imarina_row_data(row, translator)
         logger.debug("Parsed data from iMarina row is: " + str(researcher_imarina))
         researchers_matched_a3 = search_data(researcher_imarina, a3_data, parse_a3_row_data, translator)
+
+
+
+
         empty_row = empty_row_output_data.copy()
+
         if len(researchers_matched_a3) == 0:
             num_left += 1
+            # # PRINTS TEMPORALES DETECT HAVE LEFT
+            # print("⚠️ POSIBLE FALSO 'HAVE LEFT':")
+            # print("  iMarina Name: ", researcher_imarina.name)
+            # print("  iMarina ORCID:", researcher_imarina.orcid)
+            # print("  iMarina DNI:  ", researcher_imarina.dni)
+            # print("  iMarina Email:", researcher_imarina.email)
+            # print("-----------------------------------")
+
+            print("[LEFT]", researcher_imarina.name, "| ORCID:", researcher_imarina.orcid, "| DNI:", researcher_imarina.dni)
+
+
+            print("[NEW]", researcher_a3.name, researcher_a3.orcid, researcher_a3.email)
+
             logger.debug("The current researcher is not present in A3 meaning the researcher is no longer in ICIQ.")
             logger.debug("Adding researcher data into output with end date of today")
             if researcher_imarina.end_date is None:
@@ -586,8 +804,11 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
             logger.debug(f"Matched A3 researcher is {str(researcher_a3)}")
             if researcher_a3.end_date is not None and researcher_a3.end_date != permanent_contract_date:
                 logger.debug("Current researcher has a temporary contract.")
+
                 if has_changed_jobs(researcher_a3, researcher_imarina, translator):
                     num_changed += 1
+                    print("[CHANGED]", researcher_imarina.name, researcher_imarina.orcid, researcher_imarina.email)
+
                     logger.debug("Current researcher has changed its position within ICIQ since last upload.")
                     logger.debug("Adding new row from A3 with the data of the new position.")
                     new_row = empty_row_output_data.copy()
@@ -611,8 +832,10 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
                 logger.debug("Adding new row from iMarina with the same data.")
                 unparse_researcher_to_imarina_row(researcher_imarina, empty_row)
                 output_data = pd.concat([output_data, empty_row], ignore_index=True)
-        else:
-            raise ValueError("More than one value matched in A3 for researcher " + str(researcher_imarina.name))
+
+
+        # else:
+        #     raise ValueError("More than one value matched in A3 for researcher " + str(researcher_imarina.name))
 
     # Phase 2: Add researchers in A3 that are not present in iMarina
     for index, row in a3_data.iterrows():
@@ -672,7 +895,7 @@ def main():
     excel_name = f"iMarina_upload_{now_str}.xlsx"
     output_path = os.path.join(root_dir, 'uploads', excel_name)
 
-    # Phase 0: Download input files to SharePoint
+    # Phase 0: Download input files from SharePoint
     '''
     TODO: Download input files FROM sharepoint, not to sharepoint. We did not run the program yet, we can't
     upload anything

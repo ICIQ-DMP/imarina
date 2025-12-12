@@ -25,7 +25,27 @@ services:
     tty: true
     working_dir: /app
     #command: >
-    #  sh -c "python /app/src/main.py --imarina-input /app/input/iMarina.xlsx --a3-input /app/input/A3.xlsx --countries-dict /app/input/countries.xlsx --jobs-dict /app/input/Job_Descriptions.xlsx --step build"
+     #sh -c "python /app/src/main.py --imarina-input /app/input/iMarina.xlsx --a3-input /app/input/A3.xlsx --countries-dict /app/input/countries.xlsx --jobs-dict /app/input/Job_Descriptions.xlsx --step build"
+
+
+  onedrive:
+   image: docker.io/driveone/onedrive:edge
+   container_name: onedrive
+   userns_mode: keep-id
+   volumes:
+     - ./services/onedrive/conf:/onedrive/conf
+     - ./services/onedrive/data:/onedrive/data
+     - ./services/onedrive/logs:/onedrive/logs
+   labels:
+     io.containers.autoupdate: "image"
+   restart: unless-stopped
+   networks:
+     - imarina_net
+   healthcheck:
+     test: sh -c '[ -s /onedrive/conf/items.sqlite3-wal ]'
+     interval: 60s
+     timeout: 5s
+     retries: 2
 
 
 
@@ -50,6 +70,9 @@ secrets:
     file: ./secrets/SHAREPOINT_DOMAIN
   SITE_NAME:
     file: ./secrets/SITE_NAME
+
+networks:
+  imarina_net:
 
 
 
