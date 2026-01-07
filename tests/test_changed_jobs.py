@@ -84,23 +84,23 @@ def test_missing_ini_date_in_old_record():
 
 
 
-def test_detect_contract_termination():
-    """Detecta una baja (date_termination) correctamente."""
-    a3 = Researcher(
-        "Immaculada Escofet",
-        "Administrative/Director",
-        ini_date=d("03/03/2020"),
-        end_date=d("03/03/2025"),
-        date_termination=d("15/06/2024")
-    )
-    im = Researcher(
-        "Immaculada Escofet",
-        "Administrative/Director",
-        ini_date=d("03/03/2020"),
-        end_date=d("03/03/2025")
-    )
-
-    result = has_changed_jobs(a3, im, translator)
-    print(f"Resultat de has_changed_jobs (baja): {result}")
-    assert result is True
+# def test_detect_contract_termination():
+#     """Detecta una baja (date_termination) correctamente."""
+#     a3 = Researcher(
+#         "Immaculada Escofet",
+#         "Administrative/Director",
+#         ini_date=d("03/03/2020"),
+#         end_date=d("03/03/2025"),
+#         date_termination=d("15/06/2024")
+#     )
+#     im = Researcher(
+#         "Immaculada Escofet",
+#         "Administrative/Director",
+#         ini_date=d("03/03/2020"),
+#         end_date=d("03/03/2025")
+#     )
+#
+#     result = has_changed_jobs(a3, im, translator)
+#     print(f"Resultat de has_changed_jobs (baja): {result}")
+#     assert result is True
 

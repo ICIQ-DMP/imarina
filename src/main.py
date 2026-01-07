@@ -189,6 +189,16 @@ def normalize_name(name: str) -> str:
     return fixed
 
 
+
+def build_position_key(r):
+    return (
+        r.orcid or r.dni,
+        str(r.job_description).strip().lower(),
+        str(r.code_center).strip().lower(),
+        r.ini_date,
+        r.end_date
+    )
+
 def parse_imarina_row_data(row, translator):
     data = Researcher(dni=row.values[IMarina_Field.DNI.value], email=row.values[IMarina_Field.EMAIL.value],
                       orcid=row.values[IMarina_Field.ORCID.value], name=normalize_name(row.values[IMarina_Field.NAME.value]),
@@ -206,7 +216,6 @@ def parse_imarina_row_data(row, translator):
                       )
 
     return data
-
 
 
 def parse_a3_row_data(row, translator):
@@ -417,7 +426,6 @@ def normalized_dni(dni):
     return dni
 
 
-
 def is_same_person(imarina_row, a3_row):
     def clean(s):
         if not s: return ""
@@ -448,65 +456,6 @@ def is_same_person(imarina_row, a3_row):
         return True
 
     return False
-
-
-
-
-
-# # is same person in iMarina_row & A3_row
-# def is_same_person(imarina_row, a3_row):
-#     # this  small function clean
-#     def clean(s):
-#         if not s:
-#             return ""
-#         return str(s).replace("-", "").replace(".", "").strip().lower()
-#
-#     im_orcid = clean(getattr(imarina_row, "orcid", ""))
-#     a3_orcid = clean(getattr(a3_row, "orcid", ""))
-#
-#     im_dni = clean(getattr(imarina_row, "dni", None))
-#     a3_dni = clean(getattr(a3_row, "dni", None))
-#
-#     im_email = clean(getattr(imarina_row, "email", ""))
-#     a3_email = clean(getattr(a3_row, "email", ""))
-#
-#
-#     #normalizar los atributos (usamos la funcion normalize_name_str)
-#     im_name = normalize_name_str(getattr(imarina_row, "name", None))
-#     a3_name = normalize_name_str(getattr(a3_row, "name", None))
-#     im_surn = normalize_name_str(getattr(imarina_row, "surname", None))
-#     a3_surn = normalize_name_str(getattr(a3_row, "surname", None))
-#
-#
-#     if im_orcid and a3_orcid and im_orcid == a3_orcid:
-#         return True
-#
-#     if im_dni and a3_dni and im_dni == a3_dni:
-#         return True
-#
-#     if im_email and a3_email and im_email == a3_email:
-#         return True
-#
-#     im_surn_set = set(im_surn.split())
-#     a3_surn_set = set(a3_surn.split())
-#
-#     if im_surn_set.intersection(a3_surn_set):
-#         if im_name[:1] == a3_name[:1] and im_name[:1] != "":
-#             return True
-#
-#     #no hay match
-#     return False
-
-     # # prints temporals per comparar
-     # print("[COMPARE]", imarina_row.name, " <-> ", a3_row.name)
-     # print(" ORCID:", im_orcid, "<->", a3_orcid)
-     # print(" DNI:", im_dni, "<->", a3_dni)
-     # print(" EMAIL:", im_email, "<->", a3_email)
-     # print(" NAME+SURNAME:", im_name, im_surn, "<->", a3_name, a3_surn)
-
-
-    # Si llega aquí, es que no hubo match
-   # return False
 
 
 
@@ -581,13 +530,6 @@ def search_data(query, search_data, parser, translator):
         if is_same_person(query, row_data):
             matches.append(row_data)
 
-        # else:
-        #     q_words = set(normalize_name_str(f"{query.name} {query.surname}").split())
-        #     r_words = set(normalize_name_str(f"{row_data.name} {row_data.surname}").split())
-        #
-        #     if len(q_words.intersection(r_words)) >= 2:
-        #         fuzzy_matches.append(row_data)
-
 
     if matches:
 
@@ -595,73 +537,6 @@ def search_data(query, search_data, parser, translator):
         return same_ini if len(same_ini) == 1 else matches
 
     return []
-
-
-
-    # #  Coincidencias encontradas por is_same_person
-    # if len(strict_matches) > 0:
-    #     # Si hay más de uno, aplicamos filtros de desempate
-    #     if len(strict_matches) > 1:
-    #         #  (ini_date)
-    #         same_ini = [r for r in strict_matches if r.ini_date == query.ini_date]
-    #         if len(same_ini) == 1:
-    #             return [same_ini[0]]
-    #
-    #         # (job_description)
-    #         same_job = [r for r in strict_matches if r.job_description == query.job_description]
-    #         if len(same_job) == 1:
-    #             return [same_job[0]]
-    #
-    #         # matches found
-    #         print(f"\n⚠️ [DEBUG] MULTIPLE MATCHES FOUND for {query.name}")
-    #         for m in strict_matches:
-    #             print(f"   -> {m.name} | {m.job_description} | Ini: {m.ini_date}")
-    #
-    #     return strict_matches
-
-    # return []
-
-
-
-
-
-# def search_data(query, search_data, parser, translator):
-#     matches = []
-#     strict_matches = []
-#     for index, row in search_data.iterrows():
-#         row_data = parser(row, translator)
-#
-#         if is_same_person(query, row_data):  #compare strict ORCID/ DNI & email
-#             strict_matches.append(row_data)
-#             #print("Match!!!!!!!!!!!!!!!!!!!!")
-#         else:
-#             if normalize_name(query.name) == normalize_name(row_data.name): #comparacion por nombre normalizado
-#                 matches.append(row_data)
-#             #print(f"No match {query.name} with {row_data.name}")
-#
-#     if len(strict_matches) > 0:  #coincidencias estrictas
-#         return strict_matches
-#
-#     # same ini_date
-#     same_ini = [r for r in matches if r.ini_date == query.ini_date]
-#     if len(same_ini) == 1:
-#         return [same_ini[0]]
-#
-#     #same job_description
-#     same_job = [r for r in matches if r.job_description == query.job_description]
-#     if len(same_job) == 1:
-#         return [same_job[0]]
-#
-#     #detect multiple matches found
-#     if len(matches) > 1:
-#         print("\n⚠️ [DEBUG] MULTIPLE MATCHES FOUND")
-#         print(" Query:", query.name, query.orcid, query.email)
-#
-#         for m in matches:
-#             print("  ", m.name, m.orcid, m.email)
-#
-#     return matches
-
 
 
 def build_empty_row(imarina_dataframe):
@@ -857,10 +732,11 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
     translator[A3_Field.JOB_DESCRIPTION] = build_translator(jobs_path)
     translator[A3_Field.PERSONAL_WEB] = build_translator(personal_web_path)
 
-    # translator = build_translations(countries_path, jobs_path, personal_web_path)
 
 
-     #PHASE 1
+    processed_keys = set()   # NEW SET
+
+    #PHASE 1
     logger.info("Phase 1: Check if the researchers in last upload to iMarina are still in A3")
     not_present = 0
     for index, row in im_data.iterrows():
@@ -881,9 +757,14 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
             if researcher_imarina.end_date is None:
                 researcher_imarina.end_date = today  # Use end time already in iMarina if present, if not, set to today
             new_row = empty_row_output_data.copy()
+
             unparse_researcher_to_imarina_row(researcher_imarina, new_row)
             logger.debug(f"Row added to iMarina upload Excel is {str(new_row)}")
             output_data = pd.concat([output_data, new_row], ignore_index=True)
+
+            key = build_position_key(researcher_imarina)
+            processed_keys.add(key)
+
             not_present += 1
         elif len(researchers_matched_a3) == 1:
             logger.debug("The current researcher is still present in A3 meaning the researcher is still in ICIQ.")
@@ -897,28 +778,33 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
                     print("[CHANGED]", researcher_imarina.name, researcher_imarina.orcid, researcher_imarina.email)
 
                     logger.debug("Current researcher has changed its position within ICIQ since last upload.")
-                    logger.debug("Adding new row from A3 with the data of the new position.")
+                    #logger.debug("Adding new row from A3 with the data of the new position.")
                     new_row = empty_row_output_data.copy()
                     unparse_researcher_to_imarina_row(researcher_a3, new_row)
-                    logger.debug(f"Row added to iMarina upload Excel is {str(new_row)}")
+                    #logger.debug(f"Row added to iMarina upload Excel is {str(new_row)}")
                     output_data = pd.concat([output_data, new_row], ignore_index=True)
+                    key = build_position_key(researcher_a3)
+                    processed_keys.add(key)
                 else:
                     logger.debug("Current researcher is still working in the same position since last upload.")
-                    logger.debug("Adding new row from iMarina with the same data.")
+                    #logger.debug("Adding new row from iMarina with the same data.")
+
                     # No cambió entonces mantener la fila actual
                     # If it has not changed, add current iMarina row to output as is.
                     # (end date not present) it is a contract that could be still ongoing continue
                     new_row = empty_row_output_data.copy()
                     unparse_researcher_to_imarina_row(researcher_imarina, new_row)
-                    logger.debug(f"Row added to iMarina upload Excel is {str(new_row)}")
+                    #logger.debug(f"Row added to iMarina upload Excel is {str(new_row)}")
                     output_data = pd.concat([output_data, new_row], ignore_index=True)
                 continue
             else:
                 logger.debug("Current researcher has permanent contract.")
-                logger.debug("Current researcher is still working in the same position since last upload.")
-                logger.debug("Adding new row from iMarina with the same data.")
+                #logger.debug("Current researcher is still working in the same position since last upload.")
+                #logger.debug("Adding new row from iMarina with the same data.")
                 unparse_researcher_to_imarina_row(researcher_imarina, empty_row)
                 output_data = pd.concat([output_data, empty_row], ignore_index=True)
+                key = build_position_key(researcher_imarina)
+                processed_keys.add(key)
 
 
         # else:
