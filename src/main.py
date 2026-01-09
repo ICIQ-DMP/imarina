@@ -727,7 +727,6 @@ def is_visitor(researcher_a3: Researcher) -> bool:
 
 
 
-
 #LOGIC AND PHASES TO BUILD AND UPLOAD EXCEL
 def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarina_path, a3_path,):
 
@@ -870,6 +869,7 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
     # If they are not present, it has a code 4, it begins and end date is outside a range
     # to determine from fields to determine, then the current row from A3 corresponds to ICREA researcher or predoc
     # with CSC, so its data from A3 needs to be added to the output.
+
     output_data.to_excel(output_path, index=False)
 
 
