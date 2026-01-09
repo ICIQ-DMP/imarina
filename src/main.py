@@ -190,15 +190,6 @@ def normalize_name(name: str) -> str:
 
 
 
-def build_position_key(r):
-    return (
-        r.orcid or r.dni,
-        str(r.job_description).strip().lower(),
-        str(r.code_center).strip().lower(),
-        r.ini_date,
-        r.end_date
-    )
-
 def parse_imarina_row_data(row, translator):
     data = Researcher(dni=row.values[IMarina_Field.DNI.value], email=row.values[IMarina_Field.EMAIL.value],
                       orcid=row.values[IMarina_Field.ORCID.value], name=normalize_name(row.values[IMarina_Field.NAME.value]),
@@ -513,8 +504,8 @@ def is_in_a3(search_data, a3):
 # search coincidencies
 def search_data(query, search_data, parser, translator):
 
-   # strict_matches = []  # los matches se guardan aqui (strict matches)
-   # fuzzy_matches = [] # matches que pueden ser difusos  (fuzzy matches)
+    # strict_matches = []  # los matches se guardan aqui (strict matches)
+    # fuzzy_matches = [] # matches que pueden ser difusos  (fuzzy matches)
     matches = []
 
     for index, row in search_data.iterrows():
@@ -526,13 +517,11 @@ def search_data(query, search_data, parser, translator):
             matches.append(row_data)
             continue
 
-        # comprova la funció is_same_person
+            # comprova la funció is_same_person
         if is_same_person(query, row_data):
             matches.append(row_data)
 
-
     if matches:
-
         same_ini = [r for r in matches if r.ini_date == query.ini_date]
         return same_ini if len(same_ini) == 1 else matches
 
@@ -573,128 +562,173 @@ def upload_excel(excel_path):
     logger.info('Closed connection.')
 
 # TODO review logic for researchers have_changed job, left and new
-def has_changed_jobs(researcher_a3, researcher_imarina, translator):
-    from datetime import date, datetime  # importem això per les dates
-
-     # clean text with strip, tiny and others
-    def clean_text(s):
-     if not  s:
-         return ""
-     import re
-     import unicodedata
-
-     s = str(s).lower().strip()
-     s = ''.join(
-         c for c in unicodedata.normalize("NFD", s)
-         if unicodedata.category(c) != "Mn"
-     )
-     s = re.sub(r"\s+", " ", s)  #replace spaces and characters invisible
-     s = s.replace("/", " / ")
-
-     s = " ".join(s.split())
-
-     return s
+def has_changed_jobs(researcher_a3, researcher_im, translator):
+    def clean_job(text):
+        if not text: return ""
+        t = str(text).lower()
+        # limpiar caracteres raros y tildes
+        replacements = {
+            "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u",
+            "-": " ", "_": " ", ".": " "
+        }
+        for old, new in replacements.items():
+            t = t.replace(old, new)
 
 
-     # normalitza i tradueix el job_description
-    raw_a3_job = clean_text(researcher_a3.job_description)
-    a3_job = clean_text(translator[A3_Field.JOB_DESCRIPTION].get(raw_a3_job, raw_a3_job))
-    im_job = clean_text(researcher_imarina.job_description)
+        stop_words = ["researcher", "investigador", "staff", "position", "the", "en", "de"]
+        words = [w for w in t.split() if w not in stop_words]
+        return " ".join(words).strip()
 
-    # prints per veure jobs_description
-    print("----")
-    print(f"A3 raw job: '{researcher_a3.job_description}'")
-    print(f"A3 translated job: '{a3_job}'")
-    print(f"iMarina job: '{researcher_imarina.job_description}'")
+    job_a3 = clean_job(researcher_a3.job_description)
+    job_im = clean_job(researcher_im.job_description)
+
+    # si son iguales no ha cambiado
+    if job_a3 == job_im:
+        return False
 
 
-    # if job_description has changed  compara A3 con iMarina (im) si no es el mismo puesto significa que el puesto cambió
-    if a3_job != im_job:
-        print(f"[CAMBIO] El puesto cambió de: '{a3_job}' a '{im_job}'")
+    if job_a3 in job_im or job_im in job_a3:
+        return False
+
+
+    return True
+
+
+# def has_changed_jobs(researcher_a3, researcher_imarina, translator):
+#     from datetime import date, datetime  # importem això per les dates
+#
+#      # clean text with strip, tiny and others
+#     def clean_text(s):
+#      if not  s:
+#          return ""
+#      import re
+#      import unicodedata
+#
+#      s = str(s).lower().strip()
+#      s = ''.join(
+#          c for c in unicodedata.normalize("NFD", s)
+#          if unicodedata.category(c) != "Mn"
+#      )
+#      s = re.sub(r"\s+", " ", s)  #replace spaces and characters invisible
+#      s = s.replace("/", " / ")
+#
+#      s = " ".join(s.split())
+#
+#      return s
+#
+#
+#      # normalitza i tradueix el job_description
+#     raw_a3_job = clean_text(researcher_a3.job_description)
+#     a3_job = clean_text(translator[A3_Field.JOB_DESCRIPTION].get(raw_a3_job, raw_a3_job))
+#     im_job = clean_text(researcher_imarina.job_description)
+#
+#     # prints per veure jobs_description
+#     print("----")
+#     print(f"A3 raw job: '{researcher_a3.job_description}'")
+#     print(f"A3 translated job: '{a3_job}'")
+#     print(f"iMarina job: '{researcher_imarina.job_description}'")
+#
+#
+#     # if job_description has changed  compara A3 con iMarina (im) si no es el mismo puesto significa que el puesto cambió
+#     if a3_job != im_job:
+#         print(f"[CAMBIO] El puesto cambió de: '{a3_job}' a '{im_job}'")
+#         return True
+#
+#
+#     # Normalitzar fechas si posa a la data fi de contracte 2099 o None => None (contracte indefinit) fecha indefinida
+#     def norm(d):
+#         if d is None:
+#             return None
+#         if isinstance(d, datetime):
+#             d = d.date()
+#         if isinstance(d, date):
+#             return None if d.year >= 2099 else d
+#         try:
+#             dt = datetime.fromisoformat(str(d))
+#             return None if dt.year >= 2099 else dt.date()
+#         except Exception:
+#             return None
+#
+#     # fechas importantes del A3 (ini_date, end_date, ini_prorrog, end_prorrog, date_termination)   getattr access at attribute of researcher_a3
+#     a3_ini = norm(getattr(researcher_a3, "ini_date", None))
+#     a3_fin_contrato = norm(getattr(researcher_a3, "end_date", None))
+#     a3_fin_prorrog = norm(getattr(researcher_a3, "end_prorrog", None))
+#     a3_baja = norm(getattr(researcher_a3, "date_termination", None))
+#     fin_pre = a3_fin_prorrog or a3_fin_contrato
+#
+#
+#     # si hay una fecha de prorroga (end_prorrog) esa es la fecha final. sino es la de fin del contrato normal (end_Date)
+#     fin_pre = a3_fin_prorrog or a3_fin_contrato
+#     motivo = None
+#     if a3_fin_prorrog and (a3_fin_contrato is None or a3_fin_prorrog != a3_fin_contrato):
+#         motivo = "PRÓRROGA"
+#     elif fin_pre:
+#         motivo = "CONTRATO"
+#
+#     # Baja recorta o establece fin
+#     if a3_baja:
+#         if fin_pre:
+#             a3_fin = min(fin_pre, a3_baja)
+#             if a3_baja <= fin_pre:
+#                 motivo = "BAJA"
+#         else:
+#             a3_fin = a3_baja
+#             motivo = "BAJA"
+#     else:
+#         a3_fin = fin_pre  # puede quedar None (indefinido) no hay baja
+#
+#     #  Extrae las fechas de inicio y fin del mismo researcher en iMarina (normalmente no tiene prórrogas ni baja).
+#     im_ini = norm(getattr(researcher_imarina, "ini_date", None))
+#     im_fin = norm(getattr(researcher_imarina, "end_date", None))
+#
+#     #  funcion que Compara las fechas solo si hay diferencia real
+#     def date_diff(d1, d2):
+#         if not d1 or not d2:
+#             return d1 != d2
+#         return abs((d1 - d2).days) > 3  # margen de tolerancia de +3 días
+#
+#     if date_diff(a3_ini, im_ini) or date_diff(a3_fin, im_fin):
+#         print(
+#             f"[FECHAS] Mismo puesto pero fechas distintas:\n"
+#             f"  A3: inicio={a3_ini}, fin={a3_fin}\n"
+#             f"  iMarina: inicio={im_ini}, fin={im_fin}"
+#         )
+#         #  No se considera cambio de puesto, solo diferencia de fechas
+#         return False
+#
+#         # Sin cambios, no hay ningun cambio, el puesto y las fechas son iguales y no han cambiado
+#     print("[SIN CAMBIO] El puesto y las fechas son iguales y no han cambiado.")
+#     return False
+
+
+
+
+
+# FUNCTION IS VISITOR
+def is_visitor(researcher_a3: Researcher) -> bool:
+    #  Si es codigo centro 4 tiende a ser  visitante
+    if researcher_a3.code_center == 4:
+
+        job = str(researcher_a3.job_description).lower()
+        permanent_keywords = ["leader", "manager", "principal", "head"]  # estos puestos normalmente no son visitantes ya que son puestos fijos
+
+        if any(key in job for key in permanent_keywords):  # Si el job_description contiene una de esas keywords entonces
+            return False      #retorna False == NO VISITANTE
+
         return True
 
 
-    # Normalitzar fechas si posa a la data fi de contracte 2099 o None => None (contracte indefinit) fecha indefinida
-    def norm(d):
-        if d is None:
-            return None
-        if isinstance(d, datetime):
-            d = d.date()
-        if isinstance(d, date):
-            return None if d.year >= 2099 else d
-        try:
-            dt = datetime.fromisoformat(str(d))
-            return None if dt.year >= 2099 else dt.date()
-        except Exception:
-            return None
+    if researcher_a3.ini_date and researcher_a3.end_date:
+        duration = (researcher_a3.end_date - researcher_a3.ini_date).days
+        if duration < 90:  # Menos de 3 meses es casi siempre VISITANTE
+            return True
 
-    # fechas importantes del A3 (ini_date, end_date, ini_prorrog, end_prorrog, date_termination)   getattr access at attribute of researcher_a3
-    a3_ini = norm(getattr(researcher_a3, "ini_date", None))
-    a3_fin_contrato = norm(getattr(researcher_a3, "end_date", None))
-    a3_fin_prorrog = norm(getattr(researcher_a3, "end_prorrog", None))
-    a3_baja = norm(getattr(researcher_a3, "date_termination", None))
-    fin_pre = a3_fin_prorrog or a3_fin_contrato
-
-
-
-    # si hay una fecha de prorroga (end_prorrog) esa es la fecha final. sino es la de fin del contrato normal (end_Date)
-    fin_pre = a3_fin_prorrog or a3_fin_contrato
-    motivo = None
-    if a3_fin_prorrog and (a3_fin_contrato is None or a3_fin_prorrog != a3_fin_contrato):
-        motivo = "PRÓRROGA"
-    elif fin_pre:
-        motivo = "CONTRATO"
-
-    # Baja recorta o establece fin
-    if a3_baja:
-        if fin_pre:
-            a3_fin = min(fin_pre, a3_baja)
-            if a3_baja <= fin_pre:
-                motivo = "BAJA"
-        else:
-            a3_fin = a3_baja
-            motivo = "BAJA"
-    else:
-        a3_fin = fin_pre  # puede quedar None (indefinido) no hay baja
-
-    #  Extrae las fechas de inicio y fin del mismo researcher en iMarina (normalmente no tiene prórrogas ni baja).
-    im_ini = norm(getattr(researcher_imarina, "ini_date", None))
-    im_fin = norm(getattr(researcher_imarina, "end_date", None))
-
-    #  funcion que Compara las fechas solo si hay diferencia real
-    def date_diff(d1, d2):
-        if not d1 or not d2:
-            return d1 != d2
-        return abs((d1 - d2).days) > 3  # margen de tolerancia de +3 días
-
-    if date_diff(a3_ini, im_ini) or date_diff(a3_fin, im_fin):
-        print(
-            f"[FECHAS] Mismo puesto pero fechas distintas:\n"
-            f"  A3: inicio={a3_ini}, fin={a3_fin}\n"
-            f"  iMarina: inicio={im_ini}, fin={im_fin}"
-        )
-        #  No se considera cambio de puesto, solo diferencia de fechas
-        return False
-
-        # Sin cambios, no hay ningun cambio, el puesto y las fechas son iguales y no han cambiado
-    print("[SIN CAMBIO] El puesto y las fechas son iguales y no han cambiado.")
     return False
 
 
 
-def is_visitor(researcher_a3: Researcher,) -> bool:
-  if researcher_a3.code_center == 4:
-      start = researcher_a3.ini_date
-      end = researcher_a3.end_date
-      if start is None:
-          return False
-      if end is None:
-         end = datetime.datetime.today()
-      duration = (end - start).days
-      return duration < 365
-  return False
 
-
+#LOGIC AND PHASES TO BUILD AND UPLOAD EXCEL
 def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarina_path, a3_path,):
 
     logger = setup_logger(":", "./logs/log.log", level=logging.DEBUG)
@@ -733,9 +767,6 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
     translator[A3_Field.PERSONAL_WEB] = build_translator(personal_web_path)
 
 
-
-    processed_keys = set()   # NEW SET
-
     #PHASE 1
     logger.info("Phase 1: Check if the researchers in last upload to iMarina are still in A3")
     not_present = 0
@@ -762,9 +793,6 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
             logger.debug(f"Row added to iMarina upload Excel is {str(new_row)}")
             output_data = pd.concat([output_data, new_row], ignore_index=True)
 
-            key = build_position_key(researcher_imarina)
-            processed_keys.add(key)
-
             not_present += 1
         elif len(researchers_matched_a3) == 1:
             logger.debug("The current researcher is still present in A3 meaning the researcher is still in ICIQ.")
@@ -783,8 +811,7 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
                     unparse_researcher_to_imarina_row(researcher_a3, new_row)
                     #logger.debug(f"Row added to iMarina upload Excel is {str(new_row)}")
                     output_data = pd.concat([output_data, new_row], ignore_index=True)
-                    key = build_position_key(researcher_a3)
-                    processed_keys.add(key)
+
                 else:
                     logger.debug("Current researcher is still working in the same position since last upload.")
                     #logger.debug("Adding new row from iMarina with the same data.")
@@ -803,8 +830,6 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
                 #logger.debug("Adding new row from iMarina with the same data.")
                 unparse_researcher_to_imarina_row(researcher_imarina, empty_row)
                 output_data = pd.concat([output_data, empty_row], ignore_index=True)
-                key = build_position_key(researcher_imarina)
-                processed_keys.add(key)
 
 
         # else:
@@ -837,6 +862,7 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
     logger.info(f"Since the last upload, {num_visitors} researchers have visited ICIQ.")
     logger.info(f"Since the last upload, {num_left} researchers have left ICIQ.")
     logger.info(f"Since the last upload, {num_new} researchers have entered ICIQ.")
+
 
     # Si grupo  unidad = DIRECCIO, o grupo unidad = GESTIO, o grupo unidad = OUTREACH llavors eliminar del output ( no poner)
 

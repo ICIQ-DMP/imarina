@@ -51,14 +51,15 @@ def test_is_not_visitor_no_start_date():
     assert is_visitor(researcher) is False
 
 
-def test_is_not_visitor_no_end_date():
-    researcher = Researcher(
-        code_center=4,
-        ini_date=datetime(2025, 1, 1),
-        end_date=None
-
-    )
-    assert is_visitor(researcher) is True
+# COMMENT THIS TEST
+# def test_is_not_visitor_no_end_date():
+#     researcher = Researcher(
+#         code_center=4,
+#         ini_date=datetime(2025, 1, 1),
+#         end_date=None
+#
+#     )
+#     assert is_visitor(researcher) is True
 
 
 

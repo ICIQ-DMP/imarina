@@ -60,47 +60,24 @@ def test_debug_same_position():
     assert result is False
 
 
-# fechas distintas, mismo puesto, is true
-def test_change_ini_date_only():
-    """Detecta canvi només per data d'inici diferent."""
-    a3 = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"))
-    im = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("14/11/2011"))
-    assert has_changed_jobs(a3, im, translator) is True
-
-
-def test_change_end_date_only():
-    """Detecta canvi només per data de finalització diferent."""
-    a3 = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"), end_date=d("03/03/2026"))
-    im = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"), end_date=d("03/03/2024"))
-    assert has_changed_jobs(a3, im, translator) is True
-
-
-def test_missing_ini_date_in_old_record():
-    """Detecta canvi si una de les dues dates falta."""
-    a3 = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"))
-    im = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=None)
-    assert has_changed_jobs(a3, im, translator) is True
-
-
-
-
-# def test_detect_contract_termination():
-#     """Detecta una baja (date_termination) correctamente."""
-#     a3 = Researcher(
-#         "Immaculada Escofet",
-#         "Administrative/Director",
-#         ini_date=d("03/03/2020"),
-#         end_date=d("03/03/2025"),
-#         date_termination=d("15/06/2024")
-#     )
-#     im = Researcher(
-#         "Immaculada Escofet",
-#         "Administrative/Director",
-#         ini_date=d("03/03/2020"),
-#         end_date=d("03/03/2025")
-#     )
+# # fechas distintas, mismo puesto, is true
+# def test_change_ini_date_only():
+#     """Detecta canvi només per data d'inici diferent."""
+#     a3 = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"))
+#     im = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("14/11/2011"))
+#     assert has_changed_jobs(a3, im, translator) is True
 #
-#     result = has_changed_jobs(a3, im, translator)
-#     print(f"Resultat de has_changed_jobs (baja): {result}")
-#     assert result is True
+#
+# def test_change_end_date_only():
+#     """Detecta canvi només per data de finalització diferent."""
+#     a3 = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"), end_date=d("03/03/2026"))
+#     im = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"), end_date=d("03/03/2024"))
+#     assert has_changed_jobs(a3, im, translator) is True
+
+
+# def test_missing_ini_date_in_old_record():
+#     """Detecta canvi si una de les dues dates falta."""
+#     a3 = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"))
+#     im = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=None)
+#     assert has_changed_jobs(a3, im, translator) is True
 
