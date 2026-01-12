@@ -86,13 +86,10 @@ def parse_a3_row_data(row, translator):
     logger.debug(f"Translated country: {country}")
 
 
-    job_description_raw = str(row.values[A3_Field.JOB_DESCRIPTION.value]).strip().lower()
-    translator_jobs = {str(k).strip().lower(): v for k, v in translator[A3_Field.JOB_DESCRIPTION].items()}
-
-
     data = Researcher(code_center=row.values[A3_Field.CODE_CENTER.value],
-                      dni=row.values[A3_Field.DNI.value], email=row.values[A3_Field.EMAIL.value],
-                      orcid=row.values[A3_Field.ORCID.value],
+                      dni=row.values[A3_Field.DNI.value].replace("-", "").replace(".", "").strip().lower(),
+                      email=row.values[A3_Field.EMAIL.value],
+                      orcid=str(row.values[A3_Field.ORCID.value]).replace("-", "").replace(".", "").strip().lower(),
                       name=normalize_name(row.values[A3_Field.NAME.value]),
                       surname=normalize_name(row.values[A3_Field.SURNAME.value]),
                       second_surname=normalize_name(row.values[A3_Field.SECOND_SURNAME.value]),
@@ -109,7 +106,6 @@ def parse_a3_row_data(row, translator):
                       signature_custom=row.values[A3_Field.SIGNATURE_CUSTOM.value],
                       country=country,
                       born_country=born_country,
-                      job_description=translator_jobs.get(job_description_raw, row.values[A3_Field.JOB_DESCRIPTION.value])
-
+                      job_description=translator[A3_Field.JOB_DESCRIPTION][row.values[A3_Field.JOB_DESCRIPTION.value]]
                       )
     return data

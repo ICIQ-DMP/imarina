@@ -1,6 +1,6 @@
 from enum import Enum
 
-from imarina.core.excel import Excel
+from imarina.core.excel import Excel, get_val
 from imarina.core.log_utils import get_logger
 from src.imarina.core.Researcher import Researcher, normalize_name
 from src.imarina.core.date_utile import unparse_date, sanitize_date
@@ -48,21 +48,38 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
 
 
 def parse_imarina_row_data(row, translator):
-    data = Researcher(dni=row.values[ImarinaField.DNI.value],
-                      email=row.values[ImarinaField.EMAIL.value],
-                      orcid=row.values[ImarinaField.ORCID.value],
-                      name=normalize_name(row.values[ImarinaField.NAME.value]),
-                      surname=normalize_name(row.values[ImarinaField.SURNAME.value]),
-                      second_surname=normalize_name(row.values[ImarinaField.SECOND_SURNAME.value]),
-                      ini_date=sanitize_date(row.values[ImarinaField.INI_DATE.value]),
-                      end_date=sanitize_date(row.values[ImarinaField.END_DATE.value]),
-                      sex=row.values[ImarinaField.SEX.value],
-                      personal_web=row.values[ImarinaField.PERSONAL_WEB.value],
-                      signature=row.values[ImarinaField.SIGNATURE.value],
-                      signature_custom=row.values[ImarinaField.SIGNATURE_CUSTOM.value],
-                      country=str(row.values[ImarinaField.COUNTRY.value]).strip(),
-                      born_country =str(row.values[ImarinaField.COUNTRY.value]).strip(),
-                      job_description=row.values[ImarinaField.JOB_DESCRIPTION.value]
+    dni_val = get_val(row, ImarinaField.DNI.value)
+    if dni_val:
+        dni_val = str(dni_val).replace("-", "").replace(".", "").strip().lower()
+
+    orcid_val = get_val(row, ImarinaField.ORCID.value)
+    if orcid_val:
+        orcid_val = str(orcid_val).replace("-", "").replace(".", "").strip().lower()
+
+    job_description_val = get_val(row, ImarinaField.JOB_DESCRIPTION.value)
+
+    if job_description_val:
+        if job_description_val == "Associated researcher":
+            job_description_val = "Postdoctoral researcher"
+        elif job_description_val == "Group Leader / ICREA Professor":
+            job_description_val = "Group Leader"
+
+
+    data = Researcher(dni=dni_val,
+                      email=get_val(row, ImarinaField.EMAIL.value),
+                      orcid=orcid_val,
+                      name=normalize_name(get_val(row, ImarinaField.NAME.value)),
+                      surname=normalize_name(get_val(row, ImarinaField.SURNAME.value)),
+                      second_surname=normalize_name(get_val(row, ImarinaField.SECOND_SURNAME.value)),
+                      ini_date=sanitize_date(get_val(row, ImarinaField.INI_DATE.value)),
+                      end_date=sanitize_date(get_val(row, ImarinaField.END_DATE.value)),
+                      sex=get_val(row, ImarinaField.SEX.value),
+                      personal_web=get_val(row, ImarinaField.PERSONAL_WEB.value),
+                      signature=get_val(row, ImarinaField.SIGNATURE.value),
+                      signature_custom=get_val(row, ImarinaField.SIGNATURE_CUSTOM.value),
+                      country=str(get_val(row, ImarinaField.COUNTRY.value)).strip(),
+                      born_country =str(get_val(row, ImarinaField.COUNTRY.value)).strip(),
+                      job_description=job_description_val
                       )
 
     return data

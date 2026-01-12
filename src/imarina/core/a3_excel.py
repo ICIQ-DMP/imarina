@@ -1,17 +1,9 @@
 import pandas as pd
 
-from imarina.core.Researcher import is_same_person
 from imarina.core.a3_mapper import parse_a3_row_data, A3_Field
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
-
-def is_in_a3(search_data, a3):
-    for index, row in a3.iterrows():
-        row_data = parse_a3_row_data(row)
-        if is_same_person(search_data, row_data):
-            return True
-    return False
 
 
 

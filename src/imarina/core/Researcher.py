@@ -78,6 +78,47 @@ class Researcher:
             job_description=self.job_description,
                           )
 
+    def search_data(self, data_input):
+        matches = []
+
+        for researcher in data_input:
+            if self.is_same_person(researcher):
+                matches.append(researcher)
+
+        if matches:
+            same_ini = [r for r in matches if r.ini_date == self.ini_date]
+            return same_ini if len(same_ini) == 1 else matches
+
+        return []
+
+
+    def is_same_person(self, other):
+        if self.orcid and other.orcid and self.orcid == other.orcid: return True
+        if self.dni and other.dni and self.dni == other.dni: return True
+        if self.email and other.email and self.email == other.email: return True
+        # surname de ambos TODO: fragile
+        #if self.name and other.name and self.surname and other.surname and normalize_name_str(self.name) == normalize_name_str(other.name) and normalize_name_str(self.surname) == normalize_name_str(other.surname):
+        #    return True
+
+        # match por nombre
+        im_n = normalize_name_str(getattr(self, "name", ""))
+        a3_n = normalize_name_str(getattr(other, "name", ""))
+        im_s = normalize_name_str(getattr(self, "surname", ""))
+        a3_s = normalize_name_str(getattr(other, "surname", ""))
+
+        if im_s and a3_s and im_s == a3_s and im_n == a3_n:
+            return True
+
+        return False
+
+
+    def has_changed_jobs(self, researcher):
+
+        # si son iguales no ha cambiado
+        if self.job_description == researcher.job_description:
+            return False
+
+        return True
 
 def is_visitor(researcher_a3: Researcher) -> bool:
     #  Si es codigo centro 4 tiende a ser  visitante
@@ -99,75 +140,11 @@ def is_visitor(researcher_a3: Researcher) -> bool:
 
     return False
 
+
+
+
 def apply_defaults(researcher: Researcher):
     researcher.personal_web = "https://iciq.es"
-
-
-def is_same_person(imarina_row, a3_row):
-    def clean(s):
-        if not s: return ""
-        return str(s).replace("-", "").replace(".", "").strip().lower()
-
-    im_orcid = clean(getattr(imarina_row, "orcid", ""))
-    a3_orcid = clean(getattr(a3_row, "orcid", ""))
-    im_dni = clean(getattr(imarina_row, "dni", ""))
-    a3_dni = clean(getattr(a3_row, "dni", ""))
-
-
-    if im_orcid and a3_orcid and im_orcid == a3_orcid: return True
-    if im_dni and a3_dni and im_dni == a3_dni: return True
-
-    #match por nombre
-    im_n = normalize_name_str(getattr(imarina_row, "name", ""))
-    a3_n = normalize_name_str(getattr(a3_row, "name", ""))
-    im_s = normalize_name_str(getattr(imarina_row, "surname", ""))
-    a3_s = normalize_name_str(getattr(a3_row, "surname", ""))
-
-    # surname de ambos
-    if im_s and a3_s and im_s == a3_s:
-        return True
-    # surname y inicial del name
-    im_s_set = set(im_s.split())
-    a3_s_set = set(a3_s.split())
-    if im_s_set.intersection(a3_s_set) and im_n[:1] == a3_n[:1]:
-        return True
-
-    return False
-
-
-# TODO review logic for researchers have_changed job, left and new
-def has_changed_jobs(researcher_a3, researcher_im, translator):
-    def clean_job(text):
-        if not text: return ""
-        t = str(text).lower()
-        # limpiar caracteres raros y tildes
-        replacements = {
-            "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u",
-            "-": " ", "_": " ", ".": " "
-        }
-        for old, new in replacements.items():
-            t = t.replace(old, new)
-
-
-        stop_words = ["researcher", "investigador", "staff", "position", "the", "en", "de"]
-        words = [w for w in t.split() if w not in stop_words]
-        return " ".join(words).strip()
-
-    job_a3 = clean_job(researcher_a3.job_description)
-    job_im = clean_job(researcher_im.job_description)
-
-    # si son iguales no ha cambiado
-    if job_a3 == job_im:
-        return False
-
-
-    if job_a3 in job_im or job_im in job_a3:
-        return False
-
-
-    return True
-
-
 
 
 # normalitzar el nom del researcher

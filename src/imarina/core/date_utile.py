@@ -17,6 +17,8 @@ def sanitize_date(date_dirty):
         return datetime.datetime.strptime(date_dirty.strip("'"), "%d/%m/%Y")
     elif isinstance(date_dirty, float):
         return None
+    elif date_dirty is None:
+        return None
     else:
         raise ValueError("Unknown type for date to sanitize: " + str(type(date_dirty)) + " value is: " + str(date_dirty))
 

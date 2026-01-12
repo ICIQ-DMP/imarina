@@ -9,6 +9,12 @@ from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
+def get_val(row, idx):
+    val = row.values[idx]
+    if pd.isna(val):
+        return None
+    return val
+
 class Excel:
     def __init__(self, path: Optional[Path], skiprows = 0, header = 0):
         if path is None:
