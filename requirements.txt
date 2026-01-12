@@ -1,6 +1,5 @@
 pandas
 openpyxl
-pytest
 paramiko
 requests
 msal

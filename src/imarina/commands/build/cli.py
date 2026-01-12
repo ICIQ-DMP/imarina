@@ -35,8 +35,6 @@ def build_controller(
         )
 
 ) -> None:
-    configure_logging_from_settings()
-
     build_upload_excel(
         output_path,
         countries_dict,

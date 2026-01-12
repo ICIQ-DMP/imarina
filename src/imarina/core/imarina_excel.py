@@ -77,6 +77,8 @@ def build_upload_excel(output_path, countries_path, jobs_path, imarina_path, a3_
                   A3_Field.JOB_DESCRIPTION: build_translator(jobs_path),
                   A3_Field.PERSONAL_WEB: build_translator(personal_web_path)}
 
+
+
     logger.info("Phase 1: Check if the researchers in last upload to iMarina are still in A3")
     not_present = 0
     for index, row in im_data.dataframe.iterrows():

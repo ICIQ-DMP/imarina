@@ -79,7 +79,6 @@ class Researcher:
                           )
 
 
-# FUNCTION IS VISITOR
 def is_visitor(researcher_a3: Researcher) -> bool:
     #  Si es codigo centro 4 tiende a ser  visitante
     if researcher_a3.code_center == 4:

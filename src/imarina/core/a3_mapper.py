@@ -78,12 +78,12 @@ def parse_a3_row_data(row, translator):
 
     country = translator_countries.get(country_clean, country_clean.capitalize()) # el country completament traduit
 
-    logger.debug("Raw born_country:", born_country_raw)
-    logger.debug("Clean born_country:", born_country_clean)
-    logger.debug("Translated born_country:", born_country)
-    logger.debug("Raw country:", country_raw)
-    logger.debug("Clean country:", country_clean)
-    logger.debug("Translated country:", country)
+    logger.debug(f"Raw born_country: {born_country_raw}")
+    logger.debug(f"Clean born_country: {born_country_clean}")
+    logger.debug(f"Translated born_country: {born_country}")
+    logger.debug(f"Raw country: {country_raw}")
+    logger.debug(f"Clean country: {country_clean}")
+    logger.debug(f"Translated country: {country}")
 
 
     job_description_raw = str(row.values[A3_Field.JOB_DESCRIPTION.value]).strip().lower()
@@ -113,4 +113,3 @@ def parse_a3_row_data(row, translator):
 
                       )
     return data
-
