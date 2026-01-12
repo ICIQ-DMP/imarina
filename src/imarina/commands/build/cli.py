@@ -5,7 +5,7 @@ import typer
 
 from imarina.core.defines import PROJECT_DIR, NOW
 from imarina.core.imarina_excel import build_upload_excel
-from imarina.core.log_utils import configure_logging_from_settings, get_logger
+from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 

@@ -1,10 +1,15 @@
 import typer
 
 from imarina.core.log_utils import process_log_flags, configure_logging_from_settings
-import pandas as pd
 
 from imarina.core.log_utils import get_logger
-from imarina.core.shared_options import VerboseOpt, VeryVerboseOpt, QuietOpt, VeryQuietOpt, LogFileOpt
+from imarina.core.shared_options import (
+    VerboseOpt,
+    VeryVerboseOpt,
+    QuietOpt,
+    VeryQuietOpt,
+    LogFileOpt,
+)
 
 
 def cli_global_callback(

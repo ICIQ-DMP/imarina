@@ -1,5 +1,3 @@
-import pandas as pd
-
 from imarina.core.log_utils import get_logger
 from imarina.core.str_utils import normalize_name_str
 
@@ -29,7 +27,6 @@ class Researcher:
         self.job_description = kwargs.get("job_description")
         self.employee_code = kwargs.get("employee_code")
         self.code_center = kwargs.get("code_center")
-
 
     def __str__(self):
         return (
@@ -76,7 +73,7 @@ class Researcher:
             country=self.country,
             born_country=self.born_country,
             job_description=self.job_description,
-                          )
+        )
 
     def search_data(self, data_input):
         matches = []
@@ -91,13 +88,15 @@ class Researcher:
 
         return []
 
-
     def is_same_person(self, other):
-        if self.orcid and other.orcid and self.orcid == other.orcid: return True
-        if self.dni and other.dni and self.dni == other.dni: return True
-        if self.email and other.email and self.email == other.email: return True
+        if self.orcid and other.orcid and self.orcid == other.orcid:
+            return True
+        if self.dni and other.dni and self.dni == other.dni:
+            return True
+        if self.email and other.email and self.email == other.email:
+            return True
         # surname de ambos TODO: fragile
-        #if self.name and other.name and self.surname and other.surname and normalize_name_str(self.name) == normalize_name_str(other.name) and normalize_name_str(self.surname) == normalize_name_str(other.surname):
+        # if self.name and other.name and self.surname and other.surname and normalize_name_str(self.name) == normalize_name_str(other.name) and normalize_name_str(self.surname) == normalize_name_str(other.surname):
         #    return True
 
         # match por nombre
@@ -111,7 +110,6 @@ class Researcher:
 
         return False
 
-
     def has_changed_jobs(self, researcher):
 
         # si son iguales no ha cambiado
@@ -120,27 +118,31 @@ class Researcher:
 
         return True
 
-def is_visitor(researcher_a3: Researcher) -> bool:
-    #  Si es codigo centro 4 tiende a ser  visitante
-    if researcher_a3.code_center == 4:
+    def is_visitor(self) -> bool:
+        #  Si es codigo centro 4 tiende a ser  visitante
+        if self.code_center == 4:
 
-        job = str(researcher_a3.job_description).lower()
-        permanent_keywords = ["leader", "manager", "principal", "head"]  # estos puestos normalmente no son visitantes ya que son puestos fijos
+            job = str(self.job_description).lower()
+            permanent_keywords = [
+                "leader",
+                "manager",
+                "principal",
+                "head",
+            ]  # estos puestos normalmente no son visitantes ya que son puestos fijos
 
-        if any(key in job for key in permanent_keywords):  # Si el job_description contiene una de esas keywords entonces
-            return False      #retorna False == NO VISITANTE
+            if any(
+                key in job for key in permanent_keywords
+            ):  # Si el job_description contiene una de esas keywords entonces
+                return False  # retorna False == NO VISITANTE
 
-        return True
-
-
-    if researcher_a3.ini_date and researcher_a3.end_date:
-        duration = (researcher_a3.end_date - researcher_a3.ini_date).days
-        if duration < 90:  # Menos de 3 meses es casi siempre VISITANTE
             return True
 
-    return False
+        if self.ini_date and self.end_date:
+            duration = (self.end_date - self.ini_date).days
+            if duration < 90:  # Menos de 3 meses es casi siempre VISITANTE
+                return True
 
-
+        return False
 
 
 def apply_defaults(researcher: Researcher):
@@ -159,6 +161,5 @@ def normalize_name(name: str) -> str:
 
     else:
         fixed = name
-
 
     return fixed

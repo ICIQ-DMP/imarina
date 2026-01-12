@@ -4,6 +4,7 @@ from src.imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
+
 def build_translations(countries_path, jobs_path, personal_web_path):
     r = {A3_Field.SEX: {}}
     r[A3_Field.SEX]["Mujer"] = "Woman"
@@ -35,11 +36,7 @@ def build_translations(countries_path, jobs_path, personal_web_path):
 def build_translator(path, skiprows=0):
     excel = Excel(path, skiprows, None)
 
-    excel.dataframe.iloc[:, 0] = (
-        excel.dataframe.iloc[:, 0]
-    )
-    excel.dataframe.iloc[:, 1] = (
-        excel.dataframe.iloc[:, 1]
-    )
+    excel.dataframe.iloc[:, 0] = excel.dataframe.iloc[:, 0]
+    excel.dataframe.iloc[:, 1] = excel.dataframe.iloc[:, 1]
 
     return excel.parse_two_columns(0, 1)

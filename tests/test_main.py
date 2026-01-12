@@ -1,6 +1,5 @@
-from datetime import date, datetime
+from datetime import date
 
-from pathlib import Path
 
 from imarina.core.Researcher import Researcher, is_visitor
 
@@ -21,6 +20,7 @@ from imarina.core.Researcher import Researcher, is_visitor
 #     except Exception as e:
 #         pytest.fail(f"Pujada a SharePoint ha fallat: {e}")
 
+
 # test de prueba
 def test_demo():
     assert 1 + 1 == 2
@@ -28,12 +28,12 @@ def test_demo():
 
 def test_is_visitor():
     researcher = Researcher(
-        ini_date=date(2025, 9, 30),
-        end_date=date(2025, 10, 5),
-        code_center=4)
+        ini_date=date(2025, 9, 30), end_date=date(2025, 10, 5), code_center=4
+    )
     assert is_visitor(researcher) == True
 
-#COMMENT THIS FAIL TESTS
+
+# COMMENT THIS FAIL TESTS
 # def test_isnot_visitor():
 #     researcher = Researcher(
 #         ini_date=date(2023, 9, 30),
@@ -63,7 +63,5 @@ def test_is_visitor():
 #     assert is_visitor(researcher) is True
 
 
-
 def test_is_same_person():
     assert True
-

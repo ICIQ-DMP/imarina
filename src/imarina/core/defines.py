@@ -5,7 +5,7 @@ import pathlib
 from enum import Enum
 from typing import Optional
 
-DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DATE_FORMAT = "%Y-%m-%d_%H:%M:%S"
 NOW = datetime.datetime.now().strftime(DATE_FORMAT)
 PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 date_str = "31/12/2099"

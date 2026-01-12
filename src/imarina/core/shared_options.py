@@ -65,5 +65,5 @@ __all__ = [
     "DirectoryOpt",
     "VeryVerboseOpt",
     "VeryQuietOpt",
-    "LogFileOpt"
+    "LogFileOpt",
 ]

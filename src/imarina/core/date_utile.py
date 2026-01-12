@@ -6,6 +6,7 @@ from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
+
 def sanitize_date(date_dirty):
     if type(date_dirty) is pd._libs.tslibs.timestamps.Timestamp:
         return date_dirty
@@ -20,8 +21,12 @@ def sanitize_date(date_dirty):
     elif date_dirty is None:
         return None
     else:
-        raise ValueError("Unknown type for date to sanitize: " + str(type(date_dirty)) + " value is: " + str(date_dirty))
-
+        raise ValueError(
+            "Unknown type for date to sanitize: "
+            + str(type(date_dirty))
+            + " value is: "
+            + str(date_dirty)
+        )
 
 
 def unparse_date(date):

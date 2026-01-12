@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 
-
-
 translator = {
     A3_Field.JOB_DESCRIPTION: {
         "Investigador": "Researcher",
@@ -17,10 +15,9 @@ translator = {
         "visitantes": "Visitors",
         "Asistente dirección": "Technician",
         "Técnico de laboratorio": "Laboratory Technician",
-
-
     }
 }
+
 
 @dataclass
 class Researcher:
@@ -40,10 +37,13 @@ def d(s: str):  # petit helper per fer dates ràpid
 # test para comprobar si el researcher ha cambiado de posicion is True if has_changed_job
 def test_change_position():
     """Detecta si ha canviat la posició (job_description)."""
-    a3 = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"))
-    im = Researcher("Immaculada Escofet", "Scientific Coordinator", ini_date=d("14/11/2011"))
+    a3 = Researcher(
+        "Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025")
+    )
+    im = Researcher(
+        "Immaculada Escofet", "Scientific Coordinator", ini_date=d("14/11/2011")
+    )
     assert has_changed_jobs(a3, im, translator) is True
-
 
 
 # test que comprova si la posició es la mateixa, si no hi ha hagut changed job, retorna result False
@@ -79,4 +79,3 @@ def test_debug_same_position():
 #     a3 = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=d("03/03/2025"))
 #     im = Researcher("Immaculada Escofet", "Administrative/Director", ini_date=None)
 #     assert has_changed_jobs(a3, im, translator) is True
-

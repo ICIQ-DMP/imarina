@@ -60,15 +60,15 @@ dev: src/bmde.egg-info/PKG-INFO  ## Install package and dev dependencies
 
 # ---- quality --------------------------------------------------------------
 
-lint:  ## Run static checks (ruff + mypy)
+lint: dev  ## Run static checks (ruff + mypy)
 	@$(VENV_BIN)/ruff check .
 	@$(VENV_BIN)/mypy src
 
-fmt:  ## Auto-format (black + ruff --fix)
+fmt: dev  ## Auto-format (black + ruff --fix)
 	@$(VENV_BIN)/black src tests
 	@$(VENV_BIN)/ruff check --fix .
 
-test:  ## Run tests
+test: dev  ## Run tests
 	@PYTHONPATH=src PYTHONUNBUFFERED=1 $(VENV_BIN)/pytest -s -v
 
 # ---- run ------------------------------------------------------------------
@@ -94,7 +94,7 @@ clean:  ## Remove build/test artifacts
 
 # ---- meta -----------------------------------------------------------------
 
-.PHONY: venv lint fmt test run clean help dist install dev docker-build docker-push
+.PHONY: lint fmt test run clean help dist install docker-build docker-push
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .+$$' $(MAKEFILE_LIST) | \

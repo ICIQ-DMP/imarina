@@ -8,6 +8,7 @@ from src.imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
+
 class A3_Field(Enum):
     CODE_CENTER = 1
     NAME = 2
@@ -30,6 +31,7 @@ class A3_Field(Enum):
     SIGNATURE_CUSTOM = -1
     BIRTH_DATE = -1
 
+
 def parse_a3_row_data(row, translator):
 
     default_web = "https://www.iciq.org"
@@ -46,13 +48,14 @@ def parse_a3_row_data(row, translator):
             .strip()
         )
         name = re.sub(r"\d+", "", name)  # eliminar números
-        name = ''.join(
-            c for c in unicodedata.normalize('NFD', name)   #elimina accents
-            if unicodedata.category(c) != 'Mn'
+        name = "".join(
+            c
+            for c in unicodedata.normalize("NFD", name)  # elimina accents
+            if unicodedata.category(c) != "Mn"
         )
         return name.lower().strip()
 
-    #exceptions translate country alias
+    # exceptions translate country alias
     manual_country_aliases = {
         "iran republica islamica de": "iran",
         "alemania, republica federal": "alemania",
@@ -64,19 +67,31 @@ def parse_a3_row_data(row, translator):
         for k, v in translator[A3_Field.COUNTRY].items()
     }
 
-    born_country_raw = str(row.values[A3_Field.BORN_COUNTRY.value]).strip() # llegeix el value de la row(row.values) del excel A3 i el Field.BORN_COUNTRY.value  .strip delete whitespaces
-    born_country_clean = normalize_country_name(born_country_raw)  #born country ja normalitzat i el busca al translator_countries
+    born_country_raw = str(
+        row.values[A3_Field.BORN_COUNTRY.value]
+    ).strip()  # llegeix el value de la row(row.values) del excel A3 i el Field.BORN_COUNTRY.value  .strip delete whitespaces
+    born_country_clean = normalize_country_name(
+        born_country_raw
+    )  # born country ja normalitzat i el busca al translator_countries
 
-    born_country_clean = manual_country_aliases.get(born_country_clean, born_country_clean)
+    born_country_clean = manual_country_aliases.get(
+        born_country_clean, born_country_clean
+    )
 
-    born_country = translator_countries.get(born_country_clean, born_country_clean.capitalize())  #born country completament traduit
+    born_country = translator_countries.get(
+        born_country_clean, born_country_clean.capitalize()
+    )  # born country completament traduit
 
-    country_raw = str(row.values[A3_Field.COUNTRY.value]).strip()  #llegeix la row.values del Country del field de A3
+    country_raw = str(
+        row.values[A3_Field.COUNTRY.value]
+    ).strip()  # llegeix la row.values del Country del field de A3
     country_clean = normalize_country_name(country_raw)  # el country normalitzat
 
     country_clean = manual_country_aliases.get(country_clean, country_clean)
 
-    country = translator_countries.get(country_clean, country_clean.capitalize()) # el country completament traduit
+    country = translator_countries.get(
+        country_clean, country_clean.capitalize()
+    )  # el country completament traduit
 
     logger.debug(f"Raw born_country: {born_country_raw}")
     logger.debug(f"Clean born_country: {born_country_clean}")
@@ -85,27 +100,37 @@ def parse_a3_row_data(row, translator):
     logger.debug(f"Clean country: {country_clean}")
     logger.debug(f"Translated country: {country}")
 
-
-    data = Researcher(code_center=row.values[A3_Field.CODE_CENTER.value],
-                      dni=row.values[A3_Field.DNI.value].replace("-", "").replace(".", "").strip().lower(),
-                      email=row.values[A3_Field.EMAIL.value],
-                      orcid=str(row.values[A3_Field.ORCID.value]).replace("-", "").replace(".", "").strip().lower(),
-                      name=normalize_name(row.values[A3_Field.NAME.value]),
-                      surname=normalize_name(row.values[A3_Field.SURNAME.value]),
-                      second_surname=normalize_name(row.values[A3_Field.SECOND_SURNAME.value]),
-                      ini_date=sanitize_date(row.values[A3_Field.INI_DATE.value]),
-                      end_date=sanitize_date(row.values[A3_Field.END_DATE.value]),
-                      ini_prorrog=sanitize_date(row.values[A3_Field.INI_PRORROG.value]),
-                      end_prorrog=sanitize_date(row.values[A3_Field.END_PRORROG.value]),
-                      date_termination=sanitize_date(row.values[A3_Field.DATE_TERMINATION.value]),
-                      sex=row.values[A3_Field.SEX.value],
-                      personal_web=translator[A3_Field.PERSONAL_WEB].get(
-                          row.values[A3_Field.JOB_DESCRIPTION.value], default_web
-                      ),
-                      signature="",
-                      signature_custom=row.values[A3_Field.SIGNATURE_CUSTOM.value],
-                      country=country,
-                      born_country=born_country,
-                      job_description=translator[A3_Field.JOB_DESCRIPTION][row.values[A3_Field.JOB_DESCRIPTION.value]]
-                      )
+    data = Researcher(
+        code_center=row.values[A3_Field.CODE_CENTER.value],
+        dni=row.values[A3_Field.DNI.value]
+        .replace("-", "")
+        .replace(".", "")
+        .strip()
+        .lower(),
+        email=row.values[A3_Field.EMAIL.value],
+        orcid=str(row.values[A3_Field.ORCID.value])
+        .replace("-", "")
+        .replace(".", "")
+        .strip()
+        .lower(),
+        name=normalize_name(row.values[A3_Field.NAME.value]),
+        surname=normalize_name(row.values[A3_Field.SURNAME.value]),
+        second_surname=normalize_name(row.values[A3_Field.SECOND_SURNAME.value]),
+        ini_date=sanitize_date(row.values[A3_Field.INI_DATE.value]),
+        end_date=sanitize_date(row.values[A3_Field.END_DATE.value]),
+        ini_prorrog=sanitize_date(row.values[A3_Field.INI_PRORROG.value]),
+        end_prorrog=sanitize_date(row.values[A3_Field.END_PRORROG.value]),
+        date_termination=sanitize_date(row.values[A3_Field.DATE_TERMINATION.value]),
+        sex=row.values[A3_Field.SEX.value],
+        personal_web=translator[A3_Field.PERSONAL_WEB].get(
+            row.values[A3_Field.JOB_DESCRIPTION.value], default_web
+        ),
+        signature="",
+        signature_custom=row.values[A3_Field.SIGNATURE_CUSTOM.value],
+        country=country,
+        born_country=born_country,
+        job_description=translator[A3_Field.JOB_DESCRIPTION][
+            row.values[A3_Field.JOB_DESCRIPTION.value]
+        ],
+    )
     return data

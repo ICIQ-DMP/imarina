@@ -20,7 +20,6 @@ class ExtendedLogger(logging.Logger):
 logging.setLoggerClass(ExtendedLogger)
 
 
-
 class SecretsFilter(logging.Filter):
     def __init__(self, secrets: list[str | None] | None):
         super().__init__()
@@ -92,6 +91,7 @@ def get_logger(name: str) -> ExtendedLogger:
     """Return a logger with trace() method available."""
     return cast(ExtendedLogger, logging.getLogger(name))
 
+
 def process_log_flags(
     very_verbose: bool, verbose: bool, quiet: bool, very_quiet: bool
 ) -> tuple[LogLevel | None, bool]:
@@ -115,7 +115,11 @@ def process_log_flags(
         return None, more_than_one_flag
 
 
-def configure_logging_from_settings(level: Optional[LogLevel] = None, log_file: Optional[Path] = None, secrets: Optional[list[str]] = None) -> None:
+def configure_logging_from_settings(
+    level: Optional[LogLevel] = None,
+    log_file: Optional[Path] = None,
+    secrets: Optional[list[str]] = None,
+) -> None:
     if log_file is None:
         log_file = get_default_log_path()
 
@@ -127,6 +131,7 @@ def configure_logging_from_settings(level: Optional[LogLevel] = None, log_file: 
         log_file=log_file,
         secrets=secrets,
     )  # Preventive creation of log for logging the loading of settings
+
 
 def process_log_flags(
     very_verbose: bool, verbose: bool, quiet: bool, very_quiet: bool
