@@ -1,13 +1,14 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from sharepoint_uploader import get_site_id
+
+from imarina.core.sharepoint import get_site_id
 
 
 class DummyTokenManager:
     def get_token(self):
         return "fake_token_123"
 
-@patch("src.sharepoint_uploader.requests.get")
+@patch("imarina.core.sharepoint.requests.get")
 def test_get_site_id_success(mock_get):
     mock_response = MagicMock()
     mock_response.json.return_value = {"id": "SITE12345"}
@@ -25,7 +26,7 @@ def test_get_site_id_success(mock_get):
     assert headers["Authorization"] == "Bearer fake_token_123"
     assert result == "SITE12345"
 
-@patch("src.sharepoint_uploader.requests.get")
+@patch("imarina.core.sharepoint.requests.get")
 def test_get_site_id_http_error(mock_get):
     mock_response = MagicMock()
     mock_response.raise_for_status.side_effect = Exception("Bad Request")

@@ -1,7 +1,8 @@
 from datetime import date, datetime
 
-from main import Researcher, is_visitor, has_changed_jobs
 from pathlib import Path
+
+from imarina.core.Researcher import Researcher, is_visitor
 
 
 # @pytest.mark.skipif(

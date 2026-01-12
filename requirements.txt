@@ -5,3 +5,5 @@ paramiko
 requests
 msal
 python-dotenv
+rich
+typer

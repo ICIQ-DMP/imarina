@@ -1,0 +1,42 @@
+from __future__ import annotations
+from pathlib import Path
+from typing import Optional
+
+import pandas as pd
+from pandas.core.interchange.dataframe_protocol import DataFrame
+
+from imarina.core.log_utils import get_logger
+
+logger = get_logger(__name__)
+
+class Excel:
+    def __init__(self, path: Optional[Path], skiprows = 0, header = 0):
+        if path is None:
+            self.dataframe = pd.DataFrame()
+        else:
+            self.dataframe = pd.read_excel(path, skiprows=skiprows, header=header)
+
+
+    def parse_two_columns(self, key: int, value: int, func_apply_key=None, func_apply_value=None):
+        val_col = self.dataframe[value]
+        key_col = self.dataframe[key]
+
+        if func_apply_value is not None:
+            val_col = val_col.apply(func_apply_value)
+        if func_apply_key is not None:
+            key_col = key_col.apply(func_apply_key)
+
+        return dict(zip(key_col, val_col))
+
+    def empty(self):
+        empty_output_dataframe = self.dataframe[0:0].copy()  # retains columns, types, and headers if any
+        empty_output_dataframe.loc[0] = [None] * len(self.dataframe.columns)
+        self.dataframe = empty_output_dataframe
+
+    def __copy__(self):
+        empty = Excel(None)
+        empty.dataframe = self.dataframe.copy()
+        return empty
+    
+    def concat(self, excel: Excel):
+        self.dataframe = pd.concat([self.dataframe, excel.dataframe], ignore_index=True)

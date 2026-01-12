@@ -1,6 +1,8 @@
 import os
-import shutil
 
+from imarina.core.log_utils import get_logger
+
+logger = get_logger(__name__)
 
 def read_env_var(var_name):
     """

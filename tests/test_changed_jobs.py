@@ -1,6 +1,5 @@
-
-from main import has_changed_jobs, A3_Field
-
+from imarina.core.Researcher import has_changed_jobs
+from imarina.core.a3_mapper import A3_Field
 from dataclasses import dataclass
 
 from datetime import date, datetime

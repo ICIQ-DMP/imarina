@@ -1,0 +1,55 @@
+[project]
+name = "imarina"
+dynamic = ["version"]
+description = "imarina automated excel build"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name="AleixMT"}, {name="MarioPiqué"}]
+license = {text="GPL-3.0-or-later"}
+dependencies = [
+    "pandas",
+    "openpyxl",
+    "pytest",
+    "paramiko",
+    "requests",
+    "msal",
+    "python-dotenv",
+    "rich",
+    "typer"
+]
+
+[project.scripts]
+imarina = "imarina.__main__:main"
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "pytest",
+  "mypy",
+  "ruff"
+]
+
+[tool.semantic_release]
+version_source = "tag"
+commit_version_number = true
+tag_format = "v{version}"
+
+[tool.semantic_release.changelog]
+mode = "update"
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["ADDED", "UPDATED", "REMOVED", "FIXED", "RELEASED", "CHANGED"]
+minor_tags = ["ADDED", "UPDATED", "CHANGED"]
+patch_tags = ["FIXED", "REMOVED"]
+major_tags = ["RELEASED"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true

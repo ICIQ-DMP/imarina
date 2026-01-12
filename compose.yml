@@ -10,7 +10,7 @@ services:
     - ./input:/app/input
     - ./output:/app/output
     - ./logs:/app/logs  # folder logs of the process
-
+    - ./uploads:/app/uploads
     secrets:
       - FTP_HOST
       - FTP_PASSWORD
@@ -24,8 +24,7 @@ services:
     stdin_open: true
     tty: true
     working_dir: /app
-    #command: >
-     #sh -c "python /app/src/main.py --imarina-input /app/input/iMarina.xlsx --a3-input /app/input/A3.xlsx --countries-dict /app/input/countries.xlsx --jobs-dict /app/input/Job_Descriptions.xlsx --step build"
+    command: "build"
 
 
   onedrive:
