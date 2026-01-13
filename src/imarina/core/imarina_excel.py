@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 
 from imarina.core.a3_mapper import A3_Field, parse_a3_row_data
-from imarina.core.defines import PERMANENT_CONTRACT_DATE
+from imarina.core.defines import PERMANENT_CONTRACT_DATE, NOW, NOW_DATA
 from imarina.core.excel import Excel
 from imarina.core.imarina_mapper import (
     parse_imarina_row_data,
@@ -21,7 +21,6 @@ def output_excel(researchers, excel, output_path):
     excel.dataframe.to_excel(output_path, index=False)
     logger.info(f"iMarina Excel at {output_path} built successfully.")
 
-# normalized dni
 def normalized_dni(dni):
     if not dni:
         return ""
@@ -33,8 +32,6 @@ def normalized_dni(dni):
 def build_upload_excel(
     output_path: Path, countries_path, jobs_path, imarina_path, a3_path, personal_web_path
 ):
-    today = date.today()
-
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
 
@@ -75,10 +72,11 @@ def build_upload_excel(
             )
             logger.debug("Adding researcher data into output with end date of today")
             if researcher_imarina.end_date is None:
-                researcher_imarina.end_date = today  # Use end time already in iMarina if present, if not, set to today
+                researcher_imarina.end_date = NOW_DATA  # Use end time already in iMarina if present, if not, set to today
             researchers_left.append(researcher_imarina)
             researchers_output.append(researcher_imarina)
         elif len(researchers_matched_a3) == 1:
+
             logger.debug(
                 "The current researcher is still present in A3 meaning the researcher is still in ICIQ."
             )
@@ -127,10 +125,6 @@ def build_upload_excel(
             im_researchers
         )  # find researcher_a3 that exist in iMarina
 
-        if researcher_a3.is_visitor():
-            researchers_visitor.append(researcher_a3)
-            continue
-
         if len(researchers_matched_im) == 0:  # the researcher_a3  is new and is not in iMarina
             researchers_new.append(researcher_a3)
             researchers_output.append(researcher_a3)
@@ -139,6 +133,11 @@ def build_upload_excel(
                 "Present in A3 and also on iMarina - already processed in Phase 1"
             )
             # No hacer nada, ya fue procesado en Phase 1
+
+    for researcher in researchers_output:
+        print(researcher)
+        if researcher.is_visitor():
+            researchers_visitor.append(researcher)
 
     num_changed = len(researchers_changed)
     num_left = len(researchers_left)

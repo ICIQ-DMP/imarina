@@ -5,10 +5,13 @@ import pathlib
 from enum import Enum
 from typing import Optional
 
-DATE_FORMAT = "%Y-%m-%d_%H:%M:%S"
-NOW = datetime.datetime.now().strftime(DATE_FORMAT)
+DATETIME_FORMAT = "%Y-%m-%d_%H:%M:%S"
+NOW_DATA = datetime.datetime.now()
+NOW = NOW_DATA.strftime(DATETIME_FORMAT)
+
 PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 date_str = "31/12/2099"
+DATE_FORMAT = "%d/%m/%Y"
 PERMANENT_CONTRACT_DATE = datetime.datetime.strptime(date_str, "%d/%m/%Y")
 
 
