@@ -2,9 +2,9 @@ import re
 import unicodedata
 from enum import Enum
 
-from src.imarina.core.Researcher import Researcher, normalize_name
-from src.imarina.core.date_utile import sanitize_date
-from src.imarina.core.log_utils import get_logger
+from imarina.core.Researcher import Researcher, normalize_name
+from imarina.core.date_utile import sanitize_date
+from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 

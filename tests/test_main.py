@@ -1,7 +1,7 @@
 from datetime import date
 
 
-from imarina.core.Researcher import Researcher, is_visitor
+from imarina.core.Researcher import Researcher
 
 
 # @pytest.mark.skipif(
@@ -30,7 +30,7 @@ def test_is_visitor():
     researcher = Researcher(
         ini_date=date(2025, 9, 30), end_date=date(2025, 10, 5), code_center=4
     )
-    assert is_visitor(researcher) == True
+    assert researcher.is_visitor()
 
 
 # COMMENT THIS FAIL TESTS

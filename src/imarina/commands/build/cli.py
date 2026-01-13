@@ -43,5 +43,4 @@ def build_controller(
         a3_input,
         personal_web_path
     )
-    logger.info(f"iMarina Excel at {output_path} built successfully.")
 

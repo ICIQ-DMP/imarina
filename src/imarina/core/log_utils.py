@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional, Any, cast
 from rich.logging import RichHandler
 
-from src.imarina.core.defines import DATE_FORMAT, LogLevel, get_default_log_path
+from imarina.core.defines import DATE_FORMAT, LogLevel, get_default_log_path
 
 # ---- extend the logging module with TRACE
 TRACE_LEVEL_NUM = 1
@@ -131,26 +131,3 @@ def configure_logging_from_settings(
         log_file=log_file,
         secrets=secrets,
     )  # Preventive creation of log for logging the loading of settings
-
-
-def process_log_flags(
-    very_verbose: bool, verbose: bool, quiet: bool, very_quiet: bool
-) -> tuple[LogLevel | None, bool]:
-    more_than_one_flag = False
-    flag_counter = 0
-    for flag in (very_verbose, verbose, quiet, very_quiet):
-        if flag:
-            flag_counter += 1
-    if flag_counter > 1:
-        more_than_one_flag = True
-
-    if very_verbose:
-        return LogLevel.TRACE, more_than_one_flag
-    elif verbose:
-        return LogLevel.DEBUG, more_than_one_flag
-    elif quiet:
-        return LogLevel.WARNING, more_than_one_flag
-    elif very_quiet:
-        return LogLevel.QUIET, more_than_one_flag
-    else:
-        return None, more_than_one_flag

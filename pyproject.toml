@@ -8,14 +8,16 @@ authors = [{name="AleixMT"}, {name="MarioPiqué"}]
 license = {text="GPL-3.0-or-later"}
 dependencies = [
     "pandas",
+    "pandas-stubs",
     "openpyxl",
-    "pytest",
     "paramiko",
+    "types-paramiko",
     "requests",
     "msal",
     "python-dotenv",
     "rich",
-    "typer"
+    "typer",
+    "types-requests"
 ]
 
 [project.scripts]

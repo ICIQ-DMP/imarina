@@ -1,12 +1,13 @@
 import typer
 
 from imarina.core.log_utils import configure_logging_from_settings, get_logger
+from imarina.core.shared_options import DirectoryOpt
 from imarina.core.sharepoint import download_input_from_sharepoint
 
 logger = get_logger(__name__)
 
 
-def download_controller(ctx: typer.Context) -> None:
+def download_controller(ctx: typer.Context, input_dir: DirectoryOpt) -> None:
     configure_logging_from_settings()
 
     # TODO downloads files from sharepoint, configure arg for download dir using the diretoryOpt shared options

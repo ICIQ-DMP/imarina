@@ -7,7 +7,7 @@ logger = get_logger(__name__)
 
 
 # function to find duplicates in excel A3
-# TODO: this should be a script
+# TODO: this should be a script or a test
 def find_duplicates_in_a3(a3_data):
     # small function to clean
     def clean(x):

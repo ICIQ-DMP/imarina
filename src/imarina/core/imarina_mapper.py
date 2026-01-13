@@ -2,8 +2,8 @@ from enum import Enum
 
 from imarina.core.excel import Excel, get_val
 from imarina.core.log_utils import get_logger
-from src.imarina.core.Researcher import Researcher, normalize_name
-from src.imarina.core.date_utile import unparse_date, sanitize_date
+from imarina.core.Researcher import Researcher, normalize_name
+from imarina.core.date_utile import unparse_date, sanitize_date
 
 
 logger = get_logger(__name__)
@@ -61,7 +61,7 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
     )
 
 
-def parse_imarina_row_data(row, translator):
+def parse_imarina_row_data(row):
     dni_val = get_val(row, ImarinaField.DNI.value)
     if dni_val:
         dni_val = str(dni_val).replace("-", "").replace(".", "").strip().lower()
@@ -71,8 +71,9 @@ def parse_imarina_row_data(row, translator):
         orcid_val = str(orcid_val).replace("-", "").replace(".", "").strip().lower()
 
     job_description_val = get_val(row, ImarinaField.JOB_DESCRIPTION.value)
-
     if job_description_val:
+        job_description_val = job_description_val.strip()
+        # Hardcoded because they are only 2 values
         if job_description_val == "Associated researcher":
             job_description_val = "Postdoctoral researcher"
         elif job_description_val == "Group Leader / ICREA Professor":
@@ -97,3 +98,13 @@ def parse_imarina_row_data(row, translator):
     )
 
     return data
+
+
+def append_researchers_to_output_data(researchers, output_data):
+    empty_row_output_data = output_data.__copy__()
+    empty_row_output_data.empty()
+    for researcher in researchers:
+        new_row = empty_row_output_data.__copy__()
+        unparse_researcher_to_imarina_row(researcher, new_row)
+        output_data.concat(new_row)
+

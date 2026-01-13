@@ -1,4 +1,4 @@
-# Makefile for bmde
+# Makefile for imarina
 # Usage examples:
 #   make venv
 #   make lint
@@ -28,6 +28,9 @@ PIP        := $(VENV_BIN)/pip
 PKG_NAME   := imarina
 DOCKER_IMAGE := mariopique/imarina-load
 
+DEV_STAMP := $(VENV_DIR)/.dev-installed
+
+
 # ---- helpers --------------------------------------------------------------
 
 # Create virtualenv
@@ -35,16 +38,18 @@ $(VENV_BIN)/python:
 	@$(PYTHON_BIN) -m venv "$(VENV_DIR)"
 	@$(PYTHON_BIN) -m pip install --upgrade pip
 
-# Install runtime dependencies (creates bmde executable)
-$(VENV_BIN)/bmde: $(VENV_BIN)/python pyproject.toml
+# Install runtime dependencies (creates imarina executable)
+$(VENV_BIN)/imarina: $(VENV_BIN)/python pyproject.toml
 	@$(PIP) install -e .
 
 # Install dev dependencies
 # We use PKG-INFO as the target because pip updates it when dependencies change.
 # This avoids the loop where 'make fmt && make lint' rebuilds twice because binaries
 # like 'bin/ruff' might not have their timestamp updated by pip if they are already present.
-src/bmde.egg-info/PKG-INFO: $(VENV_BIN)/python pyproject.toml
+$(DEV_STAMP): pyproject.toml $(VENV_BIN)/python
+	@$(PIP) install -e "."
 	@$(PIP) install -e ".[dev]"
+	@touch $(DEV_STAMP)
 
 # Install build tool
 $(VENV_BIN)/pyproject-build: $(VENV_BIN)/python
@@ -54,9 +59,9 @@ $(VENV_BIN)/pyproject-build: $(VENV_BIN)/python
 venv: $(VENV_BIN)/python  ## Create virtualenv
 	@echo "✅ venv ready at $(VENV_DIR)"
 
-install: $(VENV_BIN)/bmde  ## Install package in editable mode
+install: $(VENV_BIN)/imarina  ## Install package in editable mode
 
-dev: src/bmde.egg-info/PKG-INFO  ## Install package and dev dependencies
+dev: $(DEV_STAMP)  ## Install package and dev dependencies
 
 # ---- quality --------------------------------------------------------------
 
@@ -76,7 +81,7 @@ test: dev  ## Run tests
 # Pass arguments to the CLI via CMD, e.g.:
 #   make run CMD="run -f demo.nds --debug"
 CMD ?= --help
-run: install  ## Run the bmde CLI (python -m bmde)
+run: install  ## Run the imarina CLI (python -m imarina)
 	@$(PYTHON) -m $(PKG_NAME) $(CMD)
 
 # ---- docker ---------------------------------------------------------------

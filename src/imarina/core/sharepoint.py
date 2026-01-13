@@ -171,11 +171,8 @@ def folder_exists(token_manager, drive_id, folder_path):
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{folder_path}"
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
 
-    try:
-        response = requests.get(url, headers=headers, timeout=60)
-        return response.status_code == 200
-    except:
-        return False
+    response = requests.get(url, headers=headers, timeout=60)
+    return response.status_code == 200
 
 
 def upload_latest_excel():

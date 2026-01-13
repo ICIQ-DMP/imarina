@@ -48,7 +48,7 @@ class Researcher:
             f"  Signature custom: {self.signature_custom}\n"
             f"  Country: {self.country}\n"
             f"  Born country: {self.born_country}\n"
-            f"  Job description: {self.job_description}\n"
+            f'  Job description: "{self.job_description}"\n'
             f"  Code center: {self.code_center}\n"
         )
 

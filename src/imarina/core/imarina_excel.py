@@ -1,18 +1,25 @@
 import re
 from datetime import date
+from pathlib import Path
 
 from imarina.core.a3_mapper import A3_Field, parse_a3_row_data
 from imarina.core.defines import PERMANENT_CONTRACT_DATE
 from imarina.core.excel import Excel
 from imarina.core.imarina_mapper import (
     parse_imarina_row_data,
-    unparse_researcher_to_imarina_row,
+    unparse_researcher_to_imarina_row, append_researchers_to_output_data,
 )
 from imarina.core.log_utils import get_logger
 from imarina.core.translations import build_translator
 
 logger = get_logger(__name__)
 
+
+def output_excel(researchers, excel, output_path):
+    excel.empty()
+    append_researchers_to_output_data(researchers, excel)
+    excel.dataframe.to_excel(output_path, index=False)
+    logger.info(f"iMarina Excel at {output_path} built successfully.")
 
 # normalized dni
 def normalized_dni(dni):
@@ -23,9 +30,8 @@ def normalized_dni(dni):
     return dni
 
 
-# LOGIC AND PHASES TO BUILD AND UPLOAD EXCEL
 def build_upload_excel(
-    output_path, countries_path, jobs_path, imarina_path, a3_path, personal_web_path
+    output_path: Path, countries_path, jobs_path, imarina_path, a3_path, personal_web_path
 ):
     today = date.today()
 
@@ -35,26 +41,22 @@ def build_upload_excel(
     # Get iMarina last upload data
     im_data = Excel(imarina_path, header=0)
 
-    # retains columns, types, and headers if any
-    empty_row_output_data = im_data.__copy__()
-    empty_row_output_data.empty()
-    output_data = empty_row_output_data.__copy__()
-
-    num_changed = 0
-    num_left = 0
-    num_new = 0
-    num_visitors = 0
-
     # load the translators fields: country, job_description
     translator = {
         A3_Field.COUNTRY: build_translator(countries_path),
         A3_Field.JOB_DESCRIPTION: build_translator(jobs_path),
         A3_Field.PERSONAL_WEB: build_translator(personal_web_path),
     }
+    
+    researchers_left = []
+    researchers_visitor = []
+    researchers_new = []
+    researchers_changed = []
+    researchers_output = []
 
     im_researchers = []
     for index, row in im_data.dataframe.iterrows():
-        im_researchers.append(parse_imarina_row_data(row, translator))
+        im_researchers.append(parse_imarina_row_data(row))
 
     a3_researchers = []
     for index, row in a3_data.dataframe.iterrows():
@@ -67,23 +69,15 @@ def build_upload_excel(
         logger.debug(f"Parsed data from iMarina row is: {str(researcher_imarina)}")
         researchers_matched_a3 = researcher_imarina.search_data(a3_researchers)
 
-        empty_row = empty_row_output_data.__copy__()
-
         if len(researchers_matched_a3) == 0:
-            num_left += 1
             logger.debug(
                 "The current researcher is not present in A3 meaning the researcher is no longer in ICIQ."
             )
             logger.debug("Adding researcher data into output with end date of today")
-            # input()
             if researcher_imarina.end_date is None:
                 researcher_imarina.end_date = today  # Use end time already in iMarina if present, if not, set to today
-            new_row = empty_row_output_data.__copy__()
-
-            unparse_researcher_to_imarina_row(researcher_imarina, new_row)
-            logger.trace(f"Row added to iMarina upload Excel is {str(new_row)}")
-            output_data.concat(new_row)
-
+            researchers_left.append(researcher_imarina)
+            researchers_output.append(researcher_imarina)
         elif len(researchers_matched_a3) == 1:
             logger.debug(
                 "The current researcher is still present in A3 meaning the researcher is still in ICIQ."
@@ -95,41 +89,29 @@ def build_upload_excel(
                 and researcher_a3.end_date != PERMANENT_CONTRACT_DATE
             ):
                 logger.debug("Current researcher has a temporary contract.")
-
-                if researcher_a3.has_changed_jobs(researcher_imarina):
-                    num_changed += 1
-                    logger.debug(
-                        "Current researcher has changed its position within ICIQ since last upload."
-                    )
-                    logger.debug(
-                        "Adding new row from A3 with the data of the new position."
-                    )
-                    new_row = empty_row_output_data.__copy__()
-                    unparse_researcher_to_imarina_row(researcher_a3, new_row)
-                    logger.trace(f"Row added to iMarina upload Excel is {str(new_row)}")
-                    output_data.concat(new_row)
-
-                else:
-                    logger.debug(
-                        "Current researcher is still working in the same position since last upload."
-                    )
-                    logger.debug("Adding new row from iMarina with the same data.")
-
-                    # No cambió entonces mantener la fila actual
-                    # If it has not changed, add current iMarina row to output as is.
-                    # (end date not present) it is a contract that could be still ongoing continue
-                    new_row = empty_row_output_data.__copy__()
-                    unparse_researcher_to_imarina_row(researcher_imarina, new_row)
-                    logger.debug(f"Row added to iMarina upload Excel is {str(new_row)}")
-                    output_data.concat(new_row)
             else:
-                logger.debug("Current researcher has permanent contract.")
+                logger.debug("Current researcher has a permanent contract.")
+                # TODO: set permanent contract date PERMANENT_CONTRACT_DATE
+
+            if researcher_a3.has_changed_jobs(researcher_imarina):
+                logger.debug(
+                    "Current researcher has changed its position within ICIQ since last upload."
+                )
+                logger.debug(
+                    "Adding new row from A3 with the data of the new position."
+                )
+                researchers_changed.append(researcher_a3)
+                researchers_output.append(researcher_a3)
+            else:
                 logger.debug(
                     "Current researcher is still working in the same position since last upload."
                 )
                 logger.debug("Adding new row from iMarina with the same data.")
-                unparse_researcher_to_imarina_row(researcher_imarina, empty_row)
-                output_data.concat(empty_row)
+
+                # No cambió entonces mantener la fila actual
+                # If it has not changed, add current iMarina row to output as is.
+                # (end date not present) it is a contract that could be still ongoing continue
+                researchers_output.append(researcher_imarina)
         else:
             logger.warning("More than one researcher matched in a3:")
             for res in researchers_matched_a3:
@@ -137,37 +119,31 @@ def build_upload_excel(
 
         # input("Press Enter to continue...")
 
-    # Phase 2: Add researchers in A3 that are not present in iMarina
+    logger.info(
+        "Phase 2: Add researchers in A3 that are not present in iMarina"
+    )
     for researcher_a3 in a3_researchers:
         researchers_matched_im = researcher_a3.search_data(
             im_researchers
-        )  # find researcher_a3 have exist in iMarina
-        empty_row = (
-            empty_row_output_data.__copy__()
-        )  # prepare a empty row just in case i need dates
-
-        logger.debug(
-            f"{researcher_a3.name}: code_center={researcher_a3.code_center}, ini_date={researcher_a3.ini_date}, end_date={researcher_a3.end_date}"
-        )
+        )  # find researcher_a3 that exist in iMarina
 
         if researcher_a3.is_visitor():
-            num_visitors += 1
+            researchers_visitor.append(researcher_a3)
             continue
 
-        if (
-            len(researchers_matched_im) == 0
-        ):  # the researcher_a3  is new and is not in iMarina
-            num_new += 1
-            logger.debug(
-                "Present in A3 but not on iMarina, is a new researcher to add to iMarina"
-            )
-            unparse_researcher_to_imarina_row(researcher_a3, empty_row)
-            output_data.concat(empty_row)
+        if len(researchers_matched_im) == 0:  # the researcher_a3  is new and is not in iMarina
+            researchers_new.append(researcher_a3)
+            researchers_output.append(researcher_a3)
         else:
             logger.debug(
                 "Present in A3 and also on iMarina - already processed in Phase 1"
             )
             # No hacer nada, ya fue procesado en Phase 1
+
+    num_changed = len(researchers_changed)
+    num_left = len(researchers_left)
+    num_new = len(researchers_new)
+    num_visitors = len(researchers_visitor)
 
     logger.info(
         f"Since the last upload, {num_changed} researchers have changed its position within ICIQ."
@@ -182,5 +158,11 @@ def build_upload_excel(
     # If they are not present, it has a code 4, it begins and end date is outside a range
     # to determine from fields to determine, then the current row from A3 corresponds to ICREA researcher or predoc
     # with CSC, so its data from A3 needs to be added to the output.
+    # retains columns, types, and headers if any
+    output_excel(researchers_output, im_data, output_path)
 
-    output_data.dataframe.to_excel(output_path, index=False)
+    output_path_str = str(output_path)
+    output_excel(researchers_left, im_data, Path(output_path_str + "left.xlsx"))
+    output_excel(researchers_visitor, im_data, Path(output_path_str + "visitor.xlsx"))
+    output_excel(researchers_new, im_data, Path(output_path_str + "new.xlsx"))
+    output_excel(researchers_changed, im_data, Path(output_path_str + "changed.xlsx"))
