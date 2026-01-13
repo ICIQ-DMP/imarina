@@ -107,4 +107,3 @@ def append_researchers_to_output_data(researchers, output_data):
         new_row = empty_row_output_data.__copy__()
         unparse_researcher_to_imarina_row(researcher, new_row)
         output_data.concat(new_row)
-

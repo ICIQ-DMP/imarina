@@ -1,13 +1,12 @@
 import re
-from datetime import date
 from pathlib import Path
 
 from imarina.core.a3_mapper import A3_Field, parse_a3_row_data
-from imarina.core.defines import PERMANENT_CONTRACT_DATE, NOW, NOW_DATA
+from imarina.core.defines import PERMANENT_CONTRACT_DATE, NOW_DATA
 from imarina.core.excel import Excel
 from imarina.core.imarina_mapper import (
     parse_imarina_row_data,
-    unparse_researcher_to_imarina_row, append_researchers_to_output_data,
+    append_researchers_to_output_data,
 )
 from imarina.core.log_utils import get_logger
 from imarina.core.translations import build_translator
@@ -21,6 +20,7 @@ def output_excel(researchers, excel, output_path):
     excel.dataframe.to_excel(output_path, index=False)
     logger.info(f"iMarina Excel at {output_path} built successfully.")
 
+
 def normalized_dni(dni):
     if not dni:
         return ""
@@ -30,7 +30,12 @@ def normalized_dni(dni):
 
 
 def build_upload_excel(
-    output_path: Path, countries_path, jobs_path, imarina_path, a3_path, personal_web_path
+    output_path: Path,
+    countries_path,
+    jobs_path,
+    imarina_path,
+    a3_path,
+    personal_web_path,
 ):
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
@@ -44,7 +49,7 @@ def build_upload_excel(
         A3_Field.JOB_DESCRIPTION: build_translator(jobs_path),
         A3_Field.PERSONAL_WEB: build_translator(personal_web_path),
     }
-    
+
     researchers_left = []
     researchers_visitor = []
     researchers_new = []
@@ -117,15 +122,15 @@ def build_upload_excel(
 
         # input("Press Enter to continue...")
 
-    logger.info(
-        "Phase 2: Add researchers in A3 that are not present in iMarina"
-    )
+    logger.info("Phase 2: Add researchers in A3 that are not present in iMarina")
     for researcher_a3 in a3_researchers:
         researchers_matched_im = researcher_a3.search_data(
             im_researchers
         )  # find researcher_a3 that exist in iMarina
 
-        if len(researchers_matched_im) == 0:  # the researcher_a3  is new and is not in iMarina
+        if (
+            len(researchers_matched_im) == 0
+        ):  # the researcher_a3  is new and is not in iMarina
             researchers_new.append(researcher_a3)
             researchers_output.append(researcher_a3)
         else:

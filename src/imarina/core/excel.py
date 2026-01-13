@@ -23,7 +23,6 @@ class Excel:
         else:
             self.dataframe = pd.read_excel(path, skiprows=skiprows, header=header)
 
-
     def parse_two_columns(
         self, key: int, value: int, func_apply_key=None, func_apply_value=None
     ):
