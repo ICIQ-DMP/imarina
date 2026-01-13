@@ -353,7 +353,6 @@ def apply_defaults(researcher: Researcher):
     researcher.personal_web = "https://iciq.es"
 
 
-
 def build_translations(countries_path, jobs_path, personal_web_path):
     r = {A3_Field.SEX: {}}
     r[A3_Field.SEX]["Mujer"] = "Woman"
@@ -379,6 +378,7 @@ def build_translations(countries_path, jobs_path, personal_web_path):
     for key in personal_webs.keys():
         r[A3_Field.PERSONAL_WEB][key] = personal_webs[key]
     return r
+
 
 # function to normalize names of researchers
 def normalize_name_str(s):
@@ -416,7 +416,7 @@ def normalized_dni(dni):
     dni = dni.lstrip("0")   # remove leading zeros
     return dni
 
-
+# same person in imarina & A3
 def is_same_person(imarina_row, a3_row):
     def clean(s):
         if not s: return ""
@@ -437,7 +437,7 @@ def is_same_person(imarina_row, a3_row):
     im_s = normalize_name_str(getattr(imarina_row, "surname", ""))
     a3_s = normalize_name_str(getattr(a3_row, "surname", ""))
 
-    # surname de ambos
+    # apellido  de ambos
     if im_s and a3_s and im_s == a3_s:
         return True
     # surname y inicial del name
@@ -450,7 +450,7 @@ def is_same_person(imarina_row, a3_row):
 
 
 
-# function to find duplicates in excel A3
+# function to find duplicates in Excel A3
 def find_duplicates_in_a3(a3_data):
     # small function to clean
     def clean(x):
@@ -501,15 +501,16 @@ def is_in_a3(search_data, a3):
     return False
 
 
-# search coincidencies
+# search coincidencies (matches)
 def search_data(query, search_data, parser, translator):
 
     # strict_matches = []  # los matches se guardan aqui (strict matches)
     # fuzzy_matches = [] # matches que pueden ser difusos  (fuzzy matches)
-    matches = []
+
+    matches = []  # coincidencias exactas es la que utilizamos
 
     for index, row in search_data.iterrows():
-        # parser row
+        # parser row_data recorre cada row buscando coincidencias (search_data)
         row_data = parser(row, translator)
 
         # normalize name
@@ -517,7 +518,7 @@ def search_data(query, search_data, parser, translator):
             matches.append(row_data)
             continue
 
-            # comprova la funció is_same_person
+        # comprova la funció is_same_person
         if is_same_person(query, row_data):
             matches.append(row_data)
 
@@ -526,6 +527,7 @@ def search_data(query, search_data, parser, translator):
         return same_ini if len(same_ini) == 1 else matches
 
     return []
+
 
 
 def build_empty_row(imarina_dataframe):
@@ -561,6 +563,8 @@ def upload_excel(excel_path):
         logger.exception(e)
     logger.info('Closed connection.')
 
+
+
 # TODO review logic for researchers have_changed job, left and new
 def has_changed_jobs(researcher_a3, researcher_im, translator):
     def clean_job(text):
@@ -582,17 +586,15 @@ def has_changed_jobs(researcher_a3, researcher_im, translator):
     job_a3 = clean_job(researcher_a3.job_description)
     job_im = clean_job(researcher_im.job_description)
 
-    # si son iguales no ha cambiado
+    # si son iguales no ha cambiado el puesto de trabajo
     if job_a3 == job_im:
         return False
-
 
     if job_a3 in job_im or job_im in job_a3:
         return False
 
 
     return True
-
 
 # def has_changed_jobs(researcher_a3, researcher_imarina, translator):
 #     from datetime import date, datetime  # importem això per les dates
@@ -702,8 +704,6 @@ def has_changed_jobs(researcher_a3, researcher_im, translator):
 
 
 
-
-
 # FUNCTION IS VISITOR
 def is_visitor(researcher_a3: Researcher) -> bool:
     #  Si es codigo centro 4 tiende a ser  visitante
@@ -737,9 +737,6 @@ def build_upload_excel(input_dir, output_path, countries_path, jobs_path, imarin
     # Get A3 data
     a3_data = pd.read_excel(a3_path, skiprows=2, header=0)
 
-    print("\n=== CHECKING FOR DUPLICATES IN A3 ===")
-    find_duplicates_in_a3(a3_data)
-    print("=== END DUPLICATES CHECK ===\n")
 
     # Get iMarina last upload data
     im_data = pd.read_excel(imarina_path, header=0)
