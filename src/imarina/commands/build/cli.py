@@ -9,6 +9,7 @@ from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
+
 def build_controller(
         ctx: typer.Context,
         countries_dict: Path = typer.Option(

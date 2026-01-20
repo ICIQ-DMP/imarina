@@ -4,6 +4,7 @@ from typing import Optional
 
 import pandas as pd
 
+from imarina.core.imarina_mapper import append_researchers_to_output_data
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -42,6 +43,17 @@ class Excel:
         ].copy()  # retains columns, types, and headers if any
         empty_output_dataframe.loc[0] = [None] * len(self.dataframe.columns)
         self.dataframe = empty_output_dataframe
+
+
+    def to_excel(self, researchers: list, output_path: Path):
+
+        self.empty()  # DATAFRAME
+
+        append_researchers_to_output_data(researchers, self)  #
+
+        self.dataframe.to_excel(output_path, index=False)
+
+        logger.info(f"iMarina Excel at {output_path} built successfully.")
 
     def __copy__(self):
         empty = Excel(None)

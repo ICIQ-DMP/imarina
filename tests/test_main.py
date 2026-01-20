@@ -3,7 +3,6 @@ from datetime import date
 
 from imarina.core.Researcher import Researcher
 
-
 # @pytest.mark.skipif(
 #      "TENANT_ID" not in os.environ,
 #      reason="TENANT_ID not set, skipping integration test with SharePoint"

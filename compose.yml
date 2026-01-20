@@ -11,7 +11,7 @@ services:
     - ./output:/app/output
     - ./logs:/app/logs  # folder logs of the process
     - ./uploads:/app/uploads
-    secrets:
+    secrets:    #TODO ADD (DRIVE ID)
       - FTP_HOST
       - FTP_PASSWORD
       - FTP_PORT

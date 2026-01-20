@@ -58,7 +58,7 @@ class TokenManager:
 def _create_token_manager():
     # read the secrets and create a unique instance of TokenManager.
     if os.getenv("GITHUB_ACTIONS") == "true":
-        print("⚠️ Running in GitHub Actions — skipping TokenManager initialization")
+        print(" Running in GitHub Actions — skipping TokenManager initialization")
         return None
     tenant_id = read_secret("TENANT_ID")
     client_id = read_secret("CLIENT_ID")

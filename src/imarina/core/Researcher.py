@@ -27,6 +27,38 @@ class Researcher:
         self.job_description = kwargs.get("job_description")
         self.employee_code = kwargs.get("employee_code")
         self.code_center = kwargs.get("code_center")
+        self.adscription_type = kwargs.get("adscription_type")
+        self.entity = kwargs.get("entity")
+        self.entity_type = kwargs.get("entity_type")
+        self.entity_web = kwargs.get("entity_web")
+        self.id_one = kwargs.get("id_one")
+        self.id_two = kwargs.get("id_two")
+        self.id_three = kwargs.get("id_three")
+        self.entity_country = kwargs.get("entity_country")
+        self.entity_community = kwargs.get("entity_community")
+        self.entity_web = kwargs.get("entity_web")
+        self.entity_name = kwargs.get("entity_name")
+        self.entity_city = kwargs.get("entity_city")
+        self.entity_code = kwargs.get("entity_code")
+        self.entity_direction = kwargs.get("entity_direction")
+        self.entity_type2 = kwargs.get("entity_type2")
+        self.entity_type3 = kwargs.get("entity_type3")
+        self.entity2 = kwargs.get("entity2")
+        self.research_id = kwargs.get("research_id")
+        self.author_id = kwargs.get("author_id")
+        self.dialnet_id = kwargs.get("dialnet_id")
+        self.google_scholar = kwargs.get("google_scholar")
+        self.contact_country = kwargs.get("contact_country")
+        self.community_contact = kwargs.get("community_contact")
+        self.contact_province = kwargs.get("contact_province")
+        self.contact_city = kwargs.get("contact_city")
+        self.code_contact = kwargs.get("code_contact")
+        self.contact_direction = kwargs.get("contact_direction")
+        self.contact_phone = kwargs.get("contact_phone")
+        self.bio = kwargs.get("bio")
+
+
+
 
     def __str__(self):
         return (
@@ -50,6 +82,37 @@ class Researcher:
             f"  Born country: {self.born_country}\n"
             f'  Job description: "{self.job_description}"\n'
             f"  Code center: {self.code_center}\n"
+            f"  Adscription type : {self.adscription_type}\n"
+            f"  Entity: {self.entity}\n"
+            f"  Entity type: {self.entity_type}\n"
+            f"  Entity web: {self.entity_web}\n"
+            f"  Id One : {self.id_one}\n"
+            f"  Id two: {self.id_two}\n"
+            f"  Id three: {self.id_three}\n"
+            f"  Entity country: {self.entity_country}\n"
+            f"  Entity community: {self.entity_community}\n"
+            f"  Entity name: {self.entity_name}\n"
+            f"  Entity city: {self.entity_city}\n"
+            f"  Entity code: {self.entity_code}\n"
+            f"  Entity direction: {self.entity_direction}\n"
+            f"  Entity type 2: {self.entity_type2}\n"
+            f"  Entity type 3: {self.entity_type3}\n"
+            f"  Entity 2: {self.entity2}\n"
+            f"  Research ID: {self.research_id}\n"
+            f"  Author ID: {self.author_id}\n"
+            f"  Dialnet ID: {self.dialnet_id}\n"
+            f"  Google scholar: {self.google_scholar}\n"
+            f"  Contact country: {self.contact_country}\n"
+            f"  Contact Community: {self.community_contact}\n"
+            f"  Contact Province: {self.contact_province}\n"
+            f"  Contact City: {self.contact_city}\n"
+            f"  Contact Code: {self.code_contact}\n"
+            f"  Contact Direction: {self.contact_direction}\n"
+            f"  Contact Phone: {self.contact_phone}\n"
+            f"  Bio: {self.bio}\n"
+
+
+
         )
 
     def copy(self):
@@ -73,6 +136,35 @@ class Researcher:
             country=self.country,
             born_country=self.born_country,
             job_description=self.job_description,
+            adscription_type=self.adscription_type,
+            entity=self.entity,
+            entity_type=self.entity_type,
+            entity_web=self.entity_web,
+            entity2=self.entity2,
+            entity_type2=self.entity_type2,
+            entity_type3=self.entity_type3,
+            id_one=self.id_one,
+            id_two=self.id_two,
+            id_three=self.id_three,
+            entity_country=self.entity_country,
+            entity_community=self.entity_community,
+            entity_name=self.entity_name,
+            entity_city=self.entity_city,
+            entity_code=self.entity_code,
+            entity_direction=self.entity_direction,
+            research_id=self.research_id,
+            author_id=self.author_id,
+            dialnet_id=self.dialnet_id,
+            google_scholar=self.google_scholar,
+            contact_country=self.contact_country,
+            community_contact=self.community_contact,
+            contact_province=self.contact_province,
+            contact_city=self.contact_city,
+            code_contact=self.code_contact,
+            contact_direction=self.contact_direction,
+            contact_phone=self.contact_phone,
+            bio=self.bio,
+
         )
 
     def search_data(self, data_input):

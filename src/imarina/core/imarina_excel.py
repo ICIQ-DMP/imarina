@@ -3,7 +3,7 @@ from pathlib import Path
 
 from imarina.core.a3_mapper import A3_Field, parse_a3_row_data
 from imarina.core.defines import PERMANENT_CONTRACT_DATE, NOW_DATA
-from imarina.core.excel import Excel
+
 from imarina.core.imarina_mapper import (
     parse_imarina_row_data,
     append_researchers_to_output_data,
@@ -14,11 +14,11 @@ from imarina.core.translations import build_translator
 logger = get_logger(__name__)
 
 
-def output_excel(researchers, excel, output_path):
-    excel.empty()
-    append_researchers_to_output_data(researchers, excel)
-    excel.dataframe.to_excel(output_path, index=False)
-    logger.info(f"iMarina Excel at {output_path} built successfully.")
+
+from imarina.core.excel import Excel
+def output_excel(researchers, excel: Excel, output_path):
+    excel.to_excel(researchers, output_path)
+
 
 
 def normalized_dni(dni):
@@ -29,6 +29,7 @@ def normalized_dni(dni):
     return dni
 
 
+# constructor del excel
 def build_upload_excel(
     output_path: Path,
     countries_path,
@@ -94,7 +95,7 @@ def build_upload_excel(
                 logger.debug("Current researcher has a temporary contract.")
             else:
                 logger.debug("Current researcher has a permanent contract.")
-                # TODO: set permanent contract date PERMANENT_CONTRACT_DATE
+                researcher_a3.end_date = PERMANENT_CONTRACT_DATE
 
             if researcher_a3.has_changed_jobs(researcher_imarina):
                 logger.debug(
@@ -156,8 +157,8 @@ def build_upload_excel(
     logger.info(f"Since the last upload, {num_left} researchers have left ICIQ.")
     logger.info(f"Since the last upload, {num_new} researchers have entered ICIQ.")
 
-    # Si grupo  unidad = DIRECCIO, o grupo unidad = GESTIO, o grupo unidad = OUTREACH llavors eliminar del output ( no poner)
-
+    # IF GROUP UNIT = DIRECCIO OR GROUP UNIT = GESTIO OR GROUP UNIT = OUTREACH DELETE OF OUTPUT
+     # TODO UNIQUE LANGUAGE PREF ENGLISH
     # For each researcher in A3, check if they are not present in iMarina
     # If they are not present, it has a code 4, it begins and end date is outside a range
     # to determine from fields to determine, then the current row from A3 corresponds to ICREA researcher or predoc

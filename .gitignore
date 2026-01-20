@@ -222,3 +222,4 @@ uploads
 sensibles
 !sensibles/.gitignore
 !src/imarina/commands/build
+.idea

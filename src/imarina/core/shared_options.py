@@ -9,7 +9,6 @@ from typing import Optional, Annotated
 
 import typer
 
-
 # Argument to send a directory
 DirectoryOpt = Annotated[
     Optional[Path],
