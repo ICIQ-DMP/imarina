@@ -1,5 +1,4 @@
 from imarina.core.log_utils import get_logger
-from imarina.core.str_utils import normalize_name_str
 
 logger = get_logger(__name__)
 
@@ -57,9 +56,6 @@ class Researcher:
         self.contact_phone = kwargs.get("contact_phone")
         self.bio = kwargs.get("bio")
 
-
-
-
     def __str__(self):
         return (
             f"\nResearcher:\n"
@@ -110,9 +106,6 @@ class Researcher:
             f"  Contact Direction: {self.contact_direction}\n"
             f"  Contact Phone: {self.contact_phone}\n"
             f"  Bio: {self.bio}\n"
-
-
-
         )
 
     def copy(self):
@@ -164,7 +157,6 @@ class Researcher:
             contact_direction=self.contact_direction,
             contact_phone=self.contact_phone,
             bio=self.bio,
-
         )
 
     def search_data(self, data_input):
@@ -187,24 +179,10 @@ class Researcher:
             return True
         if self.email and other.email and self.email == other.email:
             return True
-        # surname de ambos TODO: fragile
-        # if self.name and other.name and self.surname and other.surname and normalize_name_str(self.name) == normalize_name_str(other.name) and normalize_name_str(self.surname) == normalize_name_str(other.surname):
-        #    return True
-
-        # match por nombre
-        im_n = normalize_name_str(getattr(self, "name", ""))
-        a3_n = normalize_name_str(getattr(other, "name", ""))
-        im_s = normalize_name_str(getattr(self, "surname", ""))
-        a3_s = normalize_name_str(getattr(other, "surname", ""))
-
-        if im_s and a3_s and im_s == a3_s and im_n == a3_n:
-            return True
 
         return False
 
     def has_changed_jobs(self, researcher):
-
-        # si son iguales no ha cambiado
         if self.job_description == researcher.job_description:
             return False
 

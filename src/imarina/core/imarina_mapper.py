@@ -25,11 +25,11 @@ class ImarinaField(Enum):
     PERSONAL_WEB = 13  # Submit
     ADSCRIPTION_TYPE = 15  # Submit PARSE
     JOB_DESCRIPTION = 16  # Submit
-    DEDICATION = 17  #NEW PARSE
+    DEDICATION = 17  # NEW PARSE
     INI_DATE = 18  # Submit
     END_DATE = 19  # Submit
     ENTITY = 20  # Submit  PARSE
-    ID_ONE = 21 #PARSE
+    ID_ONE = 21  # PARSE
     ENTITY_TYPE = 22  # Submit DONE
     ENTITY_COUNTRY = 23
     ENTITY_COMMUNITY = 24
@@ -95,32 +95,54 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
     empty_output_row.dataframe.iat[0, ImarinaField.ID_TWO.value] = data.id_two
     empty_output_row.dataframe.iat[0, ImarinaField.ID_THREE.value] = data.id_three
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY2.value] = data.entity2
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_COUNTRY.value] = data.entity_country
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_COMMUNITY.value] = data.entity_community
+    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_COUNTRY.value] = (
+        data.entity_country
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_COMMUNITY.value] = (
+        data.entity_community
+    )
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_NAME.value] = data.entity_name
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_CITY.value] = data.entity_city
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_CODE.value] = data.entity_code
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_DIRECTION.value] = data.entity_direction
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_TYPE2.value] = data.entity_type2
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_TYPE3.value] = data.entity_type3
+    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_DIRECTION.value] = (
+        data.entity_direction
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_TYPE2.value] = (
+        data.entity_type2
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_TYPE3.value] = (
+        data.entity_type3
+    )
 
     empty_output_row.dataframe.iat[0, ImarinaField.RESEARCH_ID.value] = data.research_id
     empty_output_row.dataframe.iat[0, ImarinaField.AUTHOR_ID.value] = data.author_id
     empty_output_row.dataframe.iat[0, ImarinaField.DIALNET_ID.value] = data.dialnet_id
 
-    empty_output_row.dataframe.iat[0, ImarinaField.GOOGLE_SCHOLAR.value] = data.google_scholar
-    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_COUNTRY.value] = data.contact_country
-    empty_output_row.dataframe.iat[0, ImarinaField.COMMUNITY_CONTACT.value] = data.community_contact
-    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_PROVINCE.value] = data.contact_province
-    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_CITY.value] = data.contact_city
-    empty_output_row.dataframe.iat[0, ImarinaField.CODE_CONTACT.value] = data.code_contact
-    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_DIRECTION.value] = data.contact_direction
-    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_PHONE.value] = data.contact_phone
+    empty_output_row.dataframe.iat[0, ImarinaField.GOOGLE_SCHOLAR.value] = (
+        data.google_scholar
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_COUNTRY.value] = (
+        data.contact_country
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.COMMUNITY_CONTACT.value] = (
+        data.community_contact
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_PROVINCE.value] = (
+        data.contact_province
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_CITY.value] = (
+        data.contact_city
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.CODE_CONTACT.value] = (
+        data.code_contact
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_DIRECTION.value] = (
+        data.contact_direction
+    )
+    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_PHONE.value] = (
+        data.contact_phone
+    )
     empty_output_row.dataframe.iat[0, ImarinaField.BIO.value] = data.bio
-
-
-
-
 
 
 # parsear los datos de imarina
@@ -147,17 +169,41 @@ def parse_imarina_row_data(row):
     entity_web_val = get_val(row, ImarinaField.ENTITY_WEB.value)
     entity_web_val = str(entity_web_val).strip() if pd.notna(entity_web_val) else ""
 
-    id_one_val = str(val).strip() if (val := get_val(row, ImarinaField.ID_ONE.value)) is not None else ""
-    id_two_val = str(val).strip() if (val := get_val(row, ImarinaField.ID_TWO.value)) is not None else ""
-    id_three_val = str(val).strip() if (val := get_val(row, ImarinaField.ID_THREE.value)) is not None else ""
-    research_id_val = str(val).strip() if (val := get_val(row, ImarinaField.RESEARCH_ID.value)) is not None else ""
-    author_id_val = str(val).strip() if (val := get_val(row, ImarinaField.AUTHOR_ID.value)) is not None else ""
-    dialnet_id_val = str(val).strip() if (val := get_val(row, ImarinaField.DIALNET_ID.value)) is not None else ""
-    google_scholar_val = str(val).strip() if (val := get_val(row,ImarinaField.GOOGLE_SCHOLAR.value)) is not None else ""
-
-
-
-
+    id_one_val = (
+        str(val).strip()
+        if (val := get_val(row, ImarinaField.ID_ONE.value)) is not None
+        else ""
+    )
+    id_two_val = (
+        str(val).strip()
+        if (val := get_val(row, ImarinaField.ID_TWO.value)) is not None
+        else ""
+    )
+    id_three_val = (
+        str(val).strip()
+        if (val := get_val(row, ImarinaField.ID_THREE.value)) is not None
+        else ""
+    )
+    research_id_val = (
+        str(val).strip()
+        if (val := get_val(row, ImarinaField.RESEARCH_ID.value)) is not None
+        else ""
+    )
+    author_id_val = (
+        str(val).strip()
+        if (val := get_val(row, ImarinaField.AUTHOR_ID.value)) is not None
+        else ""
+    )
+    dialnet_id_val = (
+        str(val).strip()
+        if (val := get_val(row, ImarinaField.DIALNET_ID.value)) is not None
+        else ""
+    )
+    google_scholar_val = (
+        str(val).strip()
+        if (val := get_val(row, ImarinaField.GOOGLE_SCHOLAR.value)) is not None
+        else ""
+    )
 
     orcid_val = get_val(row, ImarinaField.ORCID.value)
     if orcid_val:
@@ -216,8 +262,6 @@ def parse_imarina_row_data(row):
         contact_direction=str(get_val(row, ImarinaField.CONTACT_DIRECTION.value)),
         contact_phone=str(get_val(row, ImarinaField.CONTACT_PHONE.value)),
         bio=str(get_val(row, ImarinaField.BIO.value)),
-
-
     )
 
     return data

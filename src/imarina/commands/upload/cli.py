@@ -9,11 +9,11 @@ from imarina.core.sharepoint import upload_file_sharepoint
 logger = get_logger(__name__)
 
 
-
 def upload_controller(
     ctx: typer.Context,
     file_path: Path = typer.Option(
-        None, help="Path del fitxer Excel (.xlsx). Si es deixa buit, busca l'últim a 'uploads'."
+        None,
+        help="Path del fitxer Excel (.xlsx). Si es deixa buit, busca l'últim a 'uploads'.",
     ),
     target_folder: Path = typer.Option(
         f"Institutional Strengthening/_Projects/iMarina_load_automation/uploads/{datetime.today().strftime('%d-%m-%Y')}",
@@ -21,7 +21,6 @@ def upload_controller(
     ),
 ) -> None:
     print(" Uploading the latest Excel file to SharePoint...")
-
 
     if file_path is None:
         uploads_dir = Path.cwd() / "uploads"
@@ -34,7 +33,9 @@ def upload_controller(
                 print(f"❌ Error: No hi ha fitxers Excel a {uploads_dir}")
                 raise typer.Exit(code=1)
         else:
-            print(f"❌ Error: No s'ha especificat fitxer i la carpeta 'uploads' no existeix.")
+            print(
+                "❌ Error: No s'ha especificat fitxer i la carpeta 'uploads' no existeix."
+            )
             raise typer.Exit(code=1)
 
     # the file not exist in the path
@@ -55,15 +56,6 @@ def upload_controller(
         print(f"❌ Error uploading to SharePoint: {e}")
         # logger.error(f"Error: {e}")
         raise typer.Exit(code=1)
-
-
-
-
-
-
-
-
-
 
 
 # def upload_controller(

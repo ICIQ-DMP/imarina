@@ -8,13 +8,13 @@ from imarina.core.sharepoint import download_input_from_sharepoint
 logger = get_logger(__name__)
 
 
-
 # aquesta funcion to sharepoint to InputDirectory
 # comment this but no delete
 
 #  downloads files from sharepoint, configure arg for download dir using the diretoryOpt shared options
 
-def download_controller(ctx: typer.Context, input_dir: DirectoryOpt  = None) -> None:
+
+def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> None:
     configure_logging_from_settings()
 
     target_path = input_dir if input_dir is not None else Path("input")
@@ -23,8 +23,9 @@ def download_controller(ctx: typer.Context, input_dir: DirectoryOpt  = None) -> 
 
     try:
         download_input_from_sharepoint(target_path)
-        print(f" DONE : Input files successfully downloaded to local directory: {target_path}")
+        print(
+            f" DONE : Input files successfully downloaded to local directory: {target_path}"
+        )
     except Exception as e:
         print(f" Error download input files to SharePoint: {e}")
     return
-
