@@ -234,6 +234,7 @@ def parse_imarina_row_data(row):
         country=str(get_val(row, ImarinaField.COUNTRY.value)).strip(),
         born_country=str(get_val(row, ImarinaField.COUNTRY.value)).strip(),
         job_description=job_description_val,
+
         adscription_type=adscription_val,  # new adscription_val (value)
         entity=entity_val,  # entity_val (value)
         entity_type=entity_type_val,  # entity_type_val (value)

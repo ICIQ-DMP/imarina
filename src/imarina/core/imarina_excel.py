@@ -157,11 +157,17 @@ def build_upload_excel(
     # to determine from fields to determine, then the current row from A3 corresponds to ICREA researcher or predoc
     # with CSC, so its data from A3 needs to be added to the output.
     # retains columns, types, and headers if any
-    im_data.to_excel(output_path)
 
     im_data_empty = im_data.__copy__()
     im_data_empty.empty()
     output_path_str = str(output_path)
+
+    excel_output = im_data_empty.__copy__()
+    append_researchers_to_output_data(researchers_output, excel_output)
+    excel_output.to_excel(Path(output_path))
+
+    '''
+
 
     excel_left = im_data_empty.__copy__()
     append_researchers_to_output_data(researchers_left, excel_left)
@@ -178,5 +184,5 @@ def build_upload_excel(
     excel_changed = im_data_empty.__copy__()
     append_researchers_to_output_data(researchers_changed, excel_changed)
     excel_changed.to_excel(Path(output_path_str + "changed.xlsx"))
-
+    '''
 
