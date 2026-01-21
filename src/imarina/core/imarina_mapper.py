@@ -259,6 +259,7 @@ def parse_imarina_row_data(row):
 def append_researchers_to_output_data(researchers, output_data):
     empty_row_output_data = output_data.__copy__()
     empty_row_output_data.empty()
+    empty_row_output_data.dataframe.loc[0] = [None] * len(empty_row_output_data.dataframe.columns)  # TODO: implement method of Excel, get EmptyRow
     for researcher in researchers:
         new_row = empty_row_output_data.__copy__()
         unparse_researcher_to_imarina_row(researcher, new_row)
