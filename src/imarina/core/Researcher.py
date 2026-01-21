@@ -24,9 +24,9 @@ class Researcher:
         self.country = kwargs.get("country")
         self.born_country = kwargs.get("born_country")
         self.job_description = kwargs.get("job_description")
-
         self.code_center = kwargs.get("code_center")
         self.adscription_type = kwargs.get("adscription_type")
+
         self.entity = kwargs.get("entity")
         self.entity_type = kwargs.get("entity_type")
         self.entity_web = kwargs.get("entity_web")
@@ -77,9 +77,9 @@ class Researcher:
             f"  Country: {self.country}\n"
             f"  Born country: {self.born_country}\n"
             f'  Job description: "{self.job_description}"\n'
-            
             f"  Code center: {self.code_center}\n"
             f"  Adscription type : {self.adscription_type}\n"
+            
             f"  Entity: {self.entity}\n"
             f"  Entity type: {self.entity_type}\n"
             f"  Entity web: {self.entity_web}\n"
@@ -111,7 +111,6 @@ class Researcher:
 
     def copy(self):
         return Researcher(
-            code_center=self.code_center,
             dni=self.dni,
             email=self.email,
             name=self.name,
@@ -130,8 +129,9 @@ class Researcher:
             country=self.country,
             born_country=self.born_country,
             job_description=self.job_description,
-
+            code_center=self.code_center,
             adscription_type=self.adscription_type,
+
             entity=self.entity,
             entity_type=self.entity_type,
             entity_web=self.entity_web,

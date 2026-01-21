@@ -151,15 +151,6 @@ def parse_imarina_row_data(row):
     if dni_val:
         dni_val = str(dni_val).replace("-", "").replace(".", "").strip().lower()
 
-    # VALUES OF imarina fields (adscription, entity, entity_type, entity_web)
-    adscription_val = get_val(row, ImarinaField.ADSCRIPTION_TYPE.value)
-    if (
-        adscription_val
-    ):  # si el valor de l'adscripcio: strip per netejar espais que puguin haver-hi
-        adscription_val = str(
-            adscription_val
-        ).strip()  # aquí farem una neteja perquè el tipus d'adscripció ha de ser sempre: Research
-
     entity_val = get_val(row, ImarinaField.ENTITY.value)
     entity_val = str(entity_val).strip() if pd.notna(entity_val) else ""
 
@@ -234,8 +225,8 @@ def parse_imarina_row_data(row):
         country=str(get_val(row, ImarinaField.COUNTRY.value)).strip(),
         born_country=str(get_val(row, ImarinaField.COUNTRY.value)).strip(),
         job_description=job_description_val,
+        adscription_type=get_val(row, ImarinaField.ADSCRIPTION_TYPE.value),
 
-        adscription_type=adscription_val,  # new adscription_val (value)
         entity=entity_val,  # entity_val (value)
         entity_type=entity_type_val,  # entity_type_val (value)
         entity_web=entity_web_val,  # entity_web_val (value)

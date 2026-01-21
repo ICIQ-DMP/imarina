@@ -30,6 +30,8 @@ class A3_Field(Enum):
     SIGNATURE = -1
     SIGNATURE_CUSTOM = -1
     BIRTH_DATE = -1
+    ADSCRIPTION_TYPE = -1
+
 
 
 def parse_a3_row_data(row, translator):
@@ -132,5 +134,6 @@ def parse_a3_row_data(row, translator):
         job_description=translator[A3_Field.JOB_DESCRIPTION][
             row.values[A3_Field.JOB_DESCRIPTION.value]
         ],
+        adscription_type="Research"
     )
     return data
