@@ -206,9 +206,13 @@ def parse_imarina_row_data(row):
         elif job_description_val == "Group Leader / ICREA Professor":
             job_description_val = "Group Leader"
 
+    email_val = get_val(row, ImarinaField.EMAIL.value)
+    if email_val is not None:
+        email_val = email_val.lower()
+
     data = Researcher(
         dni=get_val(row, ImarinaField.DNI.value),  # dni_val (value)
-        email=get_val(row, ImarinaField.EMAIL.value),
+        email=email_val,
         orcid=orcid_val,  # orcid_val (value)
         name=normalize_name(get_val(row, ImarinaField.NAME.value)),
         surname=normalize_name(get_val(row, ImarinaField.SURNAME.value)),

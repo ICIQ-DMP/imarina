@@ -4,6 +4,7 @@ from enum import Enum
 
 from imarina.core.Researcher import Researcher, normalize_name
 from imarina.core.date_utile import sanitize_date
+from imarina.core.excel import get_val
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -104,10 +105,14 @@ def parse_a3_row_data(row, translator):
     logger.debug(f"Clean country: {country_clean}")
     logger.debug(f"Translated country: {country}")
 
+    email_val = get_val(row, A3_Field.EMAIL.value)
+    if email_val is not None:
+        email_val = email_val.lower()
+
     data = Researcher(
         code_center=row.values[A3_Field.CODE_CENTER.value],
         dni=row.values[A3_Field.DNI.value],
-        email=row.values[A3_Field.EMAIL.value],
+        email=email_val,
         orcid=str(row.values[A3_Field.ORCID.value])
         .replace("-", "")
         .replace(".", "")
