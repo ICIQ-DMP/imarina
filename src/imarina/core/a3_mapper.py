@@ -104,11 +104,7 @@ def parse_a3_row_data(row, translator):
 
     data = Researcher(
         code_center=row.values[A3_Field.CODE_CENTER.value],
-        dni=row.values[A3_Field.DNI.value]
-        .replace("-", "")
-        .replace(".", "")
-        .strip()
-        .lower(),
+        dni=row.values[A3_Field.DNI.value],
         email=row.values[A3_Field.EMAIL.value],
         orcid=str(row.values[A3_Field.ORCID.value])
         .replace("-", "")

@@ -147,9 +147,6 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
 
 # parsear los datos de imarina
 def parse_imarina_row_data(row):
-    dni_val = get_val(row, ImarinaField.DNI.value)
-    if dni_val:
-        dni_val = str(dni_val).replace("-", "").replace(".", "").strip().lower()
 
     entity_val = get_val(row, ImarinaField.ENTITY.value)
     entity_val = str(entity_val).strip() if pd.notna(entity_val) else ""
@@ -210,7 +207,7 @@ def parse_imarina_row_data(row):
             job_description_val = "Group Leader"
 
     data = Researcher(
-        dni=dni_val,  # dni_val (value)
+        dni=get_val(row, ImarinaField.DNI.value),  # dni_val (value)
         email=get_val(row, ImarinaField.EMAIL.value),
         orcid=orcid_val,  # orcid_val (value)
         name=normalize_name(get_val(row, ImarinaField.NAME.value)),
