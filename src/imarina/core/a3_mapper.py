@@ -124,7 +124,7 @@ def parse_a3_row_data(row, translator):
             row.values[A3_Field.JOB_DESCRIPTION.value], default_web
         ),
         signature="",
-        signature_custom=row.values[A3_Field.SIGNATURE_CUSTOM.value],
+        signature_custom="",
         country=country,
         born_country=born_country,
         job_description=translator[A3_Field.JOB_DESCRIPTION][
