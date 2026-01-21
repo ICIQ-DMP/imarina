@@ -37,6 +37,9 @@ def build_controller(
         unit_group_path: Optional[Path] = typer.Option(
             PROJECT_DIR / "input" / "unit_group.xlsx"
         ),
+        entity_type_path: Optional[Path] = typer.Option(
+            PROJECT_DIR / "input" / "unit_type.xlsx"
+        ),
 
 ) -> None:
     build_upload_excel(
@@ -46,6 +49,7 @@ def build_controller(
         imarina_input,
         a3_input,
         personal_web_path,
-        unit_group_path
+        unit_group_path,
+        entity_type_path
     )
 

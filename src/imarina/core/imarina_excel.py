@@ -32,6 +32,7 @@ def build_upload_excel(
     a3_path,
     personal_web_path,
     unit_group_path,
+    entity_type_path,
 ):
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
@@ -44,7 +45,8 @@ def build_upload_excel(
         countries_path=countries_path,
         jobs_path=jobs_path,
         personal_web_path=personal_web_path,
-        unit_group_path=unit_group_path
+        unit_group_path=unit_group_path,
+        entity_type_path=entity_type_path,
     )
 
     researchers_left = []

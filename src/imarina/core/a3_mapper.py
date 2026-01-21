@@ -28,11 +28,39 @@ class A3_Field(Enum):
     INI_PRORROG = 16
     END_PRORROG = 17
     DATE_TERMINATION = 18
+    # Negative values are not mapped in A3 sheet. They also must have unique values.
     PERSONAL_WEB = -1
-    SIGNATURE = -1
-    SIGNATURE_CUSTOM = -1
-    BIRTH_DATE = -1
-    ADSCRIPTION_TYPE = -1
+    SIGNATURE = -2
+    SIGNATURE_CUSTOM = -3
+    BIRTH_DATE = -4
+    ADSCRIPTION_TYPE = -5
+    ENTITY_TYPE = -6
+    ENTITY_COUNTRY = -7
+    ENTITY_COMMUNITY = -8
+    ENTITY_PROVINCE = -9
+    ENTITY_CITY = -10
+    ENTITY_POSTAL_CODE = -11
+    ENTITY_ADDRESS = -12
+    ENTITY_WEB = -13
+    GOOGLE_SCHOLAR_ID = -14
+    CONTACT_PHONE = -15
+
+
+def transform_orcid(orcid: str) -> str:
+    if not orcid or orcid == "":
+        return ""
+    if "-" in orcid:
+        return orcid
+    orcid = orcid.strip()
+    ret = ""
+    counter = 0
+    for char in orcid:
+        if counter % 4 == 0 and counter != 0:
+            ret += "-"
+        ret += char
+        counter += 1
+    logger.trace(f"Transform ORCID input is {orcid} and output is {ret}")
+    return ret
 
 
 
@@ -112,16 +140,17 @@ def parse_a3_row_data(row, translator):
     entity_val = translator[A3_Field.UNIT_GROUP][row.values[A3_Field.UNIT_GROUP.value]]
 
     personal_web_val = translator[A3_Field.PERSONAL_WEB][entity_val]
-    print("translating " + entity_val + " into " + personal_web_val)
+
+    orcid_val = get_val(row, A3_Field.ORCID.value)
+    if orcid_val is None:
+        orcid_val = ""
+
+
     data = Researcher(
         code_center=row.values[A3_Field.CODE_CENTER.value],
         dni=row.values[A3_Field.DNI.value],
         email=email_val,
-        orcid=str(row.values[A3_Field.ORCID.value])
-        .replace("-", "")
-        .replace(".", "")
-        .strip()
-        .lower(),
+        orcid=transform_orcid(orcid_val),
         name=normalize_name(row.values[A3_Field.NAME.value]),
         surname=normalize_name(row.values[A3_Field.SURNAME.value]),
         second_surname=normalize_name(row.values[A3_Field.SECOND_SURNAME.value]),
@@ -140,6 +169,7 @@ def parse_a3_row_data(row, translator):
             row.values[A3_Field.JOB_DESCRIPTION.value]
         ],
         adscription_type="Research",
-        unit_group=entity_val
+        unit_group=entity_val,
+        entity_type=translator[A3_Field.ENTITY_TYPE][entity_val],
     )
     return data
