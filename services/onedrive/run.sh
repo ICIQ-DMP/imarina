@@ -47,4 +47,5 @@ docker run \
   --single-directory "${sp_path}" \
   --monitor \
   --syncdir /onedrive/data \
-  --confdir /onedrive/conf
+  --confdir /onedrive/conf \
+  --resync

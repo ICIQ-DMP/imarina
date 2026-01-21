@@ -10,7 +10,7 @@ services:
     - ./input:/app/input
     - ./output:/app/output
     - ./logs:/app/logs  # folder logs of the process
-
+    - ./uploads:/app/uploads
     secrets:
       - FTP_HOST
       - FTP_PASSWORD
@@ -21,11 +21,11 @@ services:
       - TENANT_ID
       - SHAREPOINT_DOMAIN
       - SITE_NAME
+      - DRIVE_ID
     stdin_open: true
     tty: true
     working_dir: /app
-    #command: >
-     #sh -c "python /app/src/main.py --imarina-input /app/input/iMarina.xlsx --a3-input /app/input/A3.xlsx --countries-dict /app/input/countries.xlsx --jobs-dict /app/input/Job_Descriptions.xlsx --step build"
+    command: "build"
 
 
   onedrive:
@@ -70,6 +70,8 @@ secrets:
     file: ./secrets/SHAREPOINT_DOMAIN
   SITE_NAME:
     file: ./secrets/SITE_NAME
+  DRIVE_ID:
+    file: ./secrets/DRIVE_ID
 
 networks:
   imarina_net:

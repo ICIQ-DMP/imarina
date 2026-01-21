@@ -1,5 +1,8 @@
 import os
-import shutil
+
+from imarina.core.log_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def read_env_var(var_name):
@@ -60,7 +63,9 @@ def read_file(file_path):
 
     # Check if the file is readable
     if not os.access(file_path, os.R_OK):
-        raise PermissionError(f"The file '{file_path}' cannot be read. Check permissions.")
+        raise PermissionError(
+            f"The file '{file_path}' cannot be read. Check permissions."
+        )
 
     # Read the file
     with open(file_path, "r") as file:
@@ -71,10 +76,7 @@ def read_file(file_path):
 
 def ensure_gitignore(directory):
     # Ensure existence of .gitignore
-    gitignore_path = os.path.join(directory, '.gitignore')
+    gitignore_path = os.path.join(directory, ".gitignore")
     gitignore_content = "*\n!.gitignore\n"
-    with open(gitignore_path, 'w+') as f:
+    with open(gitignore_path, "w+") as f:
         f.write(gitignore_content)
-
-
-

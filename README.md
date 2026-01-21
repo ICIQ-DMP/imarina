@@ -152,18 +152,9 @@ git clone https://github.com/ICIQ-DMP/iMarina-load.git
 ###### Initialize venv
 ```shell
 cd iMarina
-python3 -m venv venv
-./venv/bin/pip install -r requirements.txt 
+make install
 ```
 
-Install the requirements
-```shell
-./venv/bin/pip install --upgrade pip
-```
-
-```shell
-./venv/bin/pip install -r requirements.txt
-```
 
 ###### Obtaining translations
 First you will need to obtain the spreadsheets with the translations. By default, they are read from the `input/` 
@@ -183,8 +174,8 @@ cd services/onedrive
 bash run.sh
 # The program will display a link and ask you to authenticate and paste the answered URL into the terminal
 ```
-
-After following the steps, OneDrive will be syncing the folder 
+<!-- TODO: remove specific data from share point
+After following the steps, OneDrive will be syncing the folder `Institutional Strengthening/_Projects/iMarina_load_automation/input`-->
 `Institutional Strengthening/_Projects/iMarina_load_automation/input` from Sharepoint into `services/onedrive/data`. Add 
 or change the necessary arguments to read from this new source, instead of `input/`, so that data consumed by the 
 program is always updated. 
@@ -262,12 +253,13 @@ Other useful commands:
 ### Prerequisites
 Install the `requirements-dev.txt` to install the dependencies for the tests.
 ```shell
-./venv/bin/pip install -r requirements-dev.txt
+make dev
 ```
 
 
 ### Execute tests
 #### In host
+<!-- convert into makefile target -->
 We have to be at the root of the project, otherwise we will get an error
 ```shell
 cd ~/Desktop/iMarina-load
