@@ -60,16 +60,59 @@ def upload_file(token_manager, drive_id, remote_path, local_file_path):
     print("✅ Upload Done")
 
 
+# in this function read the folder in path: SECRETS / new file added DRIVE_ID
+
+from pathlib import Path
+
+
+def get_sharepoint_drive_id() -> str:
+
+    current_path = Path(__file__).resolve()
+
+    root = current_path
+    while root.parent != root:
+        if (root / "secrets").is_dir():
+            break
+        root = root.parent
+
+    secret_path = root / "secrets" / "DRIVE_ID"
+
+    if not secret_path.exists():
+
+        if (root.parent / "secrets").is_dir():
+            secret_path = root.parent / "secrets" / "DRIVE_ID"
+
+    try:
+        return secret_path.read_text().strip()
+    except FileNotFoundError:
+        raise RuntimeError(f"❌ No s'ha trobat el secret a {secret_path.absolute()}")
+
+
+# def get_sharepoint_drive_id() -> str:
+#
+#     project_root = Path(__file__).resolve().parent.parent
+#     secret_path = project_root / "secrets" / "DRIVE_ID"
+#
+#     try:
+#         drive_id = secret_path.read_text().strip()
+#         if not drive_id:
+#             raise ValueError(f"No DRIVE_ID found in {secret_path}")
+#         return drive_id
+#     except FileNotFoundError:
+#         raise Exception(f" Error: No s'ha trobat el secret a {secret_path}")
+
+
 # Uploads a file to the SharePoint site 'Institutional Strengthening'.
 def upload_file_sharepoint(
-    file_path: Path, target_folder: str = ""
+    file_path: Path,
+    target_folder: str = "_Projects/iMarina_load_automation/uploads"
 ):  # Args: file_path: Local file path to upload.  target_folder: Relative path inside drive(ex:'Uploads/2025-10').
     if isinstance(file_path, str):
         file_path = Path(file_path)
 
     token_manager = get_token_manager()
 
-    drive_id = "b!KJ1B2DCzSkuCoY3RpzAwFygN2jp0uu1LuLHdfD8wx_3n_8Rkg41LSY25TQTmrzYb"
+    drive_id = get_sharepoint_drive_id() # drive_id is read in a method (get_sharepoint_drive_id)
 
     filename = file_path.name
     remote_path = f"{target_folder}/{filename}".strip("/")
@@ -80,17 +123,28 @@ def upload_file_sharepoint(
         "Authorization": f"Bearer {token_manager.get_token()}",
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     }
+    try:
+        with open(file_path, "rb") as f:
+            response = requests.put(url, headers=headers, data=f, timeout=300)
 
-    with open(file_path, "rb") as f:
-        response = requests.put(url, headers=headers, data=f, timeout=300)
-    if response.status_code not in (200, 201):
-        print(f"✅ Archivo '{file_path.name}' subido correctamente.")
-    elif response.status_code == 404:
-        print(
-            f"❌ Error: La carpeta destino no existe ({target_folder}) en SharePoint."
-        )
 
-    response.raise_for_status()
+        if response.status_code in (200, 201):
+            print(f"✅ Archivo '{filename}' subido correctamente a {target_folder}.")
+        else:
+
+            response.raise_for_status()
+
+    except requests.exceptions.HTTPError as e:
+        if response.status_code == 404:
+            print(f"❌ Error: La carpeta destino no existe ({target_folder}) en SharePoint.")
+        else:
+            print(f"❌ Error HTTP al subir '{filename}': {e}")
+        raise
+    except Exception as e:
+        print(f"❌ Error inesperado al subir '{filename}': {e}")
+        raise
+
+
 
 
 def download_input_from_sharepoint(local_input_folder: str = "/app/input"):
@@ -98,7 +152,8 @@ def download_input_from_sharepoint(local_input_folder: str = "/app/input"):
 
     token_manager = get_token_manager()
 
-    drive_id = "b!KJ1B2DCzSkuCoY3RpzAwFygN2jp0uu1LuLHdfD8wx_3n_8Rkg41LSY25TQTmrzYb"
+    drive_id = get_sharepoint_drive_id()
+
     sharepoint_input_folder = (
         "Institutional Strengthening/_Projects/iMarina_load_automation/input"
     )
@@ -200,15 +255,15 @@ def upload_latest_excel():
         print(f"❌ Error pujant '{latest_file.name}': {e}")
 
 
-# function upload file to SharePoint
-def upload_file_sharepoint_2(file_path: Path):
-    try:
-        target_folder = "_Projects/iMarina_load_automation/uploads"  # directory
-        upload_file_sharepoint(Path(file_path), target_folder)
-
-    except Exception as e:
-        print(f"❌ Error al subir el archivo a SharePoint: {e}")
-        raise
+# # function upload file to SharePoint
+# def upload_file_sharepoint_2(file_path: Path):
+#     try:
+#         target_folder = "_Projects/iMarina_load_automation/uploads"  # directory
+#         upload_file_sharepoint(Path(file_path), target_folder)
+#
+#     except Exception as e:
+#         print(f"❌ Error al subir el archivo a SharePoint: {e}")
+#         raise
 
 
 if __name__ == "__main__":

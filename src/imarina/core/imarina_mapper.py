@@ -147,13 +147,16 @@ def parse_imarina_row_data(row):
     entity_web_val = get_val(row, ImarinaField.ENTITY_WEB.value)
     entity_web_val = str(entity_web_val).strip() if pd.notna(entity_web_val) else ""
 
-    id_one_val = get_val(row, ImarinaField.ID_ONE.value).strip()
-    id_two_val = get_val(row, ImarinaField.ID_TWO.value).strip()
-    id_three_val = get_val(row, ImarinaField.ID_THREE.value).strip()
-    research_id_val = get_val(row, ImarinaField.RESEARCH_ID.value).strip()
-    author_id_val = get_val(row, ImarinaField.AUTHOR_ID.value).strip()
-    dialnet_id_val = get_val(row, ImarinaField.DIALNET_ID.value).strip()
-    google_scholar_val = get_val(row, ImarinaField.GOOGLE_SCHOLAR.value).strip()
+    id_one_val = str(val).strip() if (val := get_val(row, ImarinaField.ID_ONE.value)) is not None else ""
+    id_two_val = str(val).strip() if (val := get_val(row, ImarinaField.ID_TWO.value)) is not None else ""
+    id_three_val = str(val).strip() if (val := get_val(row, ImarinaField.ID_THREE.value)) is not None else ""
+    research_id_val = str(val).strip() if (val := get_val(row, ImarinaField.RESEARCH_ID.value)) is not None else ""
+    author_id_val = str(val).strip() if (val := get_val(row, ImarinaField.AUTHOR_ID.value)) is not None else ""
+    dialnet_id_val = str(val).strip() if (val := get_val(row, ImarinaField.DIALNET_ID.value)) is not None else ""
+    google_scholar_val = str(val).strip() if (val := get_val(row,ImarinaField.GOOGLE_SCHOLAR.value)) is not None else ""
+
+
+
 
 
     orcid_val = get_val(row, ImarinaField.ORCID.value)

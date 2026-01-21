@@ -11,7 +11,7 @@ services:
     - ./output:/app/output
     - ./logs:/app/logs  # folder logs of the process
     - ./uploads:/app/uploads
-    secrets:    #TODO ADD (DRIVE ID)
+    secrets:
       - FTP_HOST
       - FTP_PASSWORD
       - FTP_PORT
@@ -21,6 +21,7 @@ services:
       - TENANT_ID
       - SHAREPOINT_DOMAIN
       - SITE_NAME
+      - DRIVE_ID
     stdin_open: true
     tty: true
     working_dir: /app
@@ -69,6 +70,8 @@ secrets:
     file: ./secrets/SHAREPOINT_DOMAIN
   SITE_NAME:
     file: ./secrets/SITE_NAME
+  DRIVE_ID:
+    file: ./secrets/DRIVE_ID
 
 networks:
   imarina_net:

@@ -4,7 +4,7 @@ from typing import Optional
 
 import pandas as pd
 
-from imarina.core.imarina_mapper import append_researchers_to_output_data
+
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -46,6 +46,7 @@ class Excel:
 
 
     def to_excel(self, researchers: list, output_path: Path):
+        from imarina.core.imarina_mapper import append_researchers_to_output_data
 
         self.empty()  # DATAFRAME
 
