@@ -1,3 +1,4 @@
+from imarina.core.defines import ICIQ_WEBPAGE
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -26,8 +27,8 @@ class Researcher:
         self.job_description = kwargs.get("job_description")
         self.code_center = kwargs.get("code_center")
         self.adscription_type = kwargs.get("adscription_type")
+        self.unit_group = kwargs.get("unit_group")
 
-        self.entity = kwargs.get("entity")
         self.entity_type = kwargs.get("entity_type")
         self.entity_web = kwargs.get("entity_web")
         self.id_one = kwargs.get("id_one")
@@ -79,8 +80,8 @@ class Researcher:
             f'  Job description: "{self.job_description}"\n'
             f"  Code center: {self.code_center}\n"
             f"  Adscription type : {self.adscription_type}\n"
+            f"  Unit group: {self.unit_group}\n"
             
-            f"  Entity: {self.entity}\n"
             f"  Entity type: {self.entity_type}\n"
             f"  Entity web: {self.entity_web}\n"
             f"  Id One : {self.id_one}\n"
@@ -131,8 +132,8 @@ class Researcher:
             job_description=self.job_description,
             code_center=self.code_center,
             adscription_type=self.adscription_type,
+            unit_group=self.unit_group,
 
-            entity=self.entity,
             entity_type=self.entity_type,
             entity_web=self.entity_web,
             entity2=self.entity2,
@@ -215,10 +216,6 @@ class Researcher:
                 return True
 
         return False
-
-
-def apply_defaults(researcher: Researcher):
-    researcher.personal_web = "https://iciq.es"
 
 
 # normalitzar el nom del researcher

@@ -5,7 +5,7 @@ from imarina.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
-def build_translations(countries_path, jobs_path, personal_web_path):
+def build_translations(countries_path, jobs_path, personal_web_path, unit_group_path):
     r = {}
     r[A3_Field.SEX] = {}
     r[A3_Field.SEX]["Mujer"] = "Female"
@@ -30,6 +30,12 @@ def build_translations(countries_path, jobs_path, personal_web_path):
     personal_webs = build_translator(personal_web_path, 1)
     for key in personal_webs.keys():
         r[A3_Field.PERSONAL_WEB][key] = personal_webs[key]
+
+    r[A3_Field.UNIT_GROUP] = {}
+    unit_groups = build_translator(unit_group_path, 1)
+    for key in unit_groups.keys():
+        r[A3_Field.UNIT_GROUP][key] = unit_groups[key]
+
     return r
 
 

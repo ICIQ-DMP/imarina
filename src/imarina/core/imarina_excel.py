@@ -31,6 +31,7 @@ def build_upload_excel(
     imarina_path,
     a3_path,
     personal_web_path,
+    unit_group_path,
 ):
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
@@ -39,7 +40,12 @@ def build_upload_excel(
     im_data = Excel(imarina_path, header=0)
 
     # load the translators fields: country, job_description
-    translator = build_translations(countries_path=countries_path, jobs_path=jobs_path, personal_web_path=personal_web_path)
+    translator = build_translations(
+        countries_path=countries_path,
+        jobs_path=jobs_path,
+        personal_web_path=personal_web_path,
+        unit_group_path=unit_group_path
+    )
 
     researchers_left = []
     researchers_visitor = []

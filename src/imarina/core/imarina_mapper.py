@@ -28,7 +28,8 @@ class ImarinaField(Enum):
     DEDICATION = 17  # NEW PARSE
     INI_DATE = 18  # Submit
     END_DATE = 19  # Submit
-    ENTITY = 20  # Submit  PARSE
+    UNIT_GROUP = 20  # Submit  PARSE
+
     ID_ONE = 21  # PARSE
     ENTITY_TYPE = 22  # Submit DONE
     ENTITY_COUNTRY = 23
@@ -88,7 +89,7 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
     empty_output_row.dataframe.iat[0, ImarinaField.ADSCRIPTION_TYPE.value] = (
         data.adscription_type
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY.value] = data.entity
+    empty_output_row.dataframe.iat[0, ImarinaField.UNIT_GROUP.value] = data.unit_group
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_TYPE.value] = data.entity_type
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_WEB.value] = data.entity_web
     empty_output_row.dataframe.iat[0, ImarinaField.ID_ONE.value] = data.id_one
@@ -148,7 +149,7 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
 # parsear los datos de imarina
 def parse_imarina_row_data(row):
 
-    entity_val = get_val(row, ImarinaField.ENTITY.value)
+    entity_val = get_val(row, ImarinaField.UNIT_GROUP.value)
     entity_val = str(entity_val).strip() if pd.notna(entity_val) else ""
 
     entity_type_val = get_val(row, ImarinaField.ENTITY_TYPE.value)
@@ -227,6 +228,8 @@ def parse_imarina_row_data(row):
         born_country=str(get_val(row, ImarinaField.COUNTRY.value)).strip(),
         job_description=job_description_val,
         adscription_type=get_val(row, ImarinaField.ADSCRIPTION_TYPE.value),
+        unit_group=get_val(row, ImarinaField.UNIT_GROUP.value),
+
 
         entity=entity_val,  # entity_val (value)
         entity_type=entity_type_val,  # entity_type_val (value)

@@ -13,7 +13,7 @@ PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 date_str = "31/12/2099"
 DATE_FORMAT = "%d/%m/%Y"
 PERMANENT_CONTRACT_DATE = datetime.datetime.strptime(date_str, "%d/%m/%Y")
-
+ICIQ_WEBPAGE = "https://iciq.org/"
 
 class LogLevel(str, Enum):
     """

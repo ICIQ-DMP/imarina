@@ -21,6 +21,7 @@ class A3_Field(Enum):
     BORN_COUNTRY = 8
     EMAIL = 9
     JOB_DESCRIPTION = 10
+    UNIT_GROUP = 11
     ORCID = 13
     INI_DATE = 14
     END_DATE = 15
@@ -36,8 +37,6 @@ class A3_Field(Enum):
 
 
 def parse_a3_row_data(row, translator):
-
-    default_web = "https://www.iciq.org"
 
     # function per normalitzar el nom del country
     def normalize_country_name(name: str) -> str:
@@ -109,6 +108,11 @@ def parse_a3_row_data(row, translator):
     if email_val is not None:
         email_val = email_val.lower()
 
+    # Translates unit_group into entity
+    entity_val = translator[A3_Field.UNIT_GROUP][row.values[A3_Field.UNIT_GROUP.value]]
+
+    personal_web_val = translator[A3_Field.PERSONAL_WEB][entity_val]
+    print("translating " + entity_val + " into " + personal_web_val)
     data = Researcher(
         code_center=row.values[A3_Field.CODE_CENTER.value],
         dni=row.values[A3_Field.DNI.value],
@@ -127,9 +131,7 @@ def parse_a3_row_data(row, translator):
         end_prorrog=sanitize_date(row.values[A3_Field.END_PRORROG.value]),
         date_termination=sanitize_date(row.values[A3_Field.DATE_TERMINATION.value]),
         sex=translator[A3_Field.SEX][row.values[A3_Field.SEX.value]],
-        personal_web=translator[A3_Field.PERSONAL_WEB].get(
-            row.values[A3_Field.JOB_DESCRIPTION.value], default_web
-        ),
+        personal_web=personal_web_val,
         signature="",
         signature_custom="",
         country=country,
@@ -137,6 +139,7 @@ def parse_a3_row_data(row, translator):
         job_description=translator[A3_Field.JOB_DESCRIPTION][
             row.values[A3_Field.JOB_DESCRIPTION.value]
         ],
-        adscription_type="Research"
+        adscription_type="Research",
+        unit_group=entity_val
     )
     return data
