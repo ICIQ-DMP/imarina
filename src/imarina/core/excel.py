@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from pathlib import Path
 from typing import Optional
 
@@ -45,9 +44,7 @@ class Excel:
         self.dataframe = empty_output_dataframe
 
     def to_excel(self, output_path: Path):
-
         self.dataframe.to_excel(output_path, index=False)
-
         logger.info(f"iMarina Excel at {output_path} built successfully.")
 
     def __copy__(self):

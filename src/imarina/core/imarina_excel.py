@@ -5,7 +5,7 @@ from imarina.core.a3_mapper import A3_Field, parse_a3_row_data
 from imarina.core.defines import PERMANENT_CONTRACT_DATE, NOW_DATA
 
 from imarina.core.imarina_mapper import (
-    parse_imarina_row_data,
+    parse_imarina_row_data, append_researchers_to_output_data,
 )
 from imarina.core.log_utils import get_logger
 from imarina.core.translations import build_translator
@@ -13,10 +13,6 @@ from imarina.core.translations import build_translator
 logger = get_logger(__name__)
 
 from imarina.core.excel import Excel
-
-
-def output_excel(researchers, excel: Excel, output_path):
-    excel.to_excel(researchers, output_path)
 
 
 def normalized_dni(dni):
@@ -139,7 +135,6 @@ def build_upload_excel(
             # No hacer nada, ya fue procesado en Phase 1
 
     for researcher in researchers_output:
-        print(researcher)
         if researcher.is_visitor():
             researchers_visitor.append(researcher)
 
@@ -162,10 +157,26 @@ def build_upload_excel(
     # to determine from fields to determine, then the current row from A3 corresponds to ICREA researcher or predoc
     # with CSC, so its data from A3 needs to be added to the output.
     # retains columns, types, and headers if any
-    output_excel(researchers_output, im_data, output_path)
+    im_data.to_excel(output_path)
 
+    im_data_empty = im_data.__copy__()
+    im_data_empty.empty()
     output_path_str = str(output_path)
-    output_excel(researchers_left, im_data, Path(output_path_str + "left.xlsx"))
-    output_excel(researchers_visitor, im_data, Path(output_path_str + "visitor.xlsx"))
-    output_excel(researchers_new, im_data, Path(output_path_str + "new.xlsx"))
-    output_excel(researchers_changed, im_data, Path(output_path_str + "changed.xlsx"))
+
+    excel_left = im_data_empty.__copy__()
+    append_researchers_to_output_data(researchers_left, excel_left)
+    excel_left.to_excel(Path(output_path_str + "left.xlsx"))
+
+    excel_visitor = im_data_empty.__copy__()
+    append_researchers_to_output_data(researchers_visitor, excel_visitor)
+    excel_visitor.to_excel(Path(output_path_str + "visitor.xlsx"))
+
+    excel_new = im_data_empty.__copy__()
+    append_researchers_to_output_data(researchers_new, excel_new)
+    excel_new.to_excel(Path(output_path_str + "new.xlsx"))
+
+    excel_changed = im_data_empty.__copy__()
+    append_researchers_to_output_data(researchers_changed, excel_changed)
+    excel_changed.to_excel(Path(output_path_str + "changed.xlsx"))
+
+
