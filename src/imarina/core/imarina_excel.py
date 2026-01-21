@@ -8,7 +8,7 @@ from imarina.core.imarina_mapper import (
     parse_imarina_row_data, append_researchers_to_output_data,
 )
 from imarina.core.log_utils import get_logger
-from imarina.core.translations import build_translator
+from imarina.core.translations import build_translator, build_translations
 
 logger = get_logger(__name__)
 
@@ -39,11 +39,7 @@ def build_upload_excel(
     im_data = Excel(imarina_path, header=0)
 
     # load the translators fields: country, job_description
-    translator = {
-        A3_Field.COUNTRY: build_translator(countries_path),
-        A3_Field.JOB_DESCRIPTION: build_translator(jobs_path),
-        A3_Field.PERSONAL_WEB: build_translator(personal_web_path),
-    }
+    translator = build_translations(countries_path=countries_path, jobs_path=jobs_path, personal_web_path=personal_web_path)
 
     researchers_left = []
     researchers_visitor = []

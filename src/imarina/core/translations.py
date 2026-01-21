@@ -6,9 +6,10 @@ logger = get_logger(__name__)
 
 
 def build_translations(countries_path, jobs_path, personal_web_path):
-    r = {A3_Field.SEX: {}}
-    r[A3_Field.SEX]["Mujer"] = "Woman"
-    r[A3_Field.SEX]["Hombre"] = "Man"
+    r = {}
+    r[A3_Field.SEX] = {}
+    r[A3_Field.SEX]["Mujer"] = "Female"
+    r[A3_Field.SEX]["Hombre"] = "Male"
 
     r[A3_Field.COUNTRY] = {}
     countries = build_translator(countries_path)

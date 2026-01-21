@@ -95,6 +95,8 @@ def parse_a3_row_data(row, translator):
         country_clean, country_clean.capitalize()
     )  # el country completament traduit
 
+
+
     logger.debug(f"Raw born_country: {born_country_raw}")
     logger.debug(f"Clean born_country: {born_country_clean}")
     logger.debug(f"Translated born_country: {born_country}")
@@ -119,7 +121,7 @@ def parse_a3_row_data(row, translator):
         ini_prorrog=sanitize_date(row.values[A3_Field.INI_PRORROG.value]),
         end_prorrog=sanitize_date(row.values[A3_Field.END_PRORROG.value]),
         date_termination=sanitize_date(row.values[A3_Field.DATE_TERMINATION.value]),
-        sex=row.values[A3_Field.SEX.value],
+        sex=translator[A3_Field.SEX][row.values[A3_Field.SEX.value]],
         personal_web=translator[A3_Field.PERSONAL_WEB].get(
             row.values[A3_Field.JOB_DESCRIPTION.value], default_web
         ),
