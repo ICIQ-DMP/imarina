@@ -15,6 +15,7 @@ DATE_FORMAT = "%d/%m/%Y"
 PERMANENT_CONTRACT_DATE = datetime.datetime.strptime(date_str, "%d/%m/%Y")
 ICIQ_WEBPAGE = "https://iciq.org/"
 
+
 class LogLevel(str, Enum):
     """
     Logical log levels for the CLI.

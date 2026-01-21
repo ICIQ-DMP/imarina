@@ -1,4 +1,3 @@
-from imarina.core.defines import ICIQ_WEBPAGE
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -42,7 +41,6 @@ class Researcher:
         self.scopus_id = kwargs.get("scopus_id")
         self.google_scholar_id = kwargs.get("google_scholar_id")
 
-
     def __str__(self):
         return (
             f"\nResearcher:\n"
@@ -67,7 +65,6 @@ class Researcher:
             f"  Adscription type : {self.adscription_type}\n"
             f"  Unit group: {self.unit_group}\n"
             f"  Entity type: {self.entity_type}\n"
-            
             f"  Entity country: {self.entity_country}\n"
             f"  Entity community: {self.entity_community}\n"
             f"  Entity province: {self.entity_province}\n"
@@ -76,7 +73,6 @@ class Researcher:
             f"  Entity address: {self.entity_address}\n"
             f"  Entity web: {self.entity_web}\n"
             f"  Contact Phone: {self.contact_phone}\n"
-
             f"  ORCID: {self.orcid}\n"
             f"  Scopus ID: {self.scopus_id}\n"
             f"  Google scholar ID: {self.google_scholar_id}\n"
@@ -105,7 +101,6 @@ class Researcher:
             adscription_type=self.adscription_type,
             unit_group=self.unit_group,
             entity_type=self.entity_type,
-
             entity_country=self.entity_country,
             entity_community=self.entity_community,
             entity_province=self.entity_province,
@@ -114,7 +109,6 @@ class Researcher:
             entity_address=self.entity_address,
             entity_web=self.entity_web,
             contact_phone=self.contact_phone,
-
             orcid=self.orcid,
             scopus_id=self.scopus_id,
             google_scholar_id=self.google_scholar_id,

@@ -1,14 +1,15 @@
 import re
 from pathlib import Path
 
-from imarina.core.a3_mapper import A3_Field, parse_a3_row_data
+from imarina.core.a3_mapper import parse_a3_row_data
 from imarina.core.defines import PERMANENT_CONTRACT_DATE, NOW_DATA
 
 from imarina.core.imarina_mapper import (
-    parse_imarina_row_data, append_researchers_to_output_data,
+    parse_imarina_row_data,
+    append_researchers_to_output_data,
 )
 from imarina.core.log_utils import get_logger
-from imarina.core.translations import build_translator, build_translations
+from imarina.core.translations import build_translations
 
 logger = get_logger(__name__)
 
@@ -164,15 +165,15 @@ def build_upload_excel(
 
     im_data_empty = im_data.__copy__()
     im_data_empty.empty()
-    output_path_str = str(output_path)
 
     excel_output = im_data_empty.__copy__()
     append_researchers_to_output_data(researchers_output, excel_output)
     excel_output.to_excel(Path(output_path))
 
-    '''
-
-
+    """
+    # TODO: parametrize behaviour with arg 
+    output_path_str = str(output_path)
+    
     excel_left = im_data_empty.__copy__()
     append_researchers_to_output_data(researchers_left, excel_left)
     excel_left.to_excel(Path(output_path_str + "left.xlsx"))
@@ -188,5 +189,4 @@ def build_upload_excel(
     excel_changed = im_data_empty.__copy__()
     append_researchers_to_output_data(researchers_changed, excel_changed)
     excel_changed.to_excel(Path(output_path_str + "changed.xlsx"))
-    '''
-
+    """

@@ -63,7 +63,6 @@ def upload_file(token_manager, drive_id, remote_path, local_file_path):
 # in this function read the folder in path: SECRETS / new file added DRIVE_ID
 
 
-
 def get_sharepoint_drive_id() -> str:
 
     current_path = Path(__file__).resolve()

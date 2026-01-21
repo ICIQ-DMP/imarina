@@ -43,7 +43,7 @@ def d(s: str):  # petit helper per fer dates ràpid
 #         "Immaculada Escofet", "Scientific Coordinator", ini_date=d("14/11/2011")
 #     )
 #     assert has_changed_jobs(a3, im, translator) is True
-
+# TODO: remove personal data, use dummy data, and convert to unit test, do not use a3 data
 
 # COMMENT TEST FAILED
 # # test que comprova si la posició es la mateixa, si no hi ha hagut changed job, retorna result False

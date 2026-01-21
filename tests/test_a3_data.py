@@ -1,8 +1,10 @@
 import pandas as pd
+import pytest
 
 from imarina.core.a3_mapper import A3_Field
 
 
+@pytest.mark.skip(reason="Integration test, skipped by default")
 def test_no_duplicates_in_a3():
     a3_data = pd.read_excel("input/A3.xlsx", skiprows=2)
 

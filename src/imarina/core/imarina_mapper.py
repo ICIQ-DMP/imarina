@@ -95,12 +95,8 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_ADDRESS.value] = (
         data.entity_address
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_WEB.value] = (
-        data.entity_web
-    )
-    empty_output_row.dataframe.iat[0, ImarinaField.SCOPUS_ID.value] = (
-        data.scopus_id
-    )
+    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_WEB.value] = data.entity_web
+    empty_output_row.dataframe.iat[0, ImarinaField.SCOPUS_ID.value] = data.scopus_id
     empty_output_row.dataframe.iat[0, ImarinaField.GOOGLE_SCHOLAR_ID.value] = (
         data.google_scholar_id
     )
@@ -171,7 +167,6 @@ def parse_imarina_row_data(row):
         job_description=job_description_val,
         adscription_type=get_val(row, ImarinaField.ADSCRIPTION_TYPE.value),
         unit_group=get_val(row, ImarinaField.UNIT_GROUP.value),
-
         entity=entity_val,  # entity_val (value)
         entity_type=entity_type_val,  # entity_type_val (value)
         entity_web=entity_web_val,  # entity_web_val (value)
@@ -192,7 +187,9 @@ def parse_imarina_row_data(row):
 def append_researchers_to_output_data(researchers, output_data):
     empty_row_output_data = output_data.__copy__()
     empty_row_output_data.empty()
-    empty_row_output_data.dataframe.loc[0] = [None] * len(empty_row_output_data.dataframe.columns)  # TODO: implement method of Excel, get EmptyRow
+    empty_row_output_data.dataframe.loc[0] = [None] * len(
+        empty_row_output_data.dataframe.columns
+    )  # TODO: implement method of Excel, get EmptyRow
     for researcher in researchers:
         new_row = empty_row_output_data.__copy__()
         unparse_researcher_to_imarina_row(researcher, new_row)

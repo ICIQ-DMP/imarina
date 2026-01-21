@@ -63,7 +63,6 @@ def transform_orcid(orcid: str) -> str:
     return ret
 
 
-
 def parse_a3_row_data(row, translator):
 
     # function per normalitzar el nom del country
@@ -123,8 +122,6 @@ def parse_a3_row_data(row, translator):
         country_clean, country_clean.capitalize()
     )  # el country completament traduit
 
-
-
     logger.debug(f"Raw born_country: {born_country_raw}")
     logger.debug(f"Clean born_country: {born_country_clean}")
     logger.debug(f"Translated born_country: {born_country}")
@@ -144,7 +141,6 @@ def parse_a3_row_data(row, translator):
     orcid_val = get_val(row, A3_Field.ORCID.value)
     if orcid_val is None:
         orcid_val = ""
-
 
     data = Researcher(
         code_center=row.values[A3_Field.CODE_CENTER.value],
