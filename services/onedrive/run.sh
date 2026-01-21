@@ -5,7 +5,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 docker stop onedrive
 docker rm onedrive
 
-echo "Running on ${SCRIPT_DIR}"
+echo "Running OneDrive from: ${SCRIPT_DIR}"
 
 sp_path="Institutional Strengthening/_Projects/iMarina_load_automation/input"
 
@@ -22,6 +22,13 @@ echo "*
 
 echo "*
 !.gitignore" > "${SCRIPT_DIR}/logs/.gitignore"
+
+# route inside the SharePoint / OneDrive
+sp_path="Institutional Strengthening/_Projects/iMarina_load_automation/input"
+
+docker stop onedrive 2>/dev/null   # detener contenedor previo si existe
+docker rm onedrive 2>/dev/null    # borrar contenedor previo si existe
+
 
 docker run \
   -it \
@@ -40,4 +47,5 @@ docker run \
   --single-directory "${sp_path}" \
   --monitor \
   --syncdir /onedrive/data \
-  --confdir /onedrive/conf
+  --confdir /onedrive/conf \
+  --resync

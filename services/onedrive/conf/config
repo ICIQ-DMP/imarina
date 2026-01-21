@@ -6,5 +6,7 @@ log_dir = "/onedrive/logs/"
 sync_dir_permissions = "755"
 sync_file_permissions = "644"
 
+#disable_http2 = "true"
+
 #download_only = "true"
 #cleanup_local_files = "true"

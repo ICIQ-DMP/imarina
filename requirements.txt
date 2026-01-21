@@ -1,7 +1,0 @@
-pandas
-openpyxl
-pytest
-paramiko
-requests
-msal
-python-dotenv

@@ -8,5 +8,6 @@ RUN pip install --no-cache-dir -r requirements-dev.txt
 COPY ./pytest.ini /app
 COPY ./tests /app
 
-# Run all tests verbose and stop on the first test failed
-ENTRYPOINT ["pytest", "-v", "-s", "-x"]
+# Run all tests verbose
+# TODO: Do it with makefile target
+ENTRYPOINT ["make", "test"]
