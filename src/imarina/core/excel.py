@@ -1,11 +1,11 @@
 from __future__ import annotations
+
 from pathlib import Path
 from typing import Optional
 
 import pandas as pd
 
 from imarina.core.log_utils import get_logger
-from imarina.core.imarina_mapper import append_researchers_to_output_data
 
 logger = get_logger(__name__)
 
@@ -44,11 +44,7 @@ class Excel:
         empty_output_dataframe.loc[0] = [None] * len(self.dataframe.columns)
         self.dataframe = empty_output_dataframe
 
-    def to_excel(self, researchers: list, output_path: Path):
-
-        self.empty()  # DATAFRAME
-
-        append_researchers_to_output_data(researchers, self)  #
+    def to_excel(self, output_path: Path):
 
         self.dataframe.to_excel(output_path, index=False)
 
