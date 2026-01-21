@@ -25,7 +25,7 @@ class Researcher:
         self.born_country = kwargs.get("born_country")
         self.job_description = kwargs.get("job_description")
         self.code_center = kwargs.get("code_center")
-        self.adscription_type = kwargs.get("adscription_type")
+        self.adscription_type = "Research"
         self.unit_group = kwargs.get("unit_group")
         self.entity_type = kwargs.get("entity_type")
 

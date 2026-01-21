@@ -168,7 +168,6 @@ def parse_a3_row_data(row, translator):
         job_description=translator[A3_Field.JOB_DESCRIPTION][
             row.values[A3_Field.JOB_DESCRIPTION.value]
         ],
-        adscription_type="Research",
         unit_group=entity_val,
         entity_type=translator[A3_Field.ENTITY_TYPE][entity_val],
     )

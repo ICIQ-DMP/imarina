@@ -121,14 +121,14 @@ def parse_imarina_row_data(row):
     entity_web_val = get_val(row, ImarinaField.ENTITY_WEB.value)
     entity_web_val = str(entity_web_val).strip() if pd.notna(entity_web_val) else ""
 
-    scopus_id_val = (
-        str(val).strip()
-        if (val := get_val(row, ImarinaField.SCOPUS_ID.value)) is not None
-        else ""
-    )
-    if scopus_id_val != "":
-        print(scopus_id_val)
-        input()
+    scopus_id_val = get_val(row, ImarinaField.SCOPUS_ID.value)
+    if scopus_id_val is not None:
+        if isinstance(scopus_id_val, float) and scopus_id_val.is_integer():
+            scopus_id_val = str(int(scopus_id_val))
+        else:
+            scopus_id_val = str(scopus_id_val).strip()
+    else:
+        scopus_id_val = ""
 
     google_scholar_val = (
         str(val).strip()
@@ -182,7 +182,7 @@ def parse_imarina_row_data(row):
         entity_postal_code=str(get_val(row, ImarinaField.ENTITY_POSTAL_CODE.value)),
         entity_address=str(get_val(row, ImarinaField.ENTITY_ADDRESS.value)),
         scopus_id=str(scopus_id_val),
-        google_scholar=google_scholar_val,
+        google_scholar_id=google_scholar_val,
         contact_phone=str(get_val(row, ImarinaField.CONTACT_PHONE.value)),
     )
 
