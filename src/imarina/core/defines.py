@@ -5,7 +5,7 @@ import pathlib
 from enum import Enum
 from typing import Optional
 
-DATETIME_FORMAT = "%Y-%m-%d_%H:%M:%S"
+DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"
 NOW_DATA = datetime.datetime.now()
 NOW = NOW_DATA.strftime(DATETIME_FORMAT)
 

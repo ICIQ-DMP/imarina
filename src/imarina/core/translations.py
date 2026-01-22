@@ -6,7 +6,12 @@ logger = get_logger(__name__)
 
 
 def build_translations(
-    countries_path, jobs_path, personal_web_path, unit_group_path, entity_type_path
+    countries_path,
+    jobs_path,
+    personal_web_path,
+    unit_group_path,
+    entity_type_path,
+    job_description_entity_path,
 ):
     r = {}
     r[A3_Field.SEX] = {}
@@ -43,6 +48,10 @@ def build_translations(
     for key in entity_types.keys():
         r[A3_Field.ENTITY_TYPE][key] = entity_types[key]
 
+    r[A3_Field.JOB_DESCRIPTION_ENTITY] = {}
+    job_description_entities = build_translator(job_description_entity_path, 1)
+    for key in job_description_entities.keys():
+        r[A3_Field.JOB_DESCRIPTION_ENTITY][key] = job_description_entities[key]
     return r
 
 

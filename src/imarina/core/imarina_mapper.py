@@ -139,11 +139,6 @@ def parse_imarina_row_data(row):
     job_description_val = get_val(row, ImarinaField.JOB_DESCRIPTION.value)
     if job_description_val:
         job_description_val = job_description_val.strip()
-        # Hardcoded because they are only 2 values
-        if job_description_val == "Associated researcher":
-            job_description_val = "Postdoctoral researcher"
-        elif job_description_val == "Group Leader / ICREA Professor":
-            job_description_val = "Group Leader"
 
     email_val = get_val(row, ImarinaField.EMAIL.value)
     if email_val is not None:

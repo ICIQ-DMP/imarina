@@ -45,6 +45,8 @@ class A3_Field(Enum):
     GOOGLE_SCHOLAR_ID = -14
     CONTACT_PHONE = -15
 
+    JOB_DESCRIPTION_ENTITY = -16  # Special type for 2 columns at the same time
+
 
 def transform_orcid(orcid: str) -> str:
     if not orcid or orcid == "":
@@ -142,6 +144,27 @@ def parse_a3_row_data(row, translator):
     if orcid_val is None:
         orcid_val = ""
 
+    job_description_val = translator[A3_Field.JOB_DESCRIPTION][
+        row.values[A3_Field.JOB_DESCRIPTION.value]
+    ]
+
+    # The job description is one of the special job descriptions that are used to determine the entity
+    if (
+        row.values[A3_Field.JOB_DESCRIPTION.value]
+        in translator[A3_Field.JOB_DESCRIPTION_ENTITY]
+    ):
+        logger.debug(
+            f"Special job description found, translating to entity. entity_val was going to be: {str(entity_val)}"
+        )
+        entity_val = translator[A3_Field.JOB_DESCRIPTION_ENTITY][
+            row.values[A3_Field.JOB_DESCRIPTION.value]
+        ]
+        logger.debug(f"Entity translated is: {str(entity_val)}")
+
+    # Special case for ICREA group leaders, which needs also info from group unit field
+    if row.values[A3_Field.UNIT_GROUP.value] == "ICREA":
+        job_description_val = "Group Leader / ICREA Professor"
+
     data = Researcher(
         code_center=row.values[A3_Field.CODE_CENTER.value],
         dni=row.values[A3_Field.DNI.value],
@@ -161,9 +184,7 @@ def parse_a3_row_data(row, translator):
         signature_custom="",
         country=country,
         born_country=born_country,
-        job_description=translator[A3_Field.JOB_DESCRIPTION][
-            row.values[A3_Field.JOB_DESCRIPTION.value]
-        ],
+        job_description=job_description_val,
         unit_group=entity_val,
         entity_type=translator[A3_Field.ENTITY_TYPE][entity_val],
     )

@@ -34,6 +34,7 @@ def build_upload_excel(
     personal_web_path,
     unit_group_path,
     entity_type_path,
+    job_description_entity_path,
 ):
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
@@ -48,6 +49,7 @@ def build_upload_excel(
         personal_web_path=personal_web_path,
         unit_group_path=unit_group_path,
         entity_type_path=entity_type_path,
+        job_description_entity_path=job_description_entity_path,
     )
 
     researchers_left = []
@@ -105,6 +107,7 @@ def build_upload_excel(
                 )
                 researchers_changed.append(researcher_a3)
                 researchers_output.append(researcher_a3)
+                # input("changed jobs")
             else:
                 logger.debug(
                     "Current researcher is still working in the same position since last upload."

@@ -138,6 +138,24 @@ class Researcher:
         return False
 
     def has_changed_jobs(self, researcher):
+        if (
+            self.job_description == "Postdoctoral researcher"
+            and researcher.job_description == "Associated researcher"
+        ) or (
+            self.job_description == "Associated researcher"
+            and researcher.job_description == "Postdoctoral researcher"
+        ):
+            return False
+
+        if (
+            self.job_description == "Group Leader / ICREA Professor"
+            and researcher.job_description == "Group Leader"
+        ) or (
+            self.job_description == "Group Leader"
+            and researcher.job_description == "Group Leader / ICREA Professor"
+        ):
+            return False
+
         if self.job_description == researcher.job_description:
             return False
 

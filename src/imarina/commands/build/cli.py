@@ -40,7 +40,9 @@ def build_controller(
         entity_type_path: Optional[Path] = typer.Option(
             PROJECT_DIR / "input" / "unit_type.xlsx"
         ),
-
+        job_description_entity_path: Optional[Path] = typer.Option(
+            PROJECT_DIR / "input" / "job_description_entity.xlsx"
+        )
 ) -> None:
     build_upload_excel(
         output_path,
@@ -50,6 +52,7 @@ def build_controller(
         a3_input,
         personal_web_path,
         unit_group_path,
-        entity_type_path
+        entity_type_path,
+        job_description_entity_path
     )
 

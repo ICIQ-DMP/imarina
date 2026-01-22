@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 
 import typer
@@ -13,17 +12,17 @@ def upload_controller(
     ctx: typer.Context,
     file_path: Path = typer.Option(
         None,
-        help="Path del fitxer Excel (.xlsx). Si es deixa buit, busca l'últim a 'uploads'.",
+        help="Path del fitxer Excel (.xlsx). Si es deixa buit, busca l'últim a 'output'.",
     ),
     target_folder: Path = typer.Option(
-        f"Institutional Strengthening/_Projects/iMarina_load_automation/uploads/{datetime.today().strftime('%d-%m-%Y')}",
+        "Institutional Strengthening/_Projects/iMarina_load_automation/output",
         help="Carpeta de destí a SharePoint",
     ),
 ) -> None:
     print(" Uploading the latest Excel file to SharePoint...")
 
     if file_path is None:
-        uploads_dir = Path.cwd() / "uploads"
+        uploads_dir = Path.cwd() / "output"
         if uploads_dir.exists():
             # recent file in uploads folder
             files = list(uploads_dir.glob("*.xlsx"))
@@ -34,7 +33,7 @@ def upload_controller(
                 raise typer.Exit(code=1)
         else:
             print(
-                "❌ Error: No s'ha especificat fitxer i la carpeta 'uploads' no existeix."
+                "❌ Error: No s'ha especificat fitxer i la carpeta 'output' no existeix."
             )
             raise typer.Exit(code=1)
 
@@ -56,32 +55,3 @@ def upload_controller(
         print(f"❌ Error uploading to SharePoint: {e}")
         # logger.error(f"Error: {e}")
         raise typer.Exit(code=1)
-
-
-# def upload_controller(
-#     ctx: typer.Context,
-#     file_path: Path = typer.Option(
-#         None, help="Path of the jobs dictionary file(.xlsx)"
-#     ),
-#     target_folder: Path = typer.Option(
-#         f"Institutional Strengthening/_Projects/iMarina_load_automation/uploads/{datetime.today().strftime('%d-%m-%Y')}",
-#         help="Path of the jobs dictionary file(.xlsx)",
-#     ),
-# ) -> None:
-#     # Phase 4: Upload to SharePoint (Institutional Strengthening)
-#     print("Uploading the latest Excel file to SharePoint...")
-#     if file_path is None or not file_path.exists():
-#         print(f"❌ Error: No s'ha trobat el fitxer a la ruta: {file_path}")
-#         return
-#
-#     print(f"📁 Fitxer local: {file_path.name}")
-#     print(f" Destí: {target_folder}")
-#
-#    # print(f"📁 Path del fitxer generat: {file_path}")
-#     try:
-#         upload_file_sharepoint(file_path, target_folder=str(target_folder))
-#         logger.info("✅ Upload to SharePoint completed successfully.")
-#
-#     except Exception as e:
-#         logger.error(f"❌ Error uploading to SharePoint: {e}")
-#         raise typer.Exit(code=1)
