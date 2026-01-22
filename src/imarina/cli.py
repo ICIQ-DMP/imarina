@@ -20,16 +20,16 @@ import imarina.commands.upload.cli
 import imarina.core.cli_global
 
 console = Console()
-app = typer.Typer(
-    add_completion=False, help="imarina CLI", no_args_is_help=True
-)  #
+app = typer.Typer(add_completion=False, help="imarina CLI", no_args_is_help=True)  #
 
 # Use the imported modules directly
 app.callback()(imarina.core.cli_global.cli_global_callback)
 
 
 app.command("build")(imarina.commands.build.cli.build_controller)
-app.command("download")(imarina.commands.download.cli.download_controller)   # new arguemnt download
+app.command("download")(
+    imarina.commands.download.cli.download_controller
+)  # new arguemnt download
 app.command("backup")(imarina.commands.backup.cli.backup_controller)  # command backup
 app.command("upload")(imarina.commands.upload.cli.upload_controller)  # command upload
 

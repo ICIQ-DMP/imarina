@@ -4,7 +4,6 @@ from typing import Optional
 
 import pandas as pd
 
-
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -38,22 +37,11 @@ class Excel:
         return dict(zip(key_col, val_col))
 
     def empty(self):
-        empty_output_dataframe = self.dataframe[
-            0:0
-        ].copy()  # retains columns, types, and headers if any
-        empty_output_dataframe.loc[0] = [None] * len(self.dataframe.columns)
-        self.dataframe = empty_output_dataframe
+        # retains columns, types, and headers if any, but 0 rows
+        self.dataframe = self.dataframe[0:0].copy()
 
-
-    def to_excel(self, researchers: list, output_path: Path):
-        from imarina.core.imarina_mapper import append_researchers_to_output_data
-
-        self.empty()  # DATAFRAME
-
-        append_researchers_to_output_data(researchers, self)  #
-
+    def to_excel(self, output_path: Path):
         self.dataframe.to_excel(output_path, index=False)
-
         logger.info(f"iMarina Excel at {output_path} built successfully.")
 
     def __copy__(self):

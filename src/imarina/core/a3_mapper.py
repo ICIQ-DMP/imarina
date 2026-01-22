@@ -4,6 +4,7 @@ from enum import Enum
 
 from imarina.core.Researcher import Researcher, normalize_name
 from imarina.core.date_utile import sanitize_date
+from imarina.core.excel import get_val
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -20,21 +21,51 @@ class A3_Field(Enum):
     BORN_COUNTRY = 8
     EMAIL = 9
     JOB_DESCRIPTION = 10
+    UNIT_GROUP = 11
     ORCID = 13
     INI_DATE = 14
     END_DATE = 15
     INI_PRORROG = 16
     END_PRORROG = 17
     DATE_TERMINATION = 18
+    # Negative values are not mapped in A3 sheet. They also must have unique values.
     PERSONAL_WEB = -1
-    SIGNATURE = -1
-    SIGNATURE_CUSTOM = -1
-    BIRTH_DATE = -1
+    SIGNATURE = -2
+    SIGNATURE_CUSTOM = -3
+    BIRTH_DATE = -4
+    ADSCRIPTION_TYPE = -5
+    ENTITY_TYPE = -6
+    ENTITY_COUNTRY = -7
+    ENTITY_COMMUNITY = -8
+    ENTITY_PROVINCE = -9
+    ENTITY_CITY = -10
+    ENTITY_POSTAL_CODE = -11
+    ENTITY_ADDRESS = -12
+    ENTITY_WEB = -13
+    GOOGLE_SCHOLAR_ID = -14
+    CONTACT_PHONE = -15
+
+    JOB_DESCRIPTION_ENTITY = -16  # Special type for 2 columns at the same time
+
+
+def transform_orcid(orcid: str) -> str:
+    if not orcid or orcid == "":
+        return ""
+    if "-" in orcid:
+        return orcid
+    orcid = orcid.strip()
+    ret = ""
+    counter = 0
+    for char in orcid:
+        if counter % 4 == 0 and counter != 0:
+            ret += "-"
+        ret += char
+        counter += 1
+    logger.trace(f"Transform ORCID input is {orcid} and output is {ret}")
+    return ret
 
 
 def parse_a3_row_data(row, translator):
-
-    default_web = "https://www.iciq.org"
 
     # function per normalitzar el nom del country
     def normalize_country_name(name: str) -> str:
@@ -100,19 +131,45 @@ def parse_a3_row_data(row, translator):
     logger.debug(f"Clean country: {country_clean}")
     logger.debug(f"Translated country: {country}")
 
+    email_val = get_val(row, A3_Field.EMAIL.value)
+    if email_val is not None:
+        email_val = email_val.lower()
+
+    # Translates unit_group into entity
+    entity_val = translator[A3_Field.UNIT_GROUP][row.values[A3_Field.UNIT_GROUP.value]]
+
+    personal_web_val = translator[A3_Field.PERSONAL_WEB][entity_val]
+
+    orcid_val = get_val(row, A3_Field.ORCID.value)
+    if orcid_val is None:
+        orcid_val = ""
+
+    job_description_val = translator[A3_Field.JOB_DESCRIPTION][
+        row.values[A3_Field.JOB_DESCRIPTION.value]
+    ]
+
+    # The job description is one of the special job descriptions that are used to determine the entity
+    if (
+        row.values[A3_Field.JOB_DESCRIPTION.value]
+        in translator[A3_Field.JOB_DESCRIPTION_ENTITY]
+    ):
+        logger.debug(
+            f"Special job description found, translating to entity. entity_val was going to be: {str(entity_val)}"
+        )
+        entity_val = translator[A3_Field.JOB_DESCRIPTION_ENTITY][
+            row.values[A3_Field.JOB_DESCRIPTION.value]
+        ]
+        logger.debug(f"Entity translated is: {str(entity_val)}")
+
+    # Special case for ICREA group leaders, which needs also info from group unit field
+    if row.values[A3_Field.UNIT_GROUP.value] == "ICREA":
+        job_description_val = "Group Leader / ICREA Professor"
+
     data = Researcher(
         code_center=row.values[A3_Field.CODE_CENTER.value],
-        dni=row.values[A3_Field.DNI.value]
-        .replace("-", "")
-        .replace(".", "")
-        .strip()
-        .lower(),
-        email=row.values[A3_Field.EMAIL.value],
-        orcid=str(row.values[A3_Field.ORCID.value])
-        .replace("-", "")
-        .replace(".", "")
-        .strip()
-        .lower(),
+        dni=row.values[A3_Field.DNI.value],
+        email=email_val,
+        orcid=transform_orcid(orcid_val),
         name=normalize_name(row.values[A3_Field.NAME.value]),
         surname=normalize_name(row.values[A3_Field.SURNAME.value]),
         second_surname=normalize_name(row.values[A3_Field.SECOND_SURNAME.value]),
@@ -121,16 +178,14 @@ def parse_a3_row_data(row, translator):
         ini_prorrog=sanitize_date(row.values[A3_Field.INI_PRORROG.value]),
         end_prorrog=sanitize_date(row.values[A3_Field.END_PRORROG.value]),
         date_termination=sanitize_date(row.values[A3_Field.DATE_TERMINATION.value]),
-        sex=row.values[A3_Field.SEX.value],
-        personal_web=translator[A3_Field.PERSONAL_WEB].get(
-            row.values[A3_Field.JOB_DESCRIPTION.value], default_web
-        ),
+        sex=translator[A3_Field.SEX][row.values[A3_Field.SEX.value]],
+        personal_web=personal_web_val,
         signature="",
-        signature_custom=row.values[A3_Field.SIGNATURE_CUSTOM.value],
+        signature_custom="",
         country=country,
         born_country=born_country,
-        job_description=translator[A3_Field.JOB_DESCRIPTION][
-            row.values[A3_Field.JOB_DESCRIPTION.value]
-        ],
+        job_description=job_description_val,
+        unit_group=entity_val,
+        entity_type=translator[A3_Field.ENTITY_TYPE][entity_val],
     )
     return data

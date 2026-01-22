@@ -62,8 +62,6 @@ def upload_file(token_manager, drive_id, remote_path, local_file_path):
 
 # in this function read the folder in path: SECRETS / new file added DRIVE_ID
 
-from pathlib import Path
-
 
 def get_sharepoint_drive_id() -> str:
 
@@ -104,15 +102,16 @@ def get_sharepoint_drive_id() -> str:
 
 # Uploads a file to the SharePoint site 'Institutional Strengthening'.
 def upload_file_sharepoint(
-    file_path: Path,
-    target_folder: str = "_Projects/iMarina_load_automation/uploads"
+    file_path: Path, target_folder: str = "_Projects/iMarina_load_automation/uploads"
 ):  # Args: file_path: Local file path to upload.  target_folder: Relative path inside drive(ex:'Uploads/2025-10').
     if isinstance(file_path, str):
         file_path = Path(file_path)
 
     token_manager = get_token_manager()
 
-    drive_id = get_sharepoint_drive_id() # drive_id is read in a method (get_sharepoint_drive_id)
+    drive_id = (
+        get_sharepoint_drive_id()
+    )  # drive_id is read in a method (get_sharepoint_drive_id)
 
     filename = file_path.name
     remote_path = f"{target_folder}/{filename}".strip("/")
@@ -127,7 +126,6 @@ def upload_file_sharepoint(
         with open(file_path, "rb") as f:
             response = requests.put(url, headers=headers, data=f, timeout=300)
 
-
         if response.status_code in (200, 201):
             print(f"✅ Archivo '{filename}' subido correctamente a {target_folder}.")
         else:
@@ -136,15 +134,15 @@ def upload_file_sharepoint(
 
     except requests.exceptions.HTTPError as e:
         if response.status_code == 404:
-            print(f"❌ Error: La carpeta destino no existe ({target_folder}) en SharePoint.")
+            print(
+                f"❌ Error: La carpeta destino no existe ({target_folder}) en SharePoint."
+            )
         else:
             print(f"❌ Error HTTP al subir '{filename}': {e}")
         raise
     except Exception as e:
         print(f"❌ Error inesperado al subir '{filename}': {e}")
         raise
-
-
 
 
 def download_input_from_sharepoint(local_input_folder: str = "/app/input"):
