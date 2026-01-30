@@ -1,7 +1,7 @@
 from pathlib import Path
 import typer
 
-from imarina.core.log_utils import configure_logging_from_settings, get_logger
+from imarina.core.log_utils import get_logger
 from imarina.core.shared_options import DirectoryOpt
 from imarina.core.sharepoint import download_input_from_sharepoint
 
@@ -15,8 +15,6 @@ logger = get_logger(__name__)
 
 
 def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> None:
-    configure_logging_from_settings()
-
     target_path = input_dir if input_dir is not None else Path("input")
 
     print(f" Starting download of input files from SharePoint into: {target_path}")
