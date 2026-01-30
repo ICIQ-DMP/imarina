@@ -3,6 +3,7 @@ import typer
 from imarina.core.log_utils import process_log_flags, configure_logging_from_settings
 
 from imarina.core.log_utils import get_logger
+from imarina.core.secret import read_secret
 from imarina.core.shared_options import (
     VerboseOpt,
     VeryVerboseOpt,
@@ -35,7 +36,9 @@ def cli_global_callback(
             "More than one log level arguments was provided, the log level with more verbosity will be used."
         )
 
-    configure_logging_from_settings(level=cli_log_level, log_file=log_file)
+    configure_logging_from_settings(
+        level=cli_log_level, log_file=log_file, secrets=[read_secret("FTP_PASSWORD")]
+    )
     logger = get_logger(__name__)
 
     logger.debug("Ended global callback")

@@ -10,10 +10,15 @@ NOW_DATA = datetime.datetime.now()
 NOW = NOW_DATA.strftime(DATETIME_FORMAT)
 
 PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent.parent.parent
+OUTPUT_DIR = PROJECT_DIR / "output"
 date_str = "31/12/2099"
 DATE_FORMAT = "%d/%m/%Y"
 PERMANENT_CONTRACT_DATE = datetime.datetime.strptime(date_str, "%d/%m/%Y")
 ICIQ_WEBPAGE = "https://iciq.org/"
+
+FILENAME_PREFIX = "iMarina_upload_"
+FILENAME_SUFFIX = ".xlsx"
+FTP_EXCEL_FILE_DATE_FORMAT = "%y%m%d"
 
 
 class LogLevel(str, Enum):
