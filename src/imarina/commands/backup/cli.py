@@ -3,12 +3,9 @@ import typer
 from datetime import datetime  # timestamp
 from imarina.core.shared_options import DirectoryOpt
 from imarina.core.sharepoint import upload_file_sharepoint
-from imarina.core.log_utils import configure_logging_from_settings
 
 
 def backup_controller(ctx: typer.Context, directory: DirectoryOpt = None) -> None:
-
-    configure_logging_from_settings()
 
     local_uploads_dir = directory if directory is not None else Path.cwd() / "uploads"
 

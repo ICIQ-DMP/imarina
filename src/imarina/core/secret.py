@@ -7,7 +7,7 @@ from imarina.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
-def read_secret(secret_name):
+def read_secret(secret_name) -> str:
     """Retrieve a token from predefined sources in order of priority."""
     sources = [
         lambda: read_file_content(f"/run/secrets/{secret_name}"),
