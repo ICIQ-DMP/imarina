@@ -245,23 +245,12 @@ def upload_latest_excel():
 
     try:
         print(f"⬆️ Subiendo {latest_file.name} a {target_folder}...")
-        upload_file_sharepoint_2(latest_file, target_folder=target_folder)
+        upload_file_sharepoint(latest_file, target_folder=target_folder)
         print(
             f"✅ Fitxer {latest_file.name} pujat correctament a SharePoint a la carpeta {target_folder}."
         )
     except Exception as e:
         print(f"❌ Error pujant '{latest_file.name}': {e}")
-
-
-# # function upload file to SharePoint
-# def upload_file_sharepoint_2(file_path: Path):
-#     try:
-#         target_folder = "_Projects/iMarina_load_automation/uploads"  # directory
-#         upload_file_sharepoint(Path(file_path), target_folder)
-#
-#     except Exception as e:
-#         print(f"❌ Error al subir el archivo a SharePoint: {e}")
-#         raise
 
 
 if __name__ == "__main__":

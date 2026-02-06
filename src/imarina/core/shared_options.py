@@ -57,7 +57,7 @@ VeryQuietOpt = Annotated[
 ]
 
 
-# TODO Add all opts to this variable so they are marked as publicly exposed
+# Add all opts to this variable so they are marked as publicly exposed
 __all__ = [
     "VerboseOpt",
     "QuietOpt",

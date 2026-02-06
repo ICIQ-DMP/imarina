@@ -11,9 +11,9 @@ from imarina.core.imarina_mapper import (
 from imarina.core.log_utils import get_logger
 from imarina.core.translations import build_translations
 
-logger = get_logger(__name__)
-
 from imarina.core.excel import Excel
+
+logger = get_logger(__name__)
 
 
 def normalized_dni(dni):
@@ -159,7 +159,7 @@ def build_upload_excel(
     logger.info(f"Since the last upload, {num_new} researchers have entered ICIQ.")
 
     # IF GROUP UNIT = DIRECCIO OR GROUP UNIT = GESTIO OR GROUP UNIT = OUTREACH DELETE OF OUTPUT
-    # TODO UNIQUE LANGUAGE PREF ENGLISH
+
     # For each researcher in A3, check if they are not present in iMarina
     # If they are not present, it has a code 4, it begins and end date is outside a range
     # to determine from fields to determine, then the current row from A3 corresponds to ICREA researcher or predoc
