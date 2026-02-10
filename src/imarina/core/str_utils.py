@@ -2,7 +2,7 @@
 import unicodedata
 
 
-def normalize_name_str(s):
+def normalize_name_str(s: str) -> str:
     import re  # importem regular expressions
     import unicodedata  # importem unicodedata
 

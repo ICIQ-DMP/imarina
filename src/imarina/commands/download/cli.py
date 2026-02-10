@@ -20,7 +20,7 @@ def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> N
     print(f" Starting download of input files from SharePoint into: {target_path}")
 
     try:
-        download_input_from_sharepoint(target_path)
+        download_input_from_sharepoint(str(target_path))
         print(
             f" DONE : Input files successfully downloaded to local directory: {target_path}"
         )

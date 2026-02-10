@@ -6,7 +6,7 @@ from urllib.parse import quote
 
 from imarina.core.TokenManager import get_token_manager
 from datetime import datetime
-
+from typing import Any
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -31,7 +31,7 @@ def get_site_id(token_manager, domain, site_name):
     return response.json()["id"]
 
 
-def get_drive_id(token_manager, site_id, drive_name="Documents"):
+def get_drive_id(token_manager, site_id, drive_name="Documents") -> Any:
     encoded_site_id = quote(site_id, safe="")
 
     url = f"https://graph.microsoft.com/v1.0/sites/{encoded_site_id}/drives"  # Obtain the ID from drive(library documents) from site
@@ -228,7 +228,7 @@ def folder_exists(token_manager, drive_id, folder_path):
     return response.status_code == 200
 
 
-def upload_latest_excel():
+def upload_latest_excel() -> Any:
     print("Entrando en upload_latest_excel()")
     uploads_dir = Path("/app/uploads")
 

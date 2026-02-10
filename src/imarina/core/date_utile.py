@@ -4,11 +4,11 @@ import pandas as pd
 
 from imarina.core.defines import DATE_FORMAT
 from imarina.core.log_utils import get_logger
-
+from typing import Any, Optional
 logger = get_logger(__name__)
 
 
-def sanitize_date(date_dirty) -> datetime.datetime | None:
+def sanitize_date(date_dirty: Any) -> Optional[datetime.datetime]:
     if type(date_dirty) is pd._libs.tslibs.timestamps.Timestamp:
         return date_dirty
     elif type(date_dirty) is datetime.datetime:
@@ -30,7 +30,7 @@ def sanitize_date(date_dirty) -> datetime.datetime | None:
         )
 
 
-def unparse_date(date: datetime.datetime):
+def unparse_date(date: datetime.datetime) -> Any:
     if date is None:
         return ""
     else:

@@ -28,7 +28,7 @@ def build_controller(
             PROJECT_DIR / "input" / "A3.xlsx",
             help="Path to A3 input file(.xlsx)"
         ),
-        output_path: Optional[Path] = typer.Option(
+        output_path: Path = typer.Option(
             PROJECT_DIR / "output" / f"iMarina_upload_{NOW}.xlsx"
         ),
         personal_web_path: Optional[Path] = typer.Option(

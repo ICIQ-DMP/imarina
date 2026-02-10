@@ -13,10 +13,13 @@ from imarina.core.translations import build_translations
 
 from imarina.core.excel import Excel
 
+from typing import Any, cast
+
 logger = get_logger(__name__)
 
 
-def normalized_dni(dni):
+# typed string dni
+def normalized_dni(dni: str) -> str:
     if not dni:
         return ""
     dni = re.sub(r"[^0-9A-Za-z]", "", str(dni)).upper()
@@ -27,15 +30,15 @@ def normalized_dni(dni):
 # constructor del excel
 def build_upload_excel(
     output_path: Path,
-    countries_path,
-    jobs_path,
-    imarina_path,
-    a3_path,
-    personal_web_path,
-    unit_group_path,
-    entity_type_path,
-    job_description_entity_path,
-):
+    countries_path : Any,
+    jobs_path: Any,
+    imarina_path: Any,
+    a3_path: Any,
+    personal_web_path: Any,
+    unit_group_path: Any,
+    entity_type_path : Any,
+    job_description_entity_path : Any,
+) -> None:
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
 
@@ -166,8 +169,10 @@ def build_upload_excel(
     # with CSC, so its data from A3 needs to be added to the output.
     # retains columns, types, and headers if any
 
-    im_data_empty = im_data.__copy__()
+    im_data_any = cast(Any, im_data)  # data cast pass variable type to other type
+    im_data_empty: Any = im_data_any.__copy__()
     im_data_empty.empty()
+
 
     excel_output = im_data_empty.__copy__()
     append_researchers_to_output_data(researchers_output, excel_output)

@@ -7,6 +7,7 @@ from imarina.core.date_utile import sanitize_date
 from imarina.core.excel import get_val
 from imarina.core.log_utils import get_logger
 
+from typing import Any
 logger = get_logger(__name__)
 
 
@@ -65,7 +66,7 @@ def transform_orcid(orcid: str) -> str:
     return ret
 
 
-def parse_a3_row_data(row, translator):
+def parse_a3_row_data(row: Any, translator: Any) -> Any:
 
     # function per normalitzar el nom del country
     def normalize_country_name(name: str) -> str:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Optional
-
+from typing import Any
 import pandas as pd
 
 from imarina.core.log_utils import get_logger
@@ -9,8 +9,8 @@ from imarina.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
-def get_val(row, idx):
-    val = row.values[idx]
+def get_val(row: pd.Series, field: int) -> Optional[Any]:
+    val = row.values[field]
     if pd.isna(val):
         return None
     return val
@@ -25,7 +25,7 @@ class Excel:
 
     def parse_two_columns(
         self, key: int, value: int, func_apply_key=None, func_apply_value=None
-    ):
+    )-> Any:
         val_col = self.dataframe[value]
         key_col = self.dataframe[key]
 
@@ -36,18 +36,18 @@ class Excel:
 
         return dict(zip(key_col, val_col))
 
-    def empty(self):
+    def empty(self) -> None:
         # retains columns, types, and headers if any, but 0 rows
         self.dataframe = self.dataframe[0:0].copy()
 
-    def to_excel(self, output_path: Path):
+    def to_excel(self, output_path: Path)-> None:
         self.dataframe.to_excel(output_path, index=False)
         logger.info(f"iMarina Excel at {output_path} built successfully.")
 
-    def __copy__(self):
+    def __copy__(self)-> "Excel":
         empty = Excel(None)
         empty.dataframe = self.dataframe.copy()
         return empty
 
-    def concat(self, excel: Excel):
+    def concat(self, excel: Excel)-> None:
         self.dataframe = pd.concat([self.dataframe, excel.dataframe], ignore_index=True)

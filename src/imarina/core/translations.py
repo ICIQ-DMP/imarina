@@ -1,7 +1,8 @@
 from imarina.core.excel import Excel
 from imarina.core.a3_mapper import A3_Field
 from imarina.core.log_utils import get_logger
-
+from pathlib import Path
+from typing import Any
 logger = get_logger(__name__)
 
 
@@ -12,7 +13,7 @@ def build_translations(
     unit_group_path,
     entity_type_path,
     job_description_entity_path,
-):
+) -> Any :
     r = {}
     r[A3_Field.SEX] = {}
     r[A3_Field.SEX]["Mujer"] = "Female"
@@ -56,8 +57,8 @@ def build_translations(
 
 
 # function to build the translator
-def build_translator(path, skiprows=0):
-    excel = Excel(path, skiprows, None)
+def build_translator(path: str, skiprows: int = 0) -> dict[str, str]:
+    excel = Excel(Path(path), skiprows, None)
 
     excel.dataframe.iloc[:, 0] = excel.dataframe.iloc[:, 0]
     excel.dataframe.iloc[:, 1] = excel.dataframe.iloc[:, 1]
