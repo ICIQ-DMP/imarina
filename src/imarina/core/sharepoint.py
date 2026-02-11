@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 access_token = get_token_manager()
 
 
-def list_drives():
+def list_drives() -> None:
 
     token_manager = get_token_manager()
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}

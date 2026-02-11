@@ -1,6 +1,6 @@
 # function to normalize names of researchers
 import unicodedata
-
+from typing import Any
 
 def normalize_name_str(s: str) -> str:
     import re  # importem regular expressions
@@ -19,7 +19,7 @@ def normalize_name_str(s: str) -> str:
     return s
 
 
-def normalize_string(s):
+def normalize_string(s) -> Any:
     if not s:
         return ""
     s = str(s).strip().lower()

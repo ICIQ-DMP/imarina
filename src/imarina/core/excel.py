@@ -1,7 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Optional
-from typing import Any
+from typing import Optional, Any, Callable
 import pandas as pd
 
 from imarina.core.log_utils import get_logger
@@ -17,15 +16,15 @@ def get_val(row: pd.Series, field: int) -> Optional[Any]:
 
 
 class Excel:
-    def __init__(self, path: Optional[Path], skiprows=0, header=0):
+    def __init__(self, path: Optional[Path], skiprows: int = 0, header: Optional[int] = 0,) -> None:
         if path is None:
             self.dataframe = pd.DataFrame()
         else:
             self.dataframe = pd.read_excel(path, skiprows=skiprows, header=header)
 
     def parse_two_columns(
-        self, key: int, value: int, func_apply_key=None, func_apply_value=None
-    )-> Any:
+        self, key: int, value: int, func_apply_key: Optional[Callable[[Any], Any]] = None, func_apply_value: Optional[Callable[[Any], Any]] = None,
+    )-> dict[Any, Any]:
         val_col = self.dataframe[value]
         key_col = self.dataframe[key]
 

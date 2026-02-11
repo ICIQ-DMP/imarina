@@ -40,7 +40,7 @@ class SecretsFilter(logging.Filter):
 def setup_logging(
     level: Optional[int | None],
     log_file: Optional[str | Path] = None,
-    secrets: list[str | None] | None = None,
+    secrets: list[str] | None = None,
 ) -> None:
     # Default level is INFO
     if level is None:

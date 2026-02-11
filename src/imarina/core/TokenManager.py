@@ -5,6 +5,7 @@ import requests
 from imarina.core.secret import read_secret
 import os
 from imarina.core.log_utils import get_logger
+from typing import cast, Any
 
 logger = get_logger(__name__)
 
@@ -26,7 +27,7 @@ class TokenManager:
         self.access_token = None
         self.expires_at = 0
 
-    def get_token(self):
+    def get_token(self) -> Any:
         # return a valid token and if the token has expired or is about to expire , request a new token.
         if (
             self.access_token is None or time.time() >= self.expires_at - 300
@@ -34,7 +35,7 @@ class TokenManager:
             self._refresh_token()
         return self.access_token
 
-    def _refresh_token(self):
+    def _refresh_token(self) -> None:
         # request a new token for AZURE AD
         token_data = {
             "grant_type": "client_credentials",
@@ -72,7 +73,7 @@ def _create_token_manager():
     )
 
 
-def get_token_manager():
+def get_token_manager() -> TokenManager:
     if not hasattr(get_token_manager, "_instance"):
         get_token_manager._instance = _create_token_manager()
-    return get_token_manager._instance
+    return cast(TokenManager, get_token_manager._instance)
