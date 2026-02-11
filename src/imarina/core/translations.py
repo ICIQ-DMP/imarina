@@ -7,14 +7,14 @@ logger = get_logger(__name__)
 
 
 def build_translations(
-    countries_path,
-    jobs_path,
-    personal_web_path,
-    unit_group_path,
-    entity_type_path,
-    job_description_entity_path,
+        countries_path: str,
+        jobs_path: str,
+        personal_web_path: str,
+        unit_group_path: str,
+        entity_type_path: str,
+        job_description_entity_path: str,
 ) -> Any :
-    r = {}
+    r: dict[Any, dict[str, str]] = {}
     r[A3_Field.SEX] = {}
     r[A3_Field.SEX]["Mujer"] = "Female"
     r[A3_Field.SEX]["Hombre"] = "Male"
