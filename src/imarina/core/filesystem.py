@@ -1,7 +1,7 @@
 import os
 
 from imarina.core.log_utils import get_logger
-from typing import Any
+from typing import Any, cast
 logger = get_logger(__name__)
 
 
@@ -33,9 +33,9 @@ def read_env_var(var_name)-> Any:
     return value
 
 
-def read_file_content(file_path):
-    content = read_file(file_path)
-    # Check if the file is empty or contains only whitespace
+def read_file_content(file_path: str) -> str:
+    content = cast(str, read_file(file_path))
+
     if not content:
         raise ValueError(f"The file '{file_path}' is empty.")
 
