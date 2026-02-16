@@ -21,9 +21,9 @@ logging.setLoggerClass(ExtendedLogger)
 
 
 class SecretsFilter(logging.Filter):
-    def __init__(self, secrets: list[str | None] | None):
+    def __init__(self, secrets: list[str] | None):
         super().__init__()
-        self.secrets: list[str | None] = secrets or []
+        self.secrets: list[str] = secrets or []
 
     def filter(self, record: logging.LogRecord) -> bool:
         if not self.secrets:

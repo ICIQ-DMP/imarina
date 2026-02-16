@@ -1,11 +1,11 @@
 from imarina.core.log_utils import get_logger
-from typing import Any
+#from typing import Any
 logger = get_logger(__name__)
 
 
 class Researcher:
 
-    def __init__(self, **kwargs) -> Any:
+    def __init__(self, **kwargs) -> None:
         self.dni = kwargs.get("dni")
         self.email = kwargs.get("email")
         self.name = kwargs.get("name")

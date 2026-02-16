@@ -10,14 +10,14 @@ from typing import cast, Any
 logger = get_logger(__name__)
 
 
-class TokenManager:
+class TokenManager :
     def __init__(
         self,
         tenant_id,
         client_id,
         client_secret,
         scope="https://graph.microsoft.com/.default",
-    ):
+    ) -> None:
         self.token_url = (
             f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
         )

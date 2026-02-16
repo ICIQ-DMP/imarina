@@ -1,11 +1,11 @@
 import os
 
 from imarina.core.log_utils import get_logger
-from typing import Any, cast
+from typing import cast
 logger = get_logger(__name__)
 
 
-def read_env_var(var_name)-> Any:
+def read_env_var(var_name : str)-> str:
     """
     Reads an environment variable.
 
