@@ -149,9 +149,9 @@ def parse_imarina_row_data(row) -> Any :
         dni=get_val(row, ImarinaField.DNI.value),  # dni_val (value)
         email=email_val,
         orcid=orcid_val,  # orcid_val (value)
-        name=normalize_name(get_val(row, ImarinaField.NAME.value)),
-        surname=normalize_name(get_val(row, ImarinaField.SURNAME.value)),
-        second_surname=normalize_name(get_val(row, ImarinaField.SECOND_SURNAME.value)),
+        name=normalize_name(get_val(row, ImarinaField.NAME.value) or ""),
+        surname=normalize_name(get_val(row, ImarinaField.SURNAME.value) or ""),
+        second_surname=normalize_name(get_val(row, ImarinaField.SECOND_SURNAME.value) or ""),
         ini_date=sanitize_date(get_val(row, ImarinaField.INI_DATE.value)),
         end_date=sanitize_date(get_val(row, ImarinaField.END_DATE.value)),
         sex=get_val(row, ImarinaField.SEX.value),
