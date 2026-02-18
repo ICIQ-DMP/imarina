@@ -1,7 +1,9 @@
 import os
 
 from imarina.core.log_utils import get_logger
-from typing import cast
+#from typing import cast
+from pathlib import Path
+
 logger = get_logger(__name__)
 
 
@@ -34,7 +36,7 @@ def read_env_var(var_name : str)-> str:
 
 
 def read_file_content(file_path: str) -> str:
-    content = cast(str, read_file(file_path))
+    content = read_file(file_path)
 
     if not content:
         raise ValueError(f"The file '{file_path}' is empty.")
@@ -42,7 +44,7 @@ def read_file_content(file_path: str) -> str:
     return content
 
 
-def read_file(file_path):
+def read_file(file_path: str | Path) -> str:
     """
     Reads a file and returns its content.
     Handles edge cases such as the file not existing or being unreadable.
@@ -74,7 +76,7 @@ def read_file(file_path):
     return content
 
 
-def ensure_gitignore(directory):
+def ensure_gitignore(directory: str |Path) -> None:
     # Ensure existence of .gitignore
     gitignore_path = os.path.join(directory, ".gitignore")
     gitignore_content = "*\n!.gitignore\n"

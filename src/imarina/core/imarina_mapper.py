@@ -45,7 +45,7 @@ class ImarinaField(Enum):
     CONTACT_PHONE = 46
 
 
-def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel):
+def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel) -> Any:
     empty_output_row.dataframe.iat[0, ImarinaField.DNI.value] = data.dni
     empty_output_row.dataframe.iat[0, ImarinaField.EMAIL.value] = data.email
     empty_output_row.dataframe.iat[0, ImarinaField.ORCID.value] = data.orcid

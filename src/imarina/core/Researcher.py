@@ -1,11 +1,11 @@
 from imarina.core.log_utils import get_logger
-#from typing import Any
+from typing import Any
 logger = get_logger(__name__)
 
 
 class Researcher:
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         self.dni = kwargs.get("dni")
         self.email = kwargs.get("email")
         self.name = kwargs.get("name")
@@ -41,7 +41,7 @@ class Researcher:
         self.scopus_id = kwargs.get("scopus_id")
         self.google_scholar_id = kwargs.get("google_scholar_id")
 
-    def __str__(self):
+    def __str__(self)-> Any:
         return (
             f"\nResearcher:\n"
             f"  DNI: {self.dni}\n"
@@ -78,7 +78,7 @@ class Researcher:
             f"  Google scholar ID: {self.google_scholar_id}\n"
         )
 
-    def copy(self):
+    def copy(self) -> Any:
         return Researcher(
             dni=self.dni,
             email=self.email,
@@ -114,7 +114,7 @@ class Researcher:
             google_scholar_id=self.google_scholar_id,
         )
 
-    def search_data(self, data_input):
+    def search_data(self, data_input: Any) -> Any:
         matches = []
 
         for researcher in data_input:
@@ -127,7 +127,7 @@ class Researcher:
 
         return []
 
-    def is_same_person(self, other):
+    def is_same_person(self, other:Any)-> bool:
         if self.orcid and other.orcid and self.orcid == other.orcid:
             return True
         if self.dni and other.dni and self.dni == other.dni:
@@ -137,7 +137,7 @@ class Researcher:
 
         return False
 
-    def has_changed_jobs(self, researcher):
+    def has_changed_jobs(self, researcher: Any)-> Any:
         if (
             self.job_description == "Postdoctoral researcher"
             and researcher.job_description == "Associated researcher"

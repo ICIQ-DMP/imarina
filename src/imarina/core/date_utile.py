@@ -30,7 +30,7 @@ def sanitize_date(date_dirty: Any) -> Optional[datetime.datetime]:
         )
 
 
-def unparse_date(date: datetime.datetime) -> Any:
+def unparse_date(date: Optional[datetime.datetime]) -> str:
     if date is None:
         return ""
     else:
