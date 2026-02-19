@@ -7,7 +7,7 @@ from imarina.core.log_utils import get_logger
 from imarina.core.Researcher import Researcher, normalize_name
 from imarina.core.date_utile import unparse_date, sanitize_date
 
-from typing import Any
+from typing import Any, List
 logger = get_logger(__name__)
 
 
@@ -107,7 +107,7 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
 
 
 # parsear los datos de imarina
-def parse_imarina_row_data(row) -> Any :
+def parse_imarina_row_data(row: pd.Series) -> Researcher :
 
     entity_val = get_val(row, ImarinaField.UNIT_GROUP.value)
     entity_val = str(entity_val).strip() if pd.notna(entity_val) else ""
@@ -180,13 +180,16 @@ def parse_imarina_row_data(row) -> Any :
     return data
 
 
-def append_researchers_to_output_data(researchers, output_data) -> None:
+
+def append_researchers_to_output_data(researchers: List[Any], output_data: Any) -> None:
     empty_row_output_data = output_data.__copy__()
     empty_row_output_data.empty()
     empty_row_output_data.dataframe.loc[0] = [None] * len(
         empty_row_output_data.dataframe.columns
-    )  # TODO: implement method of Excel, get EmptyRow
+    )
     for researcher in researchers:
         new_row = empty_row_output_data.__copy__()
         unparse_researcher_to_imarina_row(researcher, new_row)
         output_data.concat(new_row)
+
+# TODO: implement method of Excel, get EmptyRow

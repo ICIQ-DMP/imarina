@@ -4,7 +4,7 @@ from pathlib import Path
 import requests
 from urllib.parse import quote
 
-from imarina.core.TokenManager import get_token_manager
+from imarina.core.TokenManager import get_token_manager, TokenManager
 from datetime import datetime
 from typing import Any
 from imarina.core.log_utils import get_logger
@@ -23,7 +23,7 @@ def list_drives() -> None:
     print(response.json())
 
 
-def get_site_id(token_manager, domain, site_name):
+def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any:
     url = f"https://graph.microsoft.com/v1.0/sites/{domain}:/sites/{site_name}"  # Obtain the ID of site from SharePoint.
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
     response = requests.get(url, headers=headers, timeout=60)
@@ -31,7 +31,7 @@ def get_site_id(token_manager, domain, site_name):
     return response.json()["id"]
 
 
-def get_drive_id(token_manager, site_id, drive_name="Documents"):
+def get_drive_id(token_manager: TokenManager, site_id: str, drive_name: str ="Documents") -> Any:
     encoded_site_id = quote(site_id, safe="")
 
     url = f"https://graph.microsoft.com/v1.0/sites/{encoded_site_id}/drives"  # Obtain the ID from drive(library documents) from site
@@ -45,7 +45,7 @@ def get_drive_id(token_manager, site_id, drive_name="Documents"):
     raise Exception(f"Drive '{drive_name}' no encontrado en el site.")
 
 
-def upload_file(token_manager, drive_id, remote_path, local_file_path) -> None:
+def upload_file(token_manager: TokenManager, drive_id: str, remote_path: str, local_file_path: str) -> None:
     print(f"Uploading from local path {local_file_path} to {remote_path}")
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?@microsoft.graph.conflictBehavior=replace"  # replace if the file have exist
     headers = {
@@ -220,7 +220,7 @@ def download_input_from_sharepoint(local_input_folder: str = "/app/input") -> An
     print("=" * 60)
 
 
-def folder_exists(token_manager, drive_id, folder_path) -> bool:
+def folder_exists(token_manager: TokenManager, drive_id: str, folder_path: str) -> bool:
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{folder_path}"
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
 

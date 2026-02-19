@@ -5,7 +5,7 @@ import requests
 from imarina.core.secret import read_secret
 import os
 from imarina.core.log_utils import get_logger
-from typing import cast, Any
+from typing import  Any
 
 logger = get_logger(__name__)
 
@@ -13,10 +13,10 @@ logger = get_logger(__name__)
 class TokenManager :
     def __init__(
         self,
-        tenant_id,
-        client_id,
-        client_secret,
-        scope="https://graph.microsoft.com/.default",
+        tenant_id: str,
+        client_id: str,
+        client_secret: str,
+        scope : str ="https://graph.microsoft.com/.default",
     ) -> None:
         self.token_url = (
             f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
@@ -56,7 +56,7 @@ class TokenManager :
         self.expires_at = time.time() + token_data.get("expires_in", 3600)
 
 
-def _create_token_manager():
+def _create_token_manager() -> Any:
     # read the secrets and create a unique instance of TokenManager.
     if os.getenv("GITHUB_ACTIONS") == "true":
         print(" Running in GitHub Actions — skipping TokenManager initialization")
@@ -72,8 +72,10 @@ def _create_token_manager():
         tenant_id=tenant_id, client_id=client_id, client_secret=client_secret
     )
 
-
+# global variable _manager_instance
+_manager_instance: TokenManager | None = None
 def get_token_manager() -> TokenManager:
-    if not hasattr(get_token_manager, "_instance"):
-        get_token_manager._instance = _create_token_manager()
-    return cast(TokenManager, get_token_manager._instance)
+    global _manager_instance
+    if _manager_instance is None:
+        _manager_instance = _create_token_manager()
+    return _manager_instance
