@@ -43,14 +43,11 @@ pipeline {
         }
     }
 
-    // imarina upload TODO
+    // imarina upload
     stage('iMarina upload') {
-         steps {
-
-        }
+         // TODO steps
 
     }
-
 
         // execute main
         stage('Run main.py') {
