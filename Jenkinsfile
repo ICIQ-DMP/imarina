@@ -52,13 +52,16 @@ pipeline {
     }
 
 
-
         // execute main
         stage('Run main.py') {
+        steps {
         echo "Starting main execute"
         sh '''
            ./venv/bin/python src/main.py
         '''
+
+    }
+
     }
 
     }
