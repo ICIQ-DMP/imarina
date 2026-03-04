@@ -1,13 +1,14 @@
 import os
 
 from imarina.core.log_utils import get_logger
-#from typing import cast
+
+# from typing import cast
 from pathlib import Path
 
 logger = get_logger(__name__)
 
 
-def read_env_var(var_name : str)-> str:
+def read_env_var(var_name: str) -> str:
     """
     Reads an environment variable.
 
@@ -76,7 +77,7 @@ def read_file(file_path: str | Path) -> str:
     return content
 
 
-def ensure_gitignore(directory: str |Path) -> None:
+def ensure_gitignore(directory: str | Path) -> None:
     # Ensure existence of .gitignore
     gitignore_path = os.path.join(directory, ".gitignore")
     gitignore_content = "*\n!.gitignore\n"

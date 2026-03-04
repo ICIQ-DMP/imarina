@@ -8,6 +8,7 @@ from imarina.core.excel import get_val
 from imarina.core.log_utils import get_logger
 
 from typing import Any
+
 logger = get_logger(__name__)
 
 

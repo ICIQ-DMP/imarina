@@ -3,17 +3,18 @@ from imarina.core.a3_mapper import A3_Field
 from imarina.core.log_utils import get_logger
 from pathlib import Path
 from typing import Any
+
 logger = get_logger(__name__)
 
 
 def build_translations(
-        countries_path: str,
-        jobs_path: str,
-        personal_web_path: str,
-        unit_group_path: str,
-        entity_type_path: str,
-        job_description_entity_path: str,
-) -> Any :
+    countries_path: str,
+    jobs_path: str,
+    personal_web_path: str,
+    unit_group_path: str,
+    entity_type_path: str,
+    job_description_entity_path: str,
+) -> Any:
     r: dict[Any, dict[str, str]] = {}
     r[A3_Field.SEX] = {}
     r[A3_Field.SEX]["Mujer"] = "Female"

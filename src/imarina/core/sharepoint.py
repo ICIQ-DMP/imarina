@@ -31,7 +31,9 @@ def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any
     return response.json()["id"]
 
 
-def get_drive_id(token_manager: TokenManager, site_id: str, drive_name: str ="Documents") -> Any:
+def get_drive_id(
+    token_manager: TokenManager, site_id: str, drive_name: str = "Documents"
+) -> Any:
     encoded_site_id = quote(site_id, safe="")
 
     url = f"https://graph.microsoft.com/v1.0/sites/{encoded_site_id}/drives"  # Obtain the ID from drive(library documents) from site
@@ -45,7 +47,9 @@ def get_drive_id(token_manager: TokenManager, site_id: str, drive_name: str ="Do
     raise Exception(f"Drive '{drive_name}' no encontrado en el site.")
 
 
-def upload_file(token_manager: TokenManager, drive_id: str, remote_path: str, local_file_path: str) -> None:
+def upload_file(
+    token_manager: TokenManager, drive_id: str, remote_path: str, local_file_path: str
+) -> None:
     print(f"Uploading from local path {local_file_path} to {remote_path}")
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?@microsoft.graph.conflictBehavior=replace"  # replace if the file have exist
     headers = {
@@ -86,24 +90,14 @@ def get_sharepoint_drive_id() -> str:
         raise RuntimeError(f"❌ No s'ha trobat el secret a {secret_path.absolute()}")
 
 
-# def get_sharepoint_drive_id() -> str:
-#
-#     project_root = Path(__file__).resolve().parent.parent
-#     secret_path = project_root / "secrets" / "DRIVE_ID"
-#
-#     try:
-#         drive_id = secret_path.read_text().strip()
-#         if not drive_id:
-#             raise ValueError(f"No DRIVE_ID found in {secret_path}")
-#         return drive_id
-#     except FileNotFoundError:
-#         raise Exception(f" Error: No s'ha trobat el secret a {secret_path}")
 
 
 # Uploads a file to the SharePoint site 'Institutional Strengthening'.
 def upload_file_sharepoint(
     file_path: Path, target_folder: str = "_Projects/iMarina_load_automation/uploads"
-) -> Any:  # Args: file_path: Local file path to upload.  target_folder: Relative path inside drive(ex:'Uploads/2025-10').
+) -> (
+    Any
+):  # Args: file_path: Local file path to upload.  target_folder: Relative path inside drive(ex:'Uploads/2025-10').
     if isinstance(file_path, str):
         file_path = Path(file_path)
 

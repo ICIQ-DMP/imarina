@@ -1,5 +1,6 @@
 from imarina.core.log_utils import get_logger
 from typing import Any
+
 logger = get_logger(__name__)
 
 
@@ -41,7 +42,7 @@ class Researcher:
         self.scopus_id = kwargs.get("scopus_id")
         self.google_scholar_id = kwargs.get("google_scholar_id")
 
-    def __str__(self)-> Any:
+    def __str__(self) -> Any:
         return (
             f"\nResearcher:\n"
             f"  DNI: {self.dni}\n"
@@ -127,7 +128,7 @@ class Researcher:
 
         return []
 
-    def is_same_person(self, other:Any)-> bool:
+    def is_same_person(self, other: Any) -> bool:
         if self.orcid and other.orcid and self.orcid == other.orcid:
             return True
         if self.dni and other.dni and self.dni == other.dni:
@@ -137,7 +138,7 @@ class Researcher:
 
         return False
 
-    def has_changed_jobs(self, researcher: Any)-> Any:
+    def has_changed_jobs(self, researcher: Any) -> Any:
         if (
             self.job_description == "Postdoctoral researcher"
             and researcher.job_description == "Associated researcher"

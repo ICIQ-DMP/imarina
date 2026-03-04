@@ -16,15 +16,24 @@ def get_val(row: pd.Series, field: int) -> Optional[Any]:
 
 
 class Excel:
-    def __init__(self, path: Optional[Path], skiprows: int = 0, header: Optional[int] = 0,) -> None:
+    def __init__(
+        self,
+        path: Optional[Path],
+        skiprows: int = 0,
+        header: Optional[int] = 0,
+    ) -> None:
         if path is None:
             self.dataframe = pd.DataFrame()
         else:
             self.dataframe = pd.read_excel(path, skiprows=skiprows, header=header)
 
     def parse_two_columns(
-        self, key: int, value: int, func_apply_key: Optional[Callable[[Any], Any]] = None, func_apply_value: Optional[Callable[[Any], Any]] = None,
-    )-> dict[Any, Any]:
+        self,
+        key: int,
+        value: int,
+        func_apply_key: Optional[Callable[[Any], Any]] = None,
+        func_apply_value: Optional[Callable[[Any], Any]] = None,
+    ) -> dict[Any, Any]:
         val_col = self.dataframe[value]
         key_col = self.dataframe[key]
 
@@ -39,14 +48,14 @@ class Excel:
         # retains columns, types, and headers if any, but 0 rows
         self.dataframe = self.dataframe[0:0].copy()
 
-    def to_excel(self, output_path: Path)-> None:
+    def to_excel(self, output_path: Path) -> None:
         self.dataframe.to_excel(output_path, index=False)
         logger.info(f"iMarina Excel at {output_path} built successfully.")
 
-    def __copy__(self)-> "Excel":
+    def __copy__(self) -> "Excel":
         empty = Excel(None)
         empty.dataframe = self.dataframe.copy()
         return empty
 
-    def concat(self, excel: Excel)-> None:
+    def concat(self, excel: Excel) -> None:
         self.dataframe = pd.concat([self.dataframe, excel.dataframe], ignore_index=True)

@@ -8,6 +8,7 @@ from imarina.core.Researcher import Researcher, normalize_name
 from imarina.core.date_utile import unparse_date, sanitize_date
 
 from typing import Any, List
+
 logger = get_logger(__name__)
 
 
@@ -107,7 +108,7 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
 
 
 # parsear los datos de imarina
-def parse_imarina_row_data(row: pd.Series) -> Researcher :
+def parse_imarina_row_data(row: pd.Series) -> Researcher:
 
     entity_val = get_val(row, ImarinaField.UNIT_GROUP.value)
     entity_val = str(entity_val).strip() if pd.notna(entity_val) else ""
@@ -151,7 +152,9 @@ def parse_imarina_row_data(row: pd.Series) -> Researcher :
         orcid=orcid_val,  # orcid_val (value)
         name=normalize_name(get_val(row, ImarinaField.NAME.value) or ""),
         surname=normalize_name(get_val(row, ImarinaField.SURNAME.value) or ""),
-        second_surname=normalize_name(get_val(row, ImarinaField.SECOND_SURNAME.value) or ""),
+        second_surname=normalize_name(
+            get_val(row, ImarinaField.SECOND_SURNAME.value) or ""
+        ),
         ini_date=sanitize_date(get_val(row, ImarinaField.INI_DATE.value)),
         end_date=sanitize_date(get_val(row, ImarinaField.END_DATE.value)),
         sex=get_val(row, ImarinaField.SEX.value),
@@ -180,7 +183,6 @@ def parse_imarina_row_data(row: pd.Series) -> Researcher :
     return data
 
 
-
 def append_researchers_to_output_data(researchers: List[Any], output_data: Any) -> None:
     empty_row_output_data = output_data.__copy__()
     empty_row_output_data.empty()
@@ -191,5 +193,6 @@ def append_researchers_to_output_data(researchers: List[Any], output_data: Any) 
         new_row = empty_row_output_data.__copy__()
         unparse_researcher_to_imarina_row(researcher, new_row)
         output_data.concat(new_row)
+
 
 # TODO: implement method of Excel, get EmptyRow

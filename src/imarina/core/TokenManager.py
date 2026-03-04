@@ -5,18 +5,18 @@ import requests
 from imarina.core.secret import read_secret
 import os
 from imarina.core.log_utils import get_logger
-from typing import  Any
+from typing import Any
 
 logger = get_logger(__name__)
 
 
-class TokenManager :
+class TokenManager:
     def __init__(
         self,
         tenant_id: str,
         client_id: str,
         client_secret: str,
-        scope : str ="https://graph.microsoft.com/.default",
+        scope: str = "https://graph.microsoft.com/.default",
     ) -> None:
         self.token_url = (
             f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
@@ -72,8 +72,11 @@ def _create_token_manager() -> Any:
         tenant_id=tenant_id, client_id=client_id, client_secret=client_secret
     )
 
+
 # global variable _manager_instance
 _manager_instance: TokenManager | None = None
+
+
 def get_token_manager() -> TokenManager:
     global _manager_instance
     if _manager_instance is None:

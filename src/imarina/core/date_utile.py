@@ -5,6 +5,7 @@ import pandas as pd
 from imarina.core.defines import DATE_FORMAT
 from imarina.core.log_utils import get_logger
 from typing import Any, Optional
+
 logger = get_logger(__name__)
 
 
