@@ -6,7 +6,7 @@ pipeline {
          disableConcurrentBuilds() // one execution only
     }
     parameters {
-        string(name: 'PROCESS_ID', defaultValue: '' , description: 'ID operation in iMarina')
+        string(name: 'ID', defaultValue: '' , description: 'ID operation in iMarina')
     }
     // environment variables
     environment {
@@ -36,7 +36,7 @@ pipeline {
         // imarina download
         stage('iMarina Download') {
           steps {
-              sh "./venv/bin/python3 -m imarina download --id ${params.PROCESS_ID}"
+              sh "./venv/bin/python3 -m imarina download --id ${params.ID}"
         }
     }
 
