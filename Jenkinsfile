@@ -18,12 +18,15 @@ pipeline {
 
         // Python venv and dependencies
         stage('Prepare Python environment and dependencies') {
+        steps {
            echo "Creating virtual environment and update dependencies..."
            sh'''
                 python3 -m venv venv
                 ./venv/bin/pip install --upgrade pip
                 ./venv/bin/pip install -r requirements.txt
            '''
+        }
+
     }
         // imarina download
         stage('iMarina Download') {
