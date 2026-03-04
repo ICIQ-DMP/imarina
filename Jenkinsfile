@@ -15,15 +15,7 @@ pipeline {
     }
 
     stages {
-        stage('Install Python') {
-        steps {
-            // install python inside the docker image
-            sh'''
-             sudo apt-get update
-             sudo apt-get install -y python3 python3-venv python3-pip
-            '''
-        }
-    }
+
         // Python venv and dependencies
         stage('Prepare Python environment and dependencies') {
            echo "Creating virtual environment and update dependencies..."
