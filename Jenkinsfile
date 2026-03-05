@@ -45,6 +45,9 @@ pipeline {
 
     // imarina upload
     stage('iMarina upload') {
+         steps {
+         echo "Upload process"
+    }
          // TODO steps
 
     }
