@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'agent docker'
+        label 'agent jenkins'
     }
     options {
          disableConcurrentBuilds() // one execution only
@@ -42,16 +42,12 @@ pipeline {
           sh "${IMARINA_CMD} build"
         }
     }
-
     // imarina upload
     stage('iMarina upload') {
          steps {
-         echo "Upload process"
+         echo "Upload process - TODO "
+         }
     }
-         // TODO steps
-
-    }
-
         // execute main
         stage('Run main.py') {
         steps {
