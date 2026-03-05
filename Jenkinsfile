@@ -8,10 +8,10 @@ pipeline {
     parameters {
         string(name: 'ID', defaultValue: '' , description: 'ID operation in iMarina')
     }
-    // environment variables
+    // environment variables   WORKSPACE is a variable of Jenkins  use absolute path
     environment {
-         PYTHON_PATH = "./venv/bin/python3"
-         IMARINA_CMD = "./venv/bin/python3 -m imarina"
+         PYTHON_PATH = "/usr/bin/python3"
+         IMARINA_CMD = "${WORKSPACE}/venv/bin/python3 -m imarina"
     }
 
     stages {
@@ -21,7 +21,7 @@ pipeline {
         steps {
            echo "Creating virtual environment and update dependencies..."
            sh'''
-                python3 -m venv venv
+                ${env.PYTHON_PATH} -m venv venv
                 ./venv/bin/pip install --upgrade pip
                 ./venv/bin/pip install -r requirements.txt
            '''
@@ -51,7 +51,7 @@ pipeline {
         // execute main
         stage('Run main.py') {
         steps {
-        echo "Starting main execute"
+        echo "Starting main execute - TODO "
         sh '''
            ./venv/bin/python src/main.py
         '''
