@@ -19,11 +19,11 @@ pipeline {
         stage('Prepare Python environment and dependencies') {
         steps {
            echo "Creating virtual environment and update dependencies..."
-           sh'''
+           sh"""
                 $PYTHON_PATH -m venv venv
                 ./venv/bin/pip install --upgrade pip
                 venv/bin/pip install .
-           '''
+           """
         }
 
     }
