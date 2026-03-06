@@ -10,7 +10,7 @@ pipeline {
     }
     // environment variables   WORKSPACE is a variable of Jenkins  use absolute path
     environment {
-         PYTHON_PATH = "/usr/bin/python3"
+         PYTHON_PATH = "/venv/bin/python3"
          IMARINA_CMD = "${WORKSPACE}/venv/bin/python3 -m imarina"
     }
 
