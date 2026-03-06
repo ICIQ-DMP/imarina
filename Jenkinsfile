@@ -15,15 +15,14 @@ pipeline {
     }
 
     stages {
-
         // Python venv and dependencies
         stage('Prepare Python environment and dependencies') {
         steps {
            echo "Creating virtual environment and update dependencies..."
            sh'''
-                ${env.PYTHON_PATH} -m venv venv
+                $PYTHON_PATH -m venv venv
                 ./venv/bin/pip install --upgrade pip
-                ./venv/bin/pip install -r requirements.txt
+                venv/bin/pip install .
            '''
         }
 
@@ -31,7 +30,7 @@ pipeline {
         // imarina download
         stage('iMarina Download') {
           steps {
-              sh "./venv/bin/python3 -m imarina download --id ${params.ID}"
+              sh "$IMARINA_CMD download --id ${params.ID}"
         }
     }
 
@@ -39,7 +38,7 @@ pipeline {
        stage(' iMarina Build ') {
        steps {
           echo "Build process for iMarina"
-          sh "${IMARINA_CMD} build"
+          sh "$IMARINA_CMD build"
         }
     }
     // imarina upload
@@ -52,9 +51,9 @@ pipeline {
         stage('Run main.py') {
         steps {
         echo "Starting main execute - TODO "
-        sh '''
-           ./venv/bin/python src/main.py
-        '''
+        sh """
+           venv/bin/python3 src/main.py
+        """
 
     }
 
