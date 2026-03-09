@@ -12,6 +12,8 @@ pipeline {
     environment {
          PYTHON_PATH = "/usr/bin/python3"
          IMARINA_CMD = "venv/bin/python3 -m imarina"
+         TENANT_ID = credentials('TENANT_ID')
+
     }
 
     stages {
@@ -25,7 +27,6 @@ pipeline {
                 venv/bin/pip install .
            """
         }
-
     }
         // stage imarina download
         stage('iMarina Download') {
