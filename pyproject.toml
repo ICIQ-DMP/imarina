@@ -20,6 +20,7 @@ dependencies = [
     "types-requests"
 ]
 
+
 [project.scripts]
 imarina = "imarina.__main__:main"
 

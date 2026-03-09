@@ -8,7 +8,7 @@ pipeline {
     parameters {
         string(name: 'ID', defaultValue: '' , description: 'ID operation in iMarina')
     }
-    // environment variables   WORKSPACE is a variable of Jenkins  use absolute path
+    // environment variables
     environment {
          PYTHON_PATH = "/usr/bin/python3"
          IMARINA_CMD = "venv/bin/python3 -m imarina"
@@ -27,10 +27,12 @@ pipeline {
         }
 
     }
-        // imarina download
+        // stage imarina download
         stage('iMarina Download') {
           steps {
-              sh "$IMARINA_CMD download --id ${params.ID}"
+              sh """
+                 $IMARINA_CMD download --id ${params.ID}
+              """
         }
     }
 
