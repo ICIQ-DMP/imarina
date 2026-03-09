@@ -30,6 +30,7 @@ pipeline {
         // stage imarina download
         stage('iMarina Download') {
           steps {
+              echo "DEBUG: El ID recibido es: ${params.ID}"
               sh """
                  $IMARINA_CMD download --id ${params.ID}
               """
