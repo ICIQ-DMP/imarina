@@ -13,6 +13,8 @@ pipeline {
          PYTHON_PATH = "/usr/bin/python3"
          IMARINA_CMD = "venv/bin/python3 -m imarina"
          TENANT_ID = credentials('TENANT_ID')
+         CLIENT_ID = credentials('CLIENT_ID')
+
 
     }
 
