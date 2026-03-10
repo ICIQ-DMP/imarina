@@ -15,7 +15,7 @@ pipeline {
          TENANT_ID = credentials('TENANT_ID')
          CLIENT_ID = credentials('CLIENT_ID')
          CLIENT_SECRET = credentials('CLIENT_SECRET')
-
+         FTP_PASSWORD = credentials('FTP_PASSWORD')
 
     }
 
