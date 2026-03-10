@@ -14,6 +14,7 @@ pipeline {
          IMARINA_CMD = "venv/bin/python3 -m imarina"
          TENANT_ID = credentials('TENANT_ID')
          CLIENT_ID = credentials('CLIENT_ID')
+         CLIENT_SECRET = credentials('CLIENT_SECRET')
 
 
     }
