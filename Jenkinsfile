@@ -8,6 +8,7 @@ pipeline {
     parameters {
         string(name: 'ID', defaultValue: '' , description: 'ID operation in iMarina')
     }
+
     // environment variables
     environment {
          PYTHON_PATH = "/usr/bin/python3"
@@ -37,11 +38,11 @@ pipeline {
         stage('iMarina Download') {
           steps {
               echo "DEBUG: El ID recibido es: ${params.ID}"
-              sh """
+              sh '''
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
                  $IMARINA_CMD download
-              """
+              '''
         }
     }
 
