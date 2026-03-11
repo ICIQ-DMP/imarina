@@ -12,6 +12,7 @@ pipeline {
     environment {
          PYTHON_PATH = "/usr/bin/python3"
          IMARINA_CMD = "venv/bin/python3 -m imarina"
+         OPERATION_ID = "${params.ID}"
          TENANT_ID = credentials('TENANT_ID')
          CLIENT_ID = credentials('CLIENT_ID')
          CLIENT_SECRET = credentials('CLIENT_SECRET')
@@ -36,7 +37,7 @@ pipeline {
           steps {
               echo "DEBUG: El ID recibido es: ${params.ID}"
               sh """
-                 $IMARINA_CMD download --help
+                 $IMARINA_CMD download
               """
         }
     }
