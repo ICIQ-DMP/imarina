@@ -39,9 +39,10 @@ pipeline {
           steps {
               echo "DEBUG: El ID recibido es: ${params.ID}"
               sh '''
+                 pwd
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
-                 $IMARINA_CMD download
+                 $IMARINA_CMD download ./input
                  ls -R input
               '''
         }

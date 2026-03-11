@@ -161,14 +161,14 @@ def download_input_from_sharepoint(local_input_folder: str = "/app/input") -> An
         print(f"⚠️ No se encontraron archivos .xlsx en {local_input_folder}")
         return
 
-    print(f"📂 Encontrados {len(files)} archivos para subir desde {local_input_folder}")
+    print(f"📂 Encontrados {len(files)} archivos para descargar desde {local_input_folder}")
     uploaded_count = 0
     errors = []
 
     for file_path in files:
         try:
 
-            print(f"  ⬆️ Subiendo: {file_path.name}")
+            print(f"  Descargando : {file_path.name}")
             remote_path = f"{sharepoint_input_folder}/{file_path.name}".strip("/")
 
             url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content"
@@ -194,7 +194,7 @@ def download_input_from_sharepoint(local_input_folder: str = "/app/input") -> An
                 errors.append(error_msg)
             else:
                 print(
-                    f"  ⚠️ Respuesta inesperada ({code}), pero archivo {file_path.name} parece subido correctamente."
+                    f"  ⚠️ Respuesta inesperada ({code}), pero archivo {file_path.name} parece descargado correctamente."
                 )
                 uploaded_count += 1
 
@@ -205,7 +205,7 @@ def download_input_from_sharepoint(local_input_folder: str = "/app/input") -> An
 
     print("\n" + "=" * 60)
     print(
-        f"✅ Subida completada: {uploaded_count}/{len(files)} archivos subidos correctamente"
+        f"✅ Descarga completada: {uploaded_count}/{len(files)} archivos descargados correctamente"
     )
     if errors:
         print(f"❌ {len(errors)} errores durante la subida:")
