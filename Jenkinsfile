@@ -36,7 +36,7 @@ pipeline {
           steps {
               echo "DEBUG: El ID recibido es: ${params.ID}"
               sh """
-                 $IMARINA_CMD download --help
+                 $IMARINA_CMD download  ${params.ID}
               """
         }
     }
