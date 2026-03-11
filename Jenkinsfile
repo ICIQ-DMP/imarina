@@ -38,6 +38,8 @@ pipeline {
           steps {
               echo "DEBUG: El ID recibido es: ${params.ID}"
               sh """
+                 mkdir -p secrets
+                 echo -n "$DRIVE_ID" > secrets/DRIVE_ID
                  $IMARINA_CMD download
               """
         }
