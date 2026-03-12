@@ -139,79 +139,57 @@ def upload_file_sharepoint(
         raise
 
 
-def download_input_from_sharepoint(local_input_folder: str = "/app/input") -> Any:
-    print("Iniciando subida de archivos input al SharePoint.")
+def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
+    print("--- Iniciando proceso de DESCARGA desde SharePoint ---")
 
     token_manager = get_token_manager()
-
     drive_id = get_sharepoint_drive_id()
 
-    sharepoint_input_folder = (
-        "Institutional Strengthening/_Projects/iMarina_load_automation/input"
-    )
+    # sharepoint path
+    sharepoint_path = "Institutional Strengthening/_Projects/iMarina_load_automation/input"
 
+    # local folder exist
     local_path = Path(local_input_folder)
+    local_path.mkdir(parents=True, exist_ok=True)
 
-    if not local_path.exists():
-        print(f"❌ Error: La carpeta local '{local_input_folder}' no existe")
-        return
+    try:
 
-    files = list(local_path.glob("*.xlsx"))
-    if not files:
-        print(f"⚠️ No se encontraron archivos .xlsx en {local_input_folder}")
-        return
+        url_list = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{sharepoint_path}:/children"
+        headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
 
-    print(f"📂 Encontrados {len(files)} archivos para descargar desde {local_input_folder}")
-    uploaded_count = 0
-    errors = []
+        response = requests.get(url_list, headers=headers, timeout=30)
 
-    for file_path in files:
-        try:
+        if response.status_code != 200:
+            raise Exception(f"Error al listar SharePoint: {response.status_code} - {response.text}")
 
-            print(f"  Descargando : {file_path.name}")
-            remote_path = f"{sharepoint_input_folder}/{file_path.name}".strip("/")
+        items = response.json().get('value', [])
+        # only files (.xlsx)
+        files_to_download = [f for f in items if f.get('file') and f['name'].endswith('.xlsx')]
 
-            url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content"
-            headers = {
-                "Authorization": f"Bearer {token_manager.get_token()}",
-                "Content-Type": "application/octet-stream",
-            }
-            with open(file_path, "rb") as f:
-                response = requests.put(url, headers=headers, data=f, timeout=300)
+        if not files_to_download:
+            print(f"⚠️ No hay archivos .xlsx para descargar en la ruta de SharePoint.")
+            return
 
-            code = response.status_code
+        print(f"📂 Encontrados {len(files_to_download)} archivos. Descargando...")
 
-            # correct ✅ if code is 200 or 201 & body content data context
-            if code in (200, 201):
-                print(
-                    f"  ✅ {file_path.name} subido/reemplazado correctamente en SharePoint ({code})"
-                )
-                uploaded_count += 1
+        for remote_file in files_to_download:
+            name = remote_file['name']
 
-            elif code >= 400:
-                error_msg = f"{file_path.name}: {code} - {response.reason}"
-                print(f"\n Error subiendo {file_path.name}: {error_msg}")
-                errors.append(error_msg)
+            url_download = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{remote_file['id']}/content"
+
+            res_file = requests.get(url_download, headers=headers, timeout=300)
+
+            if res_file.status_code == 200:
+                with open(local_path / name, "wb") as f:
+                    f.write(res_file.content)
+                print(f"  ✅ {name} guardado con éxito.")
             else:
-                print(
-                    f"  ⚠️ Respuesta inesperada ({code}), pero archivo {file_path.name} parece descargado correctamente."
-                )
-                uploaded_count += 1
+                print(f"  ❌ Error al bajar {name}: {res_file.status_code}")
 
-        except Exception as e:
-            error_msg = f"{file_path.name}: {str(e)}"
-            print(f"  ❌ Error: {error_msg}")
-            errors.append(error_msg)
+    except Exception as e:
+        print(f"❌ Fallo crítico en la descarga: {e}")
+        raise e
 
-    print("\n" + "=" * 60)
-    print(
-        f"✅ Descarga completada: {uploaded_count}/{len(files)} archivos descargados correctamente"
-    )
-    if errors:
-        print(f"❌ {len(errors)} errores durante la subida:")
-        for error in errors:
-            print(f"  - {error}")
-    print("=" * 60)
 
 
 def folder_exists(token_manager: TokenManager, drive_id: str, folder_path: str) -> bool:

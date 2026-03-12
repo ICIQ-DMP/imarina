@@ -14,16 +14,22 @@ logger = get_logger(__name__)
 #  downloads files from sharepoint, configure arg for download dir using the diretoryOpt shared options
 
 
+
 def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> None:
+    # path or input default
     target_path = input_dir if input_dir is not None else Path("input")
 
     print(f" Starting download of input files from SharePoint into: {target_path}")
 
     try:
+        # function download_input_from_sharepoint
         download_input_from_sharepoint(str(target_path))
+
         print(
             f" DONE : Input files successfully downloaded to local directory: {target_path}"
         )
     except Exception as e:
-        print(f" Error download input files to SharePoint: {e}")
+
+        print(f" Error downloading input files from SharePoint: {e}")
+
     return
