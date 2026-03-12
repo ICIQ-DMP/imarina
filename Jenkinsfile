@@ -34,6 +34,7 @@ pipeline {
            """
         }
     }
+
         // stage imarina download
         stage('iMarina Download') {
           steps {
@@ -42,7 +43,7 @@ pipeline {
                  pwd
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
-                 $IMARINA_CMD download ./input
+                 $IMARINA_CMD download
                  ls -R input
               '''
         }
