@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 
 def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> None:
-    # path or input default
+    #  path or input default
     target_path = input_dir if input_dir is not None else Path("input")
 
     print(f" Starting download of input files from SharePoint into: {target_path}")
