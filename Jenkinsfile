@@ -43,7 +43,6 @@ pipeline {
                  pwd
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
-                 export OPERATION_ID=${params.ID}
                  $IMARINA_CMD download
                  ls -R input
               '''
