@@ -38,39 +38,12 @@ pipeline {
         // stage imarina download
         stage('iMarina Download') {
           steps {
-              echo "DEBUG: Procesando ID: ${OPERATION_ID}"
+              echo "DEBUG: ID recibido: ${params.ID}"
               sh '''
                  pwd
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
-
-                 ACCESS_TOKEN=$(curl -s -X POST "https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token" \
-                     -d "client_id=${CLIENT_ID}" \
-                     -d "scope=https://graph.microsoft.com/.default" \
-                     -d "client_secret=${CLIENT_SECRET}" \
-                     -d "grant_type=client_credentials" | jq -r '.access_token')
-
-                 SITE_NAME=$(cat secrets/SITE_NAME)
-                 SHAREPOINT_DOMAIN=$(cat secrets/SHAREPOINT_DOMAIN)
-
-                 SITE_ID=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
-                      "https://graph.microsoft.com/v1.0/sites/${SHAREPOINT_DOMAIN}:/sites/${SITE_NAME}?\$select=id" | jq -r '.id')
-
-                 ITEM_DATA=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
-                      "https://graph.microsoft.com/v1.0/sites/${SITE_ID}/lists/imarina%20form/items/${OPERATION_ID}?expand=fields")
-
-                 URL_A3=$(echo $ITEM_DATA | jq -r '.fields.A3ExcelLink // .fields.A3 Excel Link')
-                 URL_IMARINA=$(echo $ITEM_DATA | jq -r '.fields.iMarinaExcelLink // .fields.iMarina Excel Link')
-
-
-                 if [ "$URL_A3" != "null" ]; then
-                     $IMARINA_CMD download --url "$URL_A3" --out "input/A3_export.xlsx"
-                 fi
-
-                 if [ "$URL_IMARINA" != "null" ]; then
-                     $IMARINA_CMD download --url "$URL_IMARINA" --out "input/imarina_export.xlsx"
-                 fi
-
+                 $IMARINA_CMD download
                  ls -R input
               '''
         }
