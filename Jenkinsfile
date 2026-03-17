@@ -43,8 +43,34 @@ pipeline {
                  pwd
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
-                 $IMARINA_CMD download
-                 ls -R input
+
+                 python3 - <<'PYEOF'
+        import os, requests
+        token = requests.post(
+            f"https://login.microsoftonline.com/{os.environ['TENANT_ID']}/oauth2/v2.0/token",
+            data={
+                "grant_type" : "client_credentials",
+                "client_id" : os.environ["CLIENT_ID"],
+                "client_secret" : os.environ["CLIENT_SECRET"],
+                "scope": "https://graph.microsoft.com/.default",
+
+            }
+
+        ).json()["access_token"]
+
+        headers = {"Authorization": f"Bearer {token}"}
+        fields = requests.get(
+            f"https://graph.microsoft.com/v1.0/sites/{os.environ['MS_SITE_ID']}/lists/{os.environ['MS_LIST_ID']}/items/${params.ID}?expand=fields",
+            headers=headers
+        ).json()["fields"]
+
+        for url, filename in [(fields["A3 Excel Link"], "input/A3.xlsx"), (fields["iMarina Excel Link"], "input/iMarina.xlsx")]:
+            open(filename, "wb").write(requests.get(url, headers=headers).content)
+            print(f"Descargado: {filename}")
+        PYEOF
+                    \$IMARINA_CMD download
+                    ls -R input
+
               '''
         }
     }
