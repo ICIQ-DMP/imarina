@@ -44,7 +44,7 @@ pipeline {
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
 
-                 python3 - <<'PYEOF'
+        python3 - <<'PYEOF'
         import os, requests
         token = requests.post(
             f"https://login.microsoftonline.com/{os.environ['TENANT_ID']}/oauth2/v2.0/token",
