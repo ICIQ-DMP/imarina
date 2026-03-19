@@ -152,6 +152,69 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
     local_path = Path(local_input_folder)
     local_path.mkdir(parents=True, exist_ok=True)
 
+    # authorization with token_manager
+    headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
+
+    # in process
+    operation_id = os.environ.get("OPERATION_ID")
+    site_id = os.environ.get("MS_SITE_ID")
+    list_id = os.environ.get("MS_LIST_ID")
+
+    if not operation_id:
+        raise Exception("OPERATION_ID not defined in venv")
+
+    print(f"Check MS LIST for ID : {operation_id}")
+
+    response = requests.get(
+        f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_id}/items/{operation_id}?expand=fields",
+        headers=headers,
+        timeout=30
+
+    )
+
+    if response.status_code != 200:
+        raise Exception(f"Error to Check the List: {response.status_code} - {response.text}")
+
+    fields = response.json()["fields"]
+    print("DEBUG fields:", list(fields.keys()))
+    files_to_download = {
+        "A3.xlsx": fields.get("A3 Excel Link"),
+        "iMarina.xlsx": fields.get("iMarina Excel Link"),
+    }
+
+    try:
+        url_list = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{sharepoint_path}:/children"
+        response = requests.get(url_list, headers=headers, timeout=30)
+
+        if response.status_code != 200:
+            raise Exception(f"Error to list Sharepoint {response.status_code} - {response.text}")
+        items = response.json().get('value', [])
+        files_to_download_sp = [f for f in items if f.get('file') and f['name'] in files_to_download]
+        if not files_to_download_sp:
+            print(f" Not files .xlsx in the Sharepoint path")
+            return
+
+        print(f" Found {len(files_to_download_sp)} files to download...")
+
+        for remote_file in files_to_download_sp:
+            name = remote_file['name']
+            url_download = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{remote_file['id']}/content"
+            res_file = requests.get(url_download, headers=headers, timeout=300)
+
+            if res_file.status_code == 200:
+                with open(local_path / name, "wb") as f:
+                    f.write(res_file.content)
+                print(f" Save {name} successfully")
+            else:
+                print(f" Error downloading {name} : {res_file.status_code}")
+
+    except Exception as e:
+        print(f" Error downloading {name} : {e}")
+        raise e
+    ### IN PROCESS
+
+
+
     try:
 
         url_list = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{sharepoint_path}:/children"
