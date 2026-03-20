@@ -166,7 +166,7 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
     print(f"Check MS LIST for ID : {operation_id}")
 
     response = requests.get(
-        f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_id}/items/{operation_id}?expand=fields",
+        f"https://graph.microsoft.com/v1.0/sites/iciq.sharepoint.com,{os.environ['MS_SITE_ID']}/lists/{os.environ['MS_LIST_ID']}/items/{os.environ['OPERATION_ID']}?expand=fields",
         headers=headers,
         timeout=30
 
