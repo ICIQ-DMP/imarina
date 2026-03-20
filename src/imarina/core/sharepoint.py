@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Any
 from imarina.core.log_utils import get_logger
 
+
 logger = get_logger(__name__)
 access_token = get_token_manager()
 
@@ -152,68 +153,6 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
     local_path = Path(local_input_folder)
     local_path.mkdir(parents=True, exist_ok=True)
 
-    # authorization with token_manager
-    headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
-
-    # in process
-    operation_id = os.environ.get("OPERATION_ID")
-    site_id = os.environ.get("MS_SITE_ID")
-    list_id = os.environ.get("MS_LIST_ID")
-
-    if not operation_id:
-        raise Exception("OPERATION_ID not defined in venv")
-
-    print(f"Check MS LIST for ID : {operation_id}")
-
-    response = requests.get(
-        f"https://graph.microsoft.com/v1.0/sites/iciq.sharepoint.com,{os.environ['MS_SITE_ID']}/lists/{os.environ['MS_LIST_ID']}/items/{os.environ['OPERATION_ID']}?expand=fields",
-        headers=headers,
-        timeout=30
-
-    )
-
-    if response.status_code != 200:
-        raise Exception(f"Error to Check the List: {response.status_code} - {response.text}")
-
-    fields = response.json()["fields"]
-    print("DEBUG fields:", list(fields.keys()))
-    files_to_download = {
-        "A3.xlsx": fields.get("A3 Excel Link"),
-        "iMarina.xlsx": fields.get("iMarina Excel Link"),
-    }
-
-    try:
-        url_list = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{sharepoint_path}:/children"
-        response = requests.get(url_list, headers=headers, timeout=30)
-
-        if response.status_code != 200:
-            raise Exception(f"Error to list Sharepoint {response.status_code} - {response.text}")
-        items = response.json().get('value', [])
-        files_to_download_sp = [f for f in items if f.get('file') and f['name'] in files_to_download]
-        if not files_to_download_sp:
-            print(f" Not files .xlsx in the Sharepoint path")
-            return
-
-        print(f" Found {len(files_to_download_sp)} files to download...")
-
-        for remote_file in files_to_download_sp:
-            name = remote_file['name']
-            url_download = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{remote_file['id']}/content"
-            res_file = requests.get(url_download, headers=headers, timeout=300)
-
-            if res_file.status_code == 200:
-                with open(local_path / name, "wb") as f:
-                    f.write(res_file.content)
-                print(f" Save {name} successfully")
-            else:
-                print(f" Error downloading {name} : {res_file.status_code}")
-
-    except Exception as e:
-        print(f" Error downloading {name} : {e}")
-        raise e
-    ### IN PROCESS
-
-
 
     try:
 
@@ -253,6 +192,34 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
         print(f"❌ Fallo crítico en la descarga: {e}")
         raise e
 
+
+
+def get_parameters_list():
+    token_manager = get_token_manager()
+    access_token = token_manager.get_token()
+
+    sharepoint_domain = os.environ["SHAREPOINT_DOMAIN"]
+    site_name         = os.environ["SITE_NAME"]
+    list_name         = os.environ["LIST_NAME"]
+    operation_id      = os.environ["OPERATION_ID"]
+
+    site_id = get_site_id(token_manager, sharepoint_domain, site_name)
+
+    params = {
+        "$expand": "fields($select=A3 Excel Link,iMarina Excel Link)",
+        "$select": "fields"
+    }
+
+    list_url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{quote(list_name, safe='')}/items/{operation_id}?$expand=fields&$select=fields"
+    list_resp = requests.get(list_url, headers={"Authorization": f"Bearer {access_token}"})
+    list_resp.raise_for_status()
+
+    fields = list_resp.json().get("fields", {})
+    print("DEBUG fields:", fields)
+
+    return fields.get("A3 Excel Link"), fields.get("iMarina Excel Link")
+
+    ### IN PROCESS
 
 
 def folder_exists(token_manager: TokenManager, drive_id: str, folder_path: str) -> bool:

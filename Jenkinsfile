@@ -21,6 +21,9 @@ pipeline {
          FTP_PASSWORD = credentials('FTP_PASSWORD')
          MS_LIST_ID = credentials('MS_LIST_ID')
          MS_SITE_ID = credentials('MS_SITE_ID')
+         SHAREPOINT_DOMAIN = credentials('SHAREPOINT_DOMAIN')
+         SITE_NAME = credentials('SITE_NAME')
+         LIST_NAME = credentials('LIST_NAME')
 
     }
 
