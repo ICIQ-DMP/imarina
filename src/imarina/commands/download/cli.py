@@ -1,4 +1,6 @@
 from pathlib import Path
+
+import requests
 import typer
 
 from imarina.core.log_utils import get_logger
@@ -36,11 +38,21 @@ def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> N
 
 
     try:
-        # function get_parameters_list (A3 Excel and iMarina Excel)
+        # Function get_parameters_list and download the links(url) of Excels (A3 Excel and iMarina Excel)
         A3_link, imarina_link = get_parameters_list()
-        print(A3_link, imarina_link)
+        for url, filename in [(A3_link, "A3.xlsx"), (imarina_link, "iMarina.xlsx")]:
+            if not url:
+                print(f"URL no found {filename}")
+                continue
+            response = requests.get(url)
+            response.raise_for_status()
+            with open(target_path / filename, "wb") as f:
+                f.write(response.content)
+            print(f"✅ {filename} download successful")
+
 
     except Exception as e:
         print(f" Error getting parameters for MS List: {e}")
+
 
     return

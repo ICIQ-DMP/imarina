@@ -205,6 +205,7 @@ def get_parameters_list():
 
     site_id = get_site_id(token_manager, sharepoint_domain, site_name)
 
+    # delete this
     params = {
         "$expand": "fields($select=A3 Excel Link,iMarina Excel Link)",
         "$select": "fields"
@@ -217,7 +218,8 @@ def get_parameters_list():
     fields = list_resp.json().get("fields", {})
     print("DEBUG fields:", fields)
 
-    return fields.get("A3 Excel Link"), fields.get("iMarina Excel Link")
+    return fields.get("A3_x0020_Excel_x0020_Link"), fields.get("iMarina_x0020_Excel_x0020_Link")
+    #return fields.get("A3 Excel Link"), fields.get("iMarina Excel Link")
 
     ### IN PROCESS
 
