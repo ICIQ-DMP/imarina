@@ -216,7 +216,7 @@ def get_parameters_list():
     list_resp.raise_for_status()
 
     fields = list_resp.json().get("fields", {})
-    print("DEBUG fields:", fields)
+    #print("DEBUG fields:", fields)
 
     a3_field = fields.get("A3_x0020_Excel_x0020_Link", {})
     imarina_field = fields.get("iMarina_x0020_Excel_x0020_Link", {})

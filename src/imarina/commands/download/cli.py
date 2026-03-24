@@ -7,7 +7,7 @@ from imarina.core.log_utils import get_logger
 from imarina.core.shared_options import DirectoryOpt
 from imarina.core.sharepoint import download_input_from_sharepoint
 
-from imarina.core.sharepoint import get_parameters_list
+from imarina.core.sharepoint import get_parameters_list, get_token_manager
 
 logger = get_logger(__name__)
 
@@ -40,11 +40,20 @@ def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> N
     try:
         # Function get_parameters_list and download the links(url) of Excels (A3 Excel and iMarina Excel)
         A3_link, imarina_link = get_parameters_list()
+        token_manager = get_token_manager() # get token
+        headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
+
         for url, filename in [(A3_link, "A3.xlsx"), (imarina_link, "iMarina.xlsx")]:
             if not url:
                 print(f"URL no found {filename}")
                 continue
-            response = requests.get(url)
+
+            import base64
+            encoded = base64.b64encode(url.encode()).decode()
+            encoded = encoded.rstrip("=").replace("/", "_").replace("+", "-")
+            download_url = f"https://graph.microsoft.com/v1.0/shares/u!{encoded}/driveItem/content"
+
+            response = requests.get(download_url, headers=headers, allow_redirects=True)
             response.raise_for_status()
             with open(target_path / filename, "wb") as f:
                 f.write(response.content)
