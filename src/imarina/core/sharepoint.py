@@ -218,7 +218,11 @@ def get_parameters_list():
     fields = list_resp.json().get("fields", {})
     print("DEBUG fields:", fields)
 
-    return fields.get("A3_x0020_Excel_x0020_Link"), fields.get("iMarina_x0020_Excel_x0020_Link")
+    a3_field = fields.get("A3_x0020_Excel_x0020_Link", {})
+    imarina_field = fields.get("iMarina_x0020_Excel_x0020_Link", {})
+
+    return a3_field.get("Url"), imarina_field.get("Url")
+    #return fields.get("A3_x0020_Excel_x0020_Link"), fields.get("iMarina_x0020_Excel_x0020_Link")
     #return fields.get("A3 Excel Link"), fields.get("iMarina Excel Link")
 
     ### IN PROCESS
