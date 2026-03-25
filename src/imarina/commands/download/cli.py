@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 
 
-def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> None:
+def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None, id: str = typer.Option(..., help="Operation ID from MS List")) -> None:
     #  path or input default
     target_path = input_dir if input_dir is not None else Path("input")
 
@@ -39,7 +39,7 @@ def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None) -> N
 
     try:
         # Function get_parameters_list and download the links(url) of Excels (A3 Excel and iMarina Excel)
-        A3_link, imarina_link = get_parameters_list()
+        A3_link, imarina_link = get_parameters_list(id)
         token_manager = get_token_manager() # get token
         headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
 

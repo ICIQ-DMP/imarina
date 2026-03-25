@@ -194,18 +194,18 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
 
 
 
-def get_parameters_list():
+def get_parameters_list(operation_id : str):
     token_manager = get_token_manager()
     access_token = token_manager.get_token()
 
     sharepoint_domain = os.environ["SHAREPOINT_DOMAIN"]
     site_name         = os.environ["SITE_NAME"]
     list_name         = os.environ["LIST_NAME"]
-    operation_id      = os.environ["OPERATION_ID"]
+    #operation_id      = os.environ["OPERATION_ID"]
 
     site_id = get_site_id(token_manager, sharepoint_domain, site_name)
 
-    # delete this
+    #
     params = {
         "$expand": "fields($select=A3 Excel Link,iMarina Excel Link)",
         "$select": "fields"
@@ -222,8 +222,7 @@ def get_parameters_list():
     imarina_field = fields.get("iMarina_x0020_Excel_x0020_Link", {})
 
     return a3_field.get("Url"), imarina_field.get("Url")
-    #return fields.get("A3_x0020_Excel_x0020_Link"), fields.get("iMarina_x0020_Excel_x0020_Link")
-    #return fields.get("A3 Excel Link"), fields.get("iMarina Excel Link")
+
 
     ### IN PROCESS
 

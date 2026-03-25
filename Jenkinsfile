@@ -44,16 +44,15 @@ pipeline {
         stage('iMarina Download') {
           steps {
               echo "DEBUG: ID recibido: ${params.ID}"
-              sh '''
+              sh """
                  pwd
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
-                 $IMARINA_CMD download
-                 ls -R input
-              '''
+                 $IMARINA_CMD download --id ${params.ID}
+
+              """
         }
     }
-
        // imarina build
        stage(' iMarina Build ') {
        steps {
