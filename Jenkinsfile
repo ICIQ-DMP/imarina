@@ -49,7 +49,6 @@ pipeline {
                  mkdir -p secrets
                  echo -n "$DRIVE_ID" > secrets/DRIVE_ID
                  $IMARINA_CMD download --id ${params.ID}
-
               """
         }
     }

@@ -137,8 +137,16 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
     if email_val is not None:
         email_val = email_val.lower()
 
+    # PRINTS DEBUG
+
+
+
     # Translates unit_group into entity
-    entity_val = translator[A3_Field.UNIT_GROUP][row.values[A3_Field.UNIT_GROUP.value]]
+    try:
+        entity_val = translator[A3_Field.UNIT_GROUP][row.values[A3_Field.UNIT_GROUP.value]]
+    except KeyError as e:
+        print(f"KeyError en UNIT_GROUP: {repr(row.values[A3_Field.UNIT_GROUP.value])}")
+        raise
 
     personal_web_val = translator[A3_Field.PERSONAL_WEB][entity_val]
 
