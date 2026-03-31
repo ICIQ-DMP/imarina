@@ -9,7 +9,7 @@ DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"
 NOW_DATA = datetime.datetime.now()
 NOW = NOW_DATA.strftime(DATETIME_FORMAT)
 
-PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent.parent.parent
+PROJECT_DIR = pathlib.Path.cwd()
 OUTPUT_DIR = PROJECT_DIR / "output"
 date_str = "31/12/2099"
 DATE_FORMAT = "%d/%m/%Y"

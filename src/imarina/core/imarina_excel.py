@@ -41,8 +41,10 @@ def build_upload_excel(
 ) -> None:
 
 
-    print(f"DEBUG a3_path: {a3_path}")
-    print(f"DEBUG a3_path exists: {Path(a3_path).exists()}")
+    #PRINTS DE PRUEBA
+    #print(f"DEBUG a3_path: {a3_path}")
+    #print(f"DEBUG a3_path exists: {Path(a3_path).exists()}")
+
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
 
