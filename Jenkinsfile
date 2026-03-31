@@ -33,9 +33,10 @@ pipeline {
         steps {
            echo "Creating virtual environment and update dependencies..."
            sh"""
+                rm -rf venv
                 $PYTHON_PATH -m venv venv
                 ./venv/bin/pip install --upgrade pip
-                venv/bin/pip install --force-reinstall .
+                venv/bin/pip install .
            """
         }
     }
