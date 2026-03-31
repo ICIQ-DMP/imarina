@@ -35,7 +35,7 @@ pipeline {
            sh"""
                 $PYTHON_PATH -m venv venv
                 ./venv/bin/pip install --upgrade pip
-                venv/bin/pip install .
+                venv/bin/pip install --force-reinstall .
            """
         }
     }
