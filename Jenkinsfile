@@ -62,7 +62,7 @@ pipeline {
        stage(' iMarina Build ') {
        steps {
           echo "Build process for iMarina"
-          sh "$IMARINA_CMD build --id ${params.ID}"
+          sh "$IMARINA_CMD build"
         }
     }
 
