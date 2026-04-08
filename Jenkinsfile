@@ -72,17 +72,7 @@ pipeline {
          echo "Upload process - TODO "
          }
     }
-        // execute main
-       stage('Run main.py') {
-        steps {
-        echo "Starting main execute - TODO "
-        sh """
-           venv/bin/python3 src/main.py
-        """
 
-    }
-
-    }
 
     }
 
