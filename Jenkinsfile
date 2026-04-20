@@ -25,6 +25,7 @@ pipeline {
          SITE_NAME = credentials('SITE_NAME')
          LIST_NAME = credentials('LIST_NAME')
 
+
     }
 
     stages {
