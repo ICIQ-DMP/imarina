@@ -69,7 +69,7 @@ pipeline {
     // imarina upload
        stage('iMarina upload') {
          steps {
-         echo "Upload process - TODO "
+         echo "Upload process "
          sh '${IMARINA_CMD} upload'
          }
     }
