@@ -1,10 +1,7 @@
 import argparse
 import requests
 
-
-def read_secret(name: str) -> str:
-    with open(f"secrets/{name}", "r") as f:
-        return f.read().strip()
+from imarina.core.secret import read_secret
 
 
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:

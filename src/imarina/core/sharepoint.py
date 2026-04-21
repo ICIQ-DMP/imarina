@@ -8,7 +8,7 @@ from imarina.core.TokenManager import get_token_manager, TokenManager
 from datetime import datetime
 from typing import Any
 from imarina.core.log_utils import get_logger
-
+from imarina.core.secret import read_secret
 
 logger = get_logger(__name__)
 access_token = get_token_manager()
@@ -69,26 +69,8 @@ def upload_file(
 
 
 def get_sharepoint_drive_id() -> str:
+    return read_secret("DRIVE_ID")
 
-    current_path = Path(__file__).resolve()
-
-    root = current_path
-    while root.parent != root:
-        if (root / "secrets").is_dir():
-            break
-        root = root.parent
-
-    secret_path = root / "secrets" / "DRIVE_ID"
-
-    if not secret_path.exists():
-
-        if (root.parent / "secrets").is_dir():
-            secret_path = root.parent / "secrets" / "DRIVE_ID"
-
-    try:
-        return secret_path.read_text().strip()
-    except FileNotFoundError:
-        raise RuntimeError(f"❌ No s'ha trobat el secret a {secret_path.absolute()}")
 
 
 
