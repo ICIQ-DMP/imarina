@@ -92,7 +92,7 @@ def mail_process(args):
     client_secret = read_secret("CLIENT_SECRET")
     site_id = read_secret("MS_SITE_ID")
     list_id = read_secret("MS_LIST_ID")
-    sender = read_secret("SENDER_EMAIL")
+    sender = "mpique@iciq.es" #hardcoded for now
 
     # Get access token
     print("Getting access token...")

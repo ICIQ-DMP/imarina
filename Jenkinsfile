@@ -25,7 +25,6 @@ pipeline {
          SITE_NAME = credentials('SITE_NAME')
          LIST_NAME = credentials('LIST_NAME')
 
-
     }
 
     stages {
@@ -70,9 +69,22 @@ pipeline {
     // imarina upload
        stage('iMarina upload') {
          steps {
-         echo "Upload process "
-         sh '${IMARINA_CMD} upload'
-         }
+          script {
+          try {
+          echo "Upload process"
+          sh '${IMARINA_CMD} upload'
+          echo "Sending success email"
+          sh '${PYTHON_PATH} imarina/core/mail.py --id ${OPERATION_ID} --status success'
+          }
+          catch (Exception e) {
+          echo "Sending error email"
+          sh '${PYTHON_PATH} imarina/core/mail.py --id ${OPERATION_ID} --status error'
+          error "Upload ha fallat: ${e.message}"
+          }
+
+        }
+
+        }
     }
 
 
