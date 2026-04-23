@@ -74,11 +74,11 @@ pipeline {
           echo "Upload process"
           sh '${IMARINA_CMD} upload'
           echo "Sending success email"
-          sh '${PYTHON_PATH} imarina/core/mail.py --id ${OPERATION_ID} --status success'
+          sh '${PYTHON_PATH} src/imarina/core/mail.py --id ${OPERATION_ID} --status success'
           }
           catch (Exception e) {
           echo "Sending error email"
-          sh '${PYTHON_PATH} imarina/core/mail.py --id ${OPERATION_ID} --status error'
+          sh '${PYTHON_PATH} src/imarina/core/mail.py --id ${OPERATION_ID} --status error'
           error "Upload ha fallat: ${e.message}"
           }
 
