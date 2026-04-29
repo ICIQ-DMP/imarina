@@ -7,6 +7,8 @@ pipeline {
     }
     parameters {
          string(name: 'ID', defaultValue: '' , description: 'ID operation in iMarina')
+         string(name: 'EMAIL', defaultValue: '', description: 'Creator email')
+         string(name: 'NAME', defaultValue: '', description: 'Creator name')
     }
 
     // environment variables
@@ -14,6 +16,8 @@ pipeline {
          PYTHON_PATH = "/usr/bin/python3"
          IMARINA_CMD = "venv/bin/python3 -m imarina"
          OPERATION_ID = "${params.ID}"
+         CREATOR_EMAIL = "${params.EMAIL}"
+         CREATOR_NAME = "${params.NAME}"
          TENANT_ID = credentials('TENANT_ID')
          CLIENT_ID = credentials('CLIENT_ID')
          DRIVE_ID = credentials('DRIVE_ID')
@@ -74,11 +78,11 @@ pipeline {
           echo "Upload process"
           sh '${IMARINA_CMD} upload'
           echo "Sending success email"
-          sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --status success'
+          sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --email ${CREATOR_EMAIL} --name "${CREATOR_NAME}" --status success'
           }
           catch (Exception e) {
           echo "Sending error email"
-          sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --status error'
+          sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --email ${CREATOR_EMAIL} --name "${CREATOR_NAME}" --status error'
           error "Upload ha fallat: ${e.message}"
           }
 

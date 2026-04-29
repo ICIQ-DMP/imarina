@@ -31,6 +31,11 @@ _SECRET_MAP = {
     # jenkins admin (secret/imarina/admin/jenkins)
     "JENKINS_PASSWORD": ("admin/jenkins", "password"),
     "JENKINS_USERNAME": ("admin/jenkins", "username"),
+    # smtp credentials (secret/imarina/runtime/smtp)
+    "SMTP_USERNAME" : ("runtime/smtp", "username"),
+    "SMTP_PASSWORD": ("runtime/smtp", "password"),
+    "SMTP_HOST": ("runtime/smtp", "host"),
+    "SMTP_PORT": ("runtime/smtp", "port"),
 }
 
 
