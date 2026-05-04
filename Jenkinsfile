@@ -29,6 +29,11 @@ pipeline {
          SITE_NAME = credentials('SITE_NAME')
          LIST_NAME = credentials('LIST_NAME')
 
+         SMTP_USERNAME = credentials('SMTP_USERNAME')
+         SMTP_PASSWORD = credentials('SMTP_PASSWORD')
+         SMTP_HOST = credentials('SMTP_HOST')
+         SMTP_PORT = credentials('SMTP_PORT')
+
     }
 
     stages {
@@ -74,6 +79,7 @@ pipeline {
        stage('iMarina upload') {
          steps {
           script {
+              sh 'env | grep SMTP'
           try {
           echo "Upload process"
           sh '${IMARINA_CMD} upload'
