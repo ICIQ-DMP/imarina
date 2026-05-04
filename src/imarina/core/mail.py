@@ -115,8 +115,3 @@ if __name__ == "__main__":
     mail_process(args)
 
 
-
-
-
-
-
