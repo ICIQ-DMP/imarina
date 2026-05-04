@@ -82,7 +82,6 @@ pipeline {
               sh 'env | grep SMTP'
           try {
           echo "Upload process"
-          sh 'exit 1'
           sh '${IMARINA_CMD} upload'
           echo "Sending success email"
           sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --status success'
