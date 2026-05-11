@@ -12,11 +12,11 @@ def upload_controller(
     ctx: typer.Context,
     file_path: Path = typer.Option(
         None,
-        help="Path del fitxer Excel (.xlsx). Si es deixa buit, busca l'últim a 'output'.",
+        help="Excel file path (.xlsx). If left empty, it will look for the last one in 'output'.",
     ),
     target_folder: Path = typer.Option(
         "Institutional Strengthening/_Projects/iMarina_load_automation/output",
-        help="Carpeta de destí a SharePoint",
+        help="Folder to the destination Sharepoint",
     ),
 ) -> None:
     print(" Uploading the latest Excel file to SharePoint...")
@@ -29,21 +29,21 @@ def upload_controller(
             if files:
                 file_path = max(files, key=lambda f: f.stat().st_mtime)
             else:
-                print(f"❌ Error: No hi ha fitxers Excel a {uploads_dir}")
+                print(f"❌ Error: Not files Excel in  {uploads_dir}")
                 raise typer.Exit(code=1)
         else:
             print(
-                "❌ Error: No s'ha especificat fitxer i la carpeta 'output' no existeix."
+                "❌ Error: No file specified and the 'output' folder does not exist.."
             )
             raise typer.Exit(code=1)
 
     # the file not exist in the path
     if not file_path.exists():
-        print(f"❌ Error: El fitxer no existeix a la ruta: {file_path}")
+        print(f"❌ Error: The file no exist in the path: {file_path}")
         raise typer.Exit(code=1)
 
-    print(f"📁 Fitxer local detectat: {file_path.name}")
-    print(f"☁️ Destí SharePoint: {target_folder}")
+    print(f"📁 Local file detected: {file_path.name}")
+    print(f"☁️ Destination SharePoint: {target_folder}")
 
     try:
 

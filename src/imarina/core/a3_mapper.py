@@ -69,7 +69,7 @@ def transform_orcid(orcid: str) -> str:
 
 def parse_a3_row_data(row: Any, translator: Any) -> Any:
 
-    # function per normalitzar el nom del country
+    # function normalize country_name
     def normalize_country_name(name: str) -> str:
         if not isinstance(name, str):
             return ""
@@ -102,10 +102,10 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
 
     born_country_raw = str(
         row.values[A3_Field.BORN_COUNTRY.value]
-    ).strip()  # llegeix el value de la row(row.values) del excel A3 i el Field.BORN_COUNTRY.value  .strip delete whitespaces
+    ).strip()  # Read the value of cell A3 in Excel (row.values) and the value of Field.BORN_COUNTRY. Remove any spaces
     born_country_clean = normalize_country_name(
         born_country_raw
-    )  # born country ja normalitzat i el busca al translator_countries
+    )  # born country normalize and find in translator_countries
 
     born_country_clean = manual_country_aliases.get(
         born_country_clean, born_country_clean
@@ -113,18 +113,18 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
 
     born_country = translator_countries.get(
         born_country_clean, born_country_clean.capitalize()
-    )  # born country completament traduit
+    )  # born country fully translated
 
     country_raw = str(
         row.values[A3_Field.COUNTRY.value]
-    ).strip()  # llegeix la row.values del Country del field de A3
-    country_clean = normalize_country_name(country_raw)  # el country normalitzat
+    ).strip()  # read row.values of Country field A3
+    country_clean = normalize_country_name(country_raw)  #  country normalized
 
     country_clean = manual_country_aliases.get(country_clean, country_clean)
 
     country = translator_countries.get(
         country_clean, country_clean.capitalize()
-    )  # el country completament traduit
+    )  # country fully translated
 
     logger.debug(f"Raw born_country: {born_country_raw}")
     logger.debug(f"Clean born_country: {born_country_clean}")
@@ -137,13 +137,13 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
     if email_val is not None:
         email_val = email_val.lower()
 
-    # PRINTS DEBUG
+
 
     # Translates unit_group into entity
     try:
         entity_val = translator[A3_Field.UNIT_GROUP][row.values[A3_Field.UNIT_GROUP.value]]
     except KeyError as e:
-        print(f"KeyError en UNIT_GROUP: {repr(row.values[A3_Field.UNIT_GROUP.value])}")
+        print(f"KeyError in UNIT_GROUP: {repr(row.values[A3_Field.UNIT_GROUP.value])}")
         raise
 
     personal_web_val = translator[A3_Field.PERSONAL_WEB][entity_val]

@@ -107,7 +107,7 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
     )
 
 
-# parsear los datos de imarina
+# parse the data from imarina
 def parse_imarina_row_data(row: pd.Series) -> Researcher:
 
     entity_val = get_val(row, ImarinaField.UNIT_GROUP.value)
@@ -195,4 +195,4 @@ def append_researchers_to_output_data(researchers: List[Any], output_data: Any) 
         output_data.concat(new_row)
 
 
-# TODO: implement method of Excel, get EmptyRow
+

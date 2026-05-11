@@ -10,12 +10,12 @@ def backup_controller(ctx: typer.Context, directory: DirectoryOpt = None) -> Non
     local_uploads_dir = directory if directory is not None else Path.cwd() / "uploads"
 
     if not local_uploads_dir.exists():
-        print(f"❌ Error: No s'ha trobat la carpeta local: {local_uploads_dir}")
+        print(f"❌ Error: The local folder was not found: {local_uploads_dir}")
         return
 
     local_files = list(local_uploads_dir.glob("*.xlsx"))
     if not local_files:
-        print(f"⚠️ No hi ha cap fitxer Excel local a: {local_uploads_dir}")
+        print(f"⚠️ There is no local Excel file at: {local_uploads_dir}")
         return
 
     latest_local_file = max(local_files, key=lambda f: f.stat().st_mtime)
@@ -26,7 +26,7 @@ def backup_controller(ctx: typer.Context, directory: DirectoryOpt = None) -> Non
 
     target_sharepoint_folder = f"Institutional Strengthening/_Projects/iMarina_load_automation/output/{today_folder}"
 
-    print(f"📂 Fitxer local detectat: {latest_local_file.name}")
+    print(f"📂 Local file detected: {latest_local_file.name}")
     print(f"☁️ Upload to SharePoint: {timestamp_name}")
 
     try:
@@ -41,11 +41,11 @@ def backup_controller(ctx: typer.Context, directory: DirectoryOpt = None) -> Non
         try:
 
             upload_file_sharepoint(temp_file, target_folder=target_sharepoint_folder)
-            print(f"✅ Backup fet al SharePoint : output/{today_folder}/")
+            print(f"✅ Backup to SharePoint : output/{today_folder}/")
         finally:
 
             if temp_file.exists():
                 temp_file.unlink()
 
     except Exception as e:
-        print(f"❌ Error fent el backup: {e}")
+        print(f"❌ Error while backup: {e}")

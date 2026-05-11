@@ -12,8 +12,7 @@ from imarina.core.sharepoint import get_parameters_list, get_token_manager
 logger = get_logger(__name__)
 
 
-# aquesta funcion to sharepoint to InputDirectory
-# comment this but no delete
+
 
 #  downloads files from sharepoint, configure arg for download dir using the diretoryOpt shared options
 

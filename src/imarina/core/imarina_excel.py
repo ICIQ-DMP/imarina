@@ -27,7 +27,7 @@ def normalized_dni(dni: str) -> str:
     return dni
 
 
-# constructor del excel
+# constructor of excel
 def build_upload_excel(
     output_path: Path,
     countries_path: Any,
@@ -41,9 +41,6 @@ def build_upload_excel(
 ) -> None:
 
 
-    #PRINTS DE PRUEBA
-    #print(f"DEBUG a3_path: {a3_path}")
-    #print(f"DEBUG a3_path exists: {Path(a3_path).exists()}")
 
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
@@ -116,14 +113,14 @@ def build_upload_excel(
                 )
                 researchers_changed.append(researcher_a3)
                 researchers_output.append(researcher_a3)
-                # input("changed jobs")
+
             else:
                 logger.debug(
                     "Current researcher is still working in the same position since last upload."
                 )
                 logger.debug("Adding new row from iMarina with the same data.")
 
-                # No cambió entonces mantener la fila actual
+                # there was no change in maintaining the current queue
                 # If it has not changed, add current iMarina row to output as is.
                 # (end date not present) it is a contract that could be still ongoing continue
                 researchers_output.append(researcher_imarina)
@@ -149,7 +146,7 @@ def build_upload_excel(
             logger.debug(
                 "Present in A3 and also on iMarina - already processed in Phase 1"
             )
-            # No hacer nada, ya fue procesado en Phase 1
+            # No action, he has already been prosecuted in Phase 1
 
     for researcher in researchers_output:
         if researcher.is_visitor():
