@@ -3,22 +3,6 @@ from datetime import date
 
 from imarina.core.Researcher import Researcher
 
-# @pytest.mark.skipif(
-#      "TENANT_ID" not in os.environ,
-#      reason="TENANT_ID not set, skipping integration test with SharePoint"
-# )
-
-
-# comment this test
-# def test_sharepoint_upload():
-#     test_file = Path("uploads/test.xlsx")
-#     assert test_file.exists(), "El fitxer de prova no existeix"
-#
-#     try:
-#         upload_file_sharepoint(test_file, target_folder="Tests")
-#     except Exception as e:
-#         pytest.fail(f"Pujada a SharePoint ha fallat: {e}")
-
 
 # test de prueba
 def test_demo():

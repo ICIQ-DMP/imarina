@@ -10,7 +10,6 @@ services:
     - ./input:/app/input
     - ./output:/app/output
     - ./logs:/app/logs  # folder logs of the process
-    - ./uploads:/app/uploads
     secrets:
       - FTP_HOST
       - FTP_PASSWORD

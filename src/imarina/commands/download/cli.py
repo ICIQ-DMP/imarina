@@ -3,6 +3,7 @@ from pathlib import Path
 import requests
 import typer
 
+from imarina.core.defines import REQUIRED_INPUT_FILES
 from imarina.core.log_utils import get_logger
 from imarina.core.shared_options import DirectoryOpt
 from imarina.core.sharepoint import download_input_from_sharepoint
@@ -62,5 +63,16 @@ def download_controller(ctx: typer.Context, input_dir: DirectoryOpt = None, id: 
     except Exception as e:
         print(f" Error getting parameters for MS List: {e}")
 
+    missing = [
+        filename
+        for filename in REQUIRED_INPUT_FILES.values()
+        if not (target_path / filename).exists()
+    ]
+    if missing:
+        print(f"❌ Missing required input file(s) in {target_path}:")
+        for filename in missing:
+            print(f"   - {filename}")
+        raise typer.Exit(code=1)
 
+    print(f"✅ All required input files are present in {target_path}")
     return

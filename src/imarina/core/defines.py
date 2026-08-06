@@ -20,6 +20,21 @@ FILENAME_PREFIX = "iMarina_upload_"
 FILENAME_SUFFIX = ".xlsx"
 FTP_EXCEL_FILE_DATE_FORMAT = "%y%m%d"
 
+# Single source of truth for the input files `build` needs and `download` must
+# provide, under these exact names, in the same flat directory (default:
+# PROJECT_DIR / "input"). Keyed by role so callers can refer to files by
+# meaning rather than repeating literal filenames.
+REQUIRED_INPUT_FILES = {
+    "a3": "A3.xlsx",
+    "imarina": "iMarina.xlsx",
+    "countries": "countries.xlsx",
+    "jobs": "Job_Descriptions.xlsx",
+    "personal_web": "Personal_web.xlsx",
+    "unit_group": "unit_group.xlsx",
+    "unit_type": "unit_type.xlsx",
+    "job_description_entity": "job_description_entity.xlsx",
+}
+
 
 class LogLevel(str, Enum):
     """

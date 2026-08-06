@@ -7,7 +7,6 @@ services:
     volumes:
     - ./input:/app/input
     - ./output:/app/output
-    - ./uploads:/app/uploads
 
 
 

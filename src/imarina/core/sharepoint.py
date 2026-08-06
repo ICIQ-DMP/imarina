@@ -77,7 +77,7 @@ def get_sharepoint_drive_id() -> str:
 
 # Uploads a file to the SharePoint site 'Institutional Strengthening'.
 def upload_file_sharepoint(
-    file_path: Path, target_folder: str = "_Projects/iMarina_load_automation/uploads"
+    file_path: Path, target_folder: str
 ) -> (
     Any
 ):  # Args: file_path: Local file path to upload.  target_folder: Relative path inside drive(ex:'Uploads/2025-10').
@@ -217,31 +217,6 @@ def folder_exists(token_manager: TokenManager, drive_id: str, folder_path: str) 
     return response.status_code == 200
 
 
-def upload_latest_excel() -> Any:
-    print("Entrando en upload_latest_excel()")
-    uploads_dir = Path("/app/uploads")
-
-    excel_files = list(uploads_dir.glob("iMarina_upload_*.xlsx"))
-    if not excel_files:
-        print("⚠️ No se encontró ningún archivo iMarina_upload_*.xlsx en /app/uploads")
-        return
-
-    latest_file = max(excel_files, key=os.path.getmtime)
-    print(f"📂 Últim fitxer trobat: {latest_file.name}")
-
-    today_folder = datetime.today().strftime("%d-%m-%Y")
-    target_folder = f"Institutional Strengthening/_Projects/iMarina_load_automation/uploads/{today_folder}"
-
-    try:
-        print(f"⬆️ Subiendo {latest_file.name} a {target_folder}...")
-        upload_file_sharepoint(latest_file, target_folder=target_folder)
-        print(
-            f"✅ Fitxer {latest_file.name} pujat correctament a SharePoint a la carpeta {target_folder}."
-        )
-    except Exception as e:
-        print(f"❌ Error pujant '{latest_file.name}': {e}")
-
-
 if __name__ == "__main__":
     token_manager = get_token_manager()
 
@@ -258,5 +233,3 @@ if __name__ == "__main__":
     r = requests.get(url, headers=headers)
     r.raise_for_status()
     print(r.json())
-
-    upload_latest_excel()

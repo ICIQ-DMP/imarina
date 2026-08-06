@@ -14,7 +14,6 @@ from rich.console import Console
 
 import imarina.commands.build.cli
 import imarina.commands.download.cli
-import imarina.commands.backup.cli
 import imarina.commands.upload.cli
 import imarina.commands.publish.cli
 
@@ -31,7 +30,6 @@ app.command("build")(imarina.commands.build.cli.build_controller)
 app.command("download")(
     imarina.commands.download.cli.download_controller
 )  # new argument download
-app.command("backup")(imarina.commands.backup.cli.backup_controller)  # command backup
 app.command("upload")(imarina.commands.upload.cli.upload_controller)  # command upload
 app.command("publish")(
     imarina.commands.publish.cli.publish_controller
