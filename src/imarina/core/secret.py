@@ -14,12 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# import sys
 from collections.abc import Callable
-from pathlib import Path
 
 import requests
 
+from imarina.core.defines import PROJECT_DIR
 from imarina.core.filesystem import read_env_var, read_file_content
 from imarina.core.log_utils import get_logger
 from imarina.core.secret_name import SecretName
@@ -36,9 +35,7 @@ def read_secret(secret_name: SecretName) -> str:
     """Retrieve a secret from predefined sources in order of priority."""
     sources: list[Callable[[], str]] = [
         lambda: read_file_content(f"/run/secrets/{secret_name}"),
-        lambda: read_file_content(
-            Path(__file__).resolve().parents[3] / "secrets" / secret_name
-        ),
+        lambda: read_file_content(PROJECT_DIR / "secrets" / secret_name),
         lambda: read_env_var(secret_name),
         lambda: read_vault_secret(secret_name),
     ]

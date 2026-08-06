@@ -21,6 +21,7 @@ from typing import Any
 import requests
 import urllib3
 
+from imarina.core.defines import PROJECT_DIR
 from imarina.core.log_utils import get_logger
 from imarina.core.secret_name import SecretName
 
@@ -59,16 +60,13 @@ _SECRET_MAP: dict[SecretName, tuple[str, str]] = {
 }
 
 
-_PROJECT_ROOT = Path(__file__).resolve().parents[1]
-
-
 def _read_credential(name: str) -> str:
     """Read a Vault connection credential from (in order):
     1. /run/secrets/<name>
     2. <project_root>/secrets/<name>
     3. environment variable
     """
-    for path in (Path(f"/run/secrets/{name}"), _PROJECT_ROOT / "secrets" / name):
+    for path in (Path(f"/run/secrets/{name}"), PROJECT_DIR / "secrets" / name):
         if path.is_file():
             value = path.read_text().strip()
             if value:
