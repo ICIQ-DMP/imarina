@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # import sys
-import os
 from collections.abc import Callable
+from pathlib import Path
 
 import requests
 
@@ -37,15 +37,7 @@ def read_secret(secret_name: SecretName) -> str:
     sources: list[Callable[[], str]] = [
         lambda: read_file_content(f"/run/secrets/{secret_name}"),
         lambda: read_file_content(
-            os.path.join(
-                os.path.dirname(
-                    os.path.dirname(
-                        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                    )
-                ),
-                "secrets",
-                secret_name,
-            )
+            Path(__file__).resolve().parents[3] / "secrets" / secret_name
         ),
         lambda: read_env_var(secret_name),
         lambda: read_vault_secret(secret_name),

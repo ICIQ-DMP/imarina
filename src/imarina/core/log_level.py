@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
 import pathlib
 from enum import Enum
 
@@ -71,4 +70,4 @@ class LogLevel(str, Enum):
 
 
 def get_default_log_path() -> pathlib.Path:
-    return pathlib.Path(str(os.path.join(PROJECT_DIR, "logs", NOW + ".log")))
+    return PROJECT_DIR / "logs" / f"{NOW}.log"

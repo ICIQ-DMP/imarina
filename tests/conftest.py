@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import sys
+from pathlib import Path
 
 # Dynamically add the project root to PYTHONPATH
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ROOT_DIR = str(Path(__file__).resolve().parent.parent)
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)

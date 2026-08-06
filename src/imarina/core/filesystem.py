@@ -1,3 +1,19 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 
 # from typing import cast
@@ -36,7 +52,7 @@ def read_env_var(var_name: str) -> str:
     return value
 
 
-def read_file_content(file_path: str) -> str:
+def read_file_content(file_path: str | Path) -> str:
     content = read_file(file_path)
 
     if not content:
@@ -60,26 +76,24 @@ def read_file(file_path: str | Path) -> str:
         FileNotFoundError: If the file does not exist.
         PermissionError: If the file cannot be read due to permission issues.
     """
+    path = Path(file_path)
+
     # Check if the file exists
-    if not os.path.exists(file_path):
+    if not path.exists():
         raise FileNotFoundError(f"The file '{file_path}' does not exist.")
 
     # Check if the file is readable
-    if not os.access(file_path, os.R_OK):
+    if not os.access(path, os.R_OK):
         raise PermissionError(
             f"The file '{file_path}' cannot be read. Check permissions."
         )
 
     # Read the file
-    with open(file_path, "r") as file:
-        content = file.read()
-
-    return content
+    return path.read_text()
 
 
 def ensure_gitignore(directory: str | Path) -> None:
     # Ensure existence of .gitignore
-    gitignore_path = os.path.join(directory, ".gitignore")
+    gitignore_path = Path(directory) / ".gitignore"
     gitignore_content = "*\n!.gitignore\n"
-    with open(gitignore_path, "w+") as f:
-        f.write(gitignore_content)
+    gitignore_path.write_text(gitignore_content)

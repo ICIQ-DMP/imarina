@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -58,7 +59,7 @@ _SECRET_MAP: dict[SecretName, tuple[str, str]] = {
 }
 
 
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _read_credential(name: str) -> str:
@@ -67,10 +68,9 @@ def _read_credential(name: str) -> str:
     2. <project_root>/secrets/<name>
     3. environment variable
     """
-    for path in (f"/run/secrets/{name}", os.path.join(_PROJECT_ROOT, "secrets", name)):
-        if os.path.isfile(path):
-            with open(path) as f:
-                value = f.read().strip()
+    for path in (Path(f"/run/secrets/{name}"), _PROJECT_ROOT / "secrets" / name):
+        if path.is_file():
+            value = path.read_text().strip()
             if value:
                 return value
     value = os.environ.get(name, "").strip()
