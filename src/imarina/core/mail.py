@@ -20,7 +20,7 @@ from email.mime.text import MIMEText
 
 import requests
 
-from imarina.core.log_utils import configure_logging_from_settings, get_logger
+from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret
 from imarina.core.sharepoint import get_list_id, get_site_id
 from imarina.core.token_manager import get_token_manager
@@ -145,26 +145,3 @@ def mail_process(args: argparse.Namespace) -> None:
         smtp_port,
     )
     logger.info("Email sent. Process complete.")
-
-
-if __name__ == "__main__":
-    # This script is invoked directly by Jenkins (not through the Typer app), so
-    # logging must be configured here for the logger.info() calls above to show.
-    configure_logging_from_settings()
-
-    parser = argparse.ArgumentParser(
-        description="Send iMarina workflow notification email"
-    )
-    parser.add_argument("--id", required=True, help="MS List item ID")
-    parser.add_argument(
-        "--status", required=True, choices=["success", "error"], help="Workflow status"
-    )
-    parser.add_argument(
-        "--sharepoint-path",
-        required=False,
-        default="Institutional Strengthening/_Projects/iMarina_load_automation/output",
-        help="SharePoint path of the generated file",
-    )
-    args = parser.parse_args()
-
-    mail_process(args)
