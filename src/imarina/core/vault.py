@@ -1,4 +1,5 @@
 import os
+
 import requests
 import urllib3
 
@@ -11,28 +12,28 @@ _VAULT_BASE_PATH = "secret/data/imarina"
 # Maps app-level secret names to (vault subpath, vault field key)
 _SECRET_MAP = {
     # sharepoint (secret/imarina/runtime/sharepoint)
-    "CLIENT_ID":         ("runtime/sharepoint", "client_id"),
-    "CLIENT_NAME":       ("runtime/sharepoint", "client_name"),
-    "CLIENT_SECRET":     ("runtime/sharepoint", "client_secret"),
-    "DRIVE_ID":          ("runtime/sharepoint", "drive_id"),
+    "CLIENT_ID": ("runtime/sharepoint", "client_id"),
+    "CLIENT_NAME": ("runtime/sharepoint", "client_name"),
+    "CLIENT_SECRET": ("runtime/sharepoint", "client_secret"),
+    "DRIVE_ID": ("runtime/sharepoint", "drive_id"),
     "SHAREPOINT_DOMAIN": ("runtime/sharepoint", "domain"),
-    "SITE_NAME":         ("runtime/sharepoint", "site_name"),
-    "TENANT_ID":         ("runtime/sharepoint", "tenant_id"),
+    "SITE_NAME": ("runtime/sharepoint", "site_name"),
+    "TENANT_ID": ("runtime/sharepoint", "tenant_id"),
     # ftp (secret/imarina/runtime/ftp)
-    "FTP_HOST":            ("runtime/ftp", "host"),
-    "FTP_PASSWORD":        ("runtime/ftp", "password"),
-    "FTP_PORT":            ("runtime/ftp", "port"),
+    "FTP_HOST": ("runtime/ftp", "host"),
+    "FTP_PASSWORD": ("runtime/ftp", "password"),
+    "FTP_PORT": ("runtime/ftp", "port"),
     "FTP_UPLOAD_FILENAME": ("runtime/ftp", "upload_filename"),
-    "FTP_USER":            ("runtime/ftp", "user"),
+    "FTP_USER": ("runtime/ftp", "user"),
     # ssh admin (secret/imarina/admin/ssh)
-    "SSH_HOST":     ("admin/ssh", "host"),
+    "SSH_HOST": ("admin/ssh", "host"),
     "SSH_PASSWORD": ("admin/ssh", "password"),
     "SSH_USERNAME": ("admin/ssh", "username"),
     # jenkins admin (secret/imarina/admin/jenkins)
     "JENKINS_PASSWORD": ("admin/jenkins", "password"),
     "JENKINS_USERNAME": ("admin/jenkins", "username"),
     # smtp credentials (secret/imarina/runtime/smtp)
-    "SMTP_USERNAME" : ("runtime/smtp", "username"),
+    "SMTP_USERNAME": ("runtime/smtp", "username"),
     "SMTP_PASSWORD": ("runtime/smtp", "password"),
     "SMTP_HOST": ("runtime/smtp", "host"),
     "SMTP_PORT": ("runtime/smtp", "port"),
@@ -44,9 +45,9 @@ _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def _read_credential(name):
     """Read a Vault connection credential from (in order):
-      1. /run/secrets/<name>
-      2. <project_root>/secrets/<name>
-      3. environment variable
+    1. /run/secrets/<name>
+    2. <project_root>/secrets/<name>
+    3. environment variable
     """
     for path in (f"/run/secrets/{name}", os.path.join(_PROJECT_ROOT, "secrets", name)):
         if os.path.isfile(path):

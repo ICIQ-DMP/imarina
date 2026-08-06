@@ -1,13 +1,12 @@
 import re
 import unicodedata
 from enum import Enum
+from typing import Any
 
-from imarina.core.Researcher import Researcher, normalize_name
 from imarina.core.date_utile import sanitize_date
 from imarina.core.excel import get_val
 from imarina.core.log_utils import get_logger
-
-from typing import Any
+from imarina.core.Researcher import Researcher, normalize_name
 
 logger = get_logger(__name__)
 
@@ -137,13 +136,13 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
     if email_val is not None:
         email_val = email_val.lower()
 
-
-
     # Translates unit_group into entity
     try:
-        entity_val = translator[A3_Field.UNIT_GROUP][row.values[A3_Field.UNIT_GROUP.value]]
-    except KeyError as e:
-        print(f"KeyError in UNIT_GROUP: {repr(row.values[A3_Field.UNIT_GROUP.value])}")
+        entity_val = translator[A3_Field.UNIT_GROUP][
+            row.values[A3_Field.UNIT_GROUP.value]
+        ]
+    except KeyError:
+        print(f"KeyError in UNIT_GROUP: {row.values[A3_Field.UNIT_GROUP.value]!r}")
         raise
 
     personal_web_val = translator[A3_Field.PERSONAL_WEB][entity_val]
@@ -162,12 +161,12 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
         in translator[A3_Field.JOB_DESCRIPTION_ENTITY]
     ):
         logger.debug(
-            f"Special job description found, translating to entity. entity_val was going to be: {str(entity_val)}"
+            f"Special job description found, translating to entity. entity_val was going to be: {entity_val!s}"
         )
         entity_val = translator[A3_Field.JOB_DESCRIPTION_ENTITY][
             row.values[A3_Field.JOB_DESCRIPTION.value]
         ]
-        logger.debug(f"Entity translated is: {str(entity_val)}")
+        logger.debug(f"Entity translated is: {entity_val!s}")
 
     # Special case for ICREA group leaders, which needs also info from group unit field
     if row.values[A3_Field.UNIT_GROUP.value] == "ICREA":

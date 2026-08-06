@@ -1,9 +1,8 @@
 from pathlib import Path
-from typing import Optional
 
 import typer
 
-from imarina.core.defines import PROJECT_DIR, NOW, REQUIRED_INPUT_FILES
+from imarina.core.defines import NOW, PROJECT_DIR, REQUIRED_INPUT_FILES
 from imarina.core.imarina_excel import build_upload_excel
 from imarina.core.log_utils import get_logger
 
@@ -33,16 +32,16 @@ def build_controller(
         output_path: Path = typer.Option(
             PROJECT_DIR / "output" / f"iMarina_upload_{NOW}.xlsx"
         ),
-        personal_web_path: Optional[Path] = typer.Option(
+        personal_web_path: Path | None = typer.Option(
             INPUT_DIR / REQUIRED_INPUT_FILES["personal_web"]
         ),
-        unit_group_path: Optional[Path] = typer.Option(
+        unit_group_path: Path | None = typer.Option(
             INPUT_DIR / REQUIRED_INPUT_FILES["unit_group"]
         ),
-        entity_type_path: Optional[Path] = typer.Option(
+        entity_type_path: Path | None = typer.Option(
             INPUT_DIR / REQUIRED_INPUT_FILES["unit_type"]
         ),
-        job_description_entity_path: Optional[Path] = typer.Option(
+        job_description_entity_path: Path | None = typer.Option(
             INPUT_DIR / REQUIRED_INPUT_FILES["job_description_entity"]
         )
 ) -> None:

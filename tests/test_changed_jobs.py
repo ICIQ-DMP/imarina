@@ -1,8 +1,8 @@
 # from imarina.core.Researcher import Researcher
-from imarina.core.a3_mapper import A3_Field
 from dataclasses import dataclass
-
 from datetime import date, datetime
+
+from imarina.core.a3_mapper import A3_Field
 
 translator = {
     A3_Field.JOB_DESCRIPTION: {

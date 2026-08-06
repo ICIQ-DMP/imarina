@@ -3,7 +3,7 @@ name = "imarina"
 dynamic = ["version"]
 description = "imarina automated excel build"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 authors = [{name="AleixMT"}, {name="MarioPiqué"}]
 license = {text="GPL-3.0-or-later"}
 dependencies = [
@@ -55,5 +55,8 @@ testpaths = ["tests"]
 pythonpath = "src"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.14"
 strict = true
+
+[tool.black]
+target-version = ["py314"]

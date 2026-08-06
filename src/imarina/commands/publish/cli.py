@@ -1,15 +1,14 @@
 import datetime
 from pathlib import Path
-from typing import Optional
 
 import typer
 
 from imarina.core.defines import (
-    OUTPUT_DIR,
+    DATETIME_FORMAT,
     FILENAME_PREFIX,
     FILENAME_SUFFIX,
-    DATETIME_FORMAT,
     FTP_EXCEL_FILE_DATE_FORMAT,
+    OUTPUT_DIR,
 )
 from imarina.core.ftp import upload_file_ftp
 from imarina.core.log_utils import get_logger
@@ -18,7 +17,7 @@ from imarina.core.secret import read_secret
 logger = get_logger(__name__)
 
 
-def select_file_to_upload(upload_dir: Path) -> Optional[Path]:
+def select_file_to_upload(upload_dir: Path) -> Path | None:
     """
     Selects the file to upload from upload_dir.
 

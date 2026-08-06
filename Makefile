@@ -15,8 +15,8 @@ SHELL := bash
 # ---- config ---------------------------------------------------------------
 
 # Check if python3.11 exists, otherwise default to python
-ifneq ($(shell command -v python3.11 2> /dev/null),)
-    PYTHON_BIN ?= python3.11
+ifneq ($(shell command -v python3.14 2> /dev/null),)
+    PYTHON_BIN ?= python3.14
 else
     PYTHON_BIN ?= python
 endif

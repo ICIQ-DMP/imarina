@@ -1,6 +1,5 @@
 from datetime import date
 
-
 from imarina.core.Researcher import Researcher
 
 

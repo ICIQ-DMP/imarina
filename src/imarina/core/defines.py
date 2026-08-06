@@ -3,7 +3,6 @@ import logging
 import os
 import pathlib
 from enum import Enum
-from typing import Optional
 
 DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"
 NOW_DATA = datetime.datetime.now()
@@ -52,7 +51,7 @@ class LogLevel(str, Enum):
     QUIET = "quiet"
 
     @classmethod
-    def parse(cls, value: Optional[str]) -> Optional["LogLevel"]:
+    def parse(cls, value: str | None) -> LogLevel | None:
         """Parse case-insensitively; returns None if value is falsy."""
         print("Executing function parse from LogLevel")
         if not value:
@@ -65,7 +64,7 @@ class LogLevel(str, Enum):
             raise ValueError(f"Unknown log level '{value}'. Valid: {valid}") from exc
 
     @classmethod
-    def get_default_log_level(cls) -> "LogLevel":
+    def get_default_log_level(cls) -> LogLevel:
         return LogLevel.INFO
 
     def to_logging_level(self) -> int:

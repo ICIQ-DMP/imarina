@@ -5,13 +5,13 @@ Reusable CLI argument definition.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Annotated
+from typing import Annotated
 
 import typer
 
 # Argument to send a directory
 DirectoryOpt = Annotated[
-    Optional[Path],
+    Path | None,
     typer.Option(
         "-d",
         "--directory",
@@ -26,7 +26,7 @@ DirectoryOpt = Annotated[
 
 
 LogFileOpt = Annotated[
-    Optional[Path], typer.Option("-l", "--log-file", help="Path to log file (optional)")
+    Path | None, typer.Option("-l", "--log-file", help="Path to log file (optional)")
 ]
 
 VerboseOpt = Annotated[
@@ -59,10 +59,10 @@ VeryQuietOpt = Annotated[
 
 # Add all opts to this variable so they are marked as publicly exposed
 __all__ = [
-    "VerboseOpt",
-    "QuietOpt",
     "DirectoryOpt",
-    "VeryVerboseOpt",
-    "VeryQuietOpt",
     "LogFileOpt",
+    "QuietOpt",
+    "VerboseOpt",
+    "VeryQuietOpt",
+    "VeryVerboseOpt",
 ]

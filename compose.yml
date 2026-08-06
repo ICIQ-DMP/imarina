@@ -35,8 +35,6 @@ services:
      - ./services/onedrive/conf:/onedrive/conf
      - ./services/onedrive/data:/onedrive/data
      - ./services/onedrive/logs:/onedrive/logs
-   labels:
-     io.containers.autoupdate: "image"
    restart: unless-stopped
    networks:
      - imarina_net

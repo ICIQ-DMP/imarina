@@ -1,13 +1,12 @@
 from enum import Enum
+from typing import Any
 
 import pandas as pd
 
+from imarina.core.date_utile import sanitize_date, unparse_date
 from imarina.core.excel import Excel, get_val
 from imarina.core.log_utils import get_logger
 from imarina.core.Researcher import Researcher, normalize_name
-from imarina.core.date_utile import unparse_date, sanitize_date
-
-from typing import Any, List
 
 logger = get_logger(__name__)
 
@@ -183,7 +182,7 @@ def parse_imarina_row_data(row: pd.Series) -> Researcher:
     return data
 
 
-def append_researchers_to_output_data(researchers: List[Any], output_data: Any) -> None:
+def append_researchers_to_output_data(researchers: list[Any], output_data: Any) -> None:
     empty_row_output_data = output_data.__copy__()
     empty_row_output_data.empty()
     empty_row_output_data.dataframe.loc[0] = [None] * len(
@@ -193,6 +192,3 @@ def append_researchers_to_output_data(researchers: List[Any], output_data: Any) 
         new_row = empty_row_output_data.__copy__()
         unparse_researcher_to_imarina_row(researcher, new_row)
         output_data.concat(new_row)
-
-
-
