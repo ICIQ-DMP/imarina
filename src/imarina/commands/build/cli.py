@@ -1,49 +1,58 @@
-from pathlib import Path
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import typer
 
-from imarina.core.defines import NOW, PROJECT_DIR, REQUIRED_INPUT_FILES
+from imarina.core.cli_defaults import (
+    DEFAULT_A3_INPUT,
+    DEFAULT_COUNTRIES_DICT,
+    DEFAULT_ENTITY_TYPE_PATH,
+    DEFAULT_IMARINA_INPUT,
+    DEFAULT_JOB_DESCRIPTION_ENTITY_PATH,
+    DEFAULT_JOBS_DICT,
+    DEFAULT_OUTPUT_PATH,
+    DEFAULT_PERSONAL_WEB_PATH,
+    DEFAULT_UNIT_GROUP_PATH,
+    A3InputOpt,
+    CountriesDictOpt,
+    EntityTypePathOpt,
+    ImarinaInputOpt,
+    JobDescriptionEntityPathOpt,
+    JobsDictOpt,
+    OutputPathOpt,
+    PersonalWebPathOpt,
+    UnitGroupPathOpt,
+)
 from imarina.core.imarina_excel import build_upload_excel
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
-INPUT_DIR = PROJECT_DIR / "input"
-
 
 def build_controller(
         ctx: typer.Context,
-        countries_dict: Path = typer.Option(
-            INPUT_DIR / REQUIRED_INPUT_FILES["countries"],
-            help="Path of the countries dictionary file(.xlsx)"
-        ),
-        jobs_dict: Path = typer.Option(
-            INPUT_DIR / REQUIRED_INPUT_FILES["jobs"],
-            help="Path of the jobs dictionary file(.xlsx)"
-        ),
-        imarina_input: Path = typer.Option(
-            INPUT_DIR / REQUIRED_INPUT_FILES["imarina"],
-            help="Path of the iMarina input file(.xlsx)"
-        ),
-        a3_input: Path = typer.Option(
-            INPUT_DIR / REQUIRED_INPUT_FILES["a3"],
-            help="Path to A3 input file(.xlsx)"
-        ),
-        output_path: Path = typer.Option(
-            PROJECT_DIR / "output" / f"iMarina_upload_{NOW}.xlsx"
-        ),
-        personal_web_path: Path | None = typer.Option(
-            INPUT_DIR / REQUIRED_INPUT_FILES["personal_web"]
-        ),
-        unit_group_path: Path | None = typer.Option(
-            INPUT_DIR / REQUIRED_INPUT_FILES["unit_group"]
-        ),
-        entity_type_path: Path | None = typer.Option(
-            INPUT_DIR / REQUIRED_INPUT_FILES["unit_type"]
-        ),
-        job_description_entity_path: Path | None = typer.Option(
-            INPUT_DIR / REQUIRED_INPUT_FILES["job_description_entity"]
-        )
+        countries_dict: CountriesDictOpt = DEFAULT_COUNTRIES_DICT,
+        jobs_dict: JobsDictOpt = DEFAULT_JOBS_DICT,
+        imarina_input: ImarinaInputOpt = DEFAULT_IMARINA_INPUT,
+        a3_input: A3InputOpt = DEFAULT_A3_INPUT,
+        output_path: OutputPathOpt = DEFAULT_OUTPUT_PATH,
+        personal_web_path: PersonalWebPathOpt = DEFAULT_PERSONAL_WEB_PATH,
+        unit_group_path: UnitGroupPathOpt = DEFAULT_UNIT_GROUP_PATH,
+        entity_type_path: EntityTypePathOpt = DEFAULT_ENTITY_TYPE_PATH,
+        job_description_entity_path: JobDescriptionEntityPathOpt = DEFAULT_JOB_DESCRIPTION_ENTITY_PATH,
 ) -> None:
     build_upload_excel(
         output_path,

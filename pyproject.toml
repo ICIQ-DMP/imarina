@@ -29,7 +29,8 @@ dev = [
   "black",
   "pytest",
   "mypy",
-  "ruff"
+  "ruff",
+  "pre-commit"
 ]
 
 [tool.semantic_release]

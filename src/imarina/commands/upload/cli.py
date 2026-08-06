@@ -1,7 +1,29 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from pathlib import Path
 
 import typer
 
+from imarina.core.cli_defaults import (
+    DEFAULT_TARGET_FOLDER,
+    DEFAULT_UPLOAD_FILE_PATH,
+    TargetFolderOpt,
+    UploadFilePathOpt,
+)
 from imarina.core.log_utils import get_logger
 from imarina.core.sharepoint import upload_file_sharepoint
 
@@ -10,14 +32,8 @@ logger = get_logger(__name__)
 
 def upload_controller(
     ctx: typer.Context,
-    file_path: Path = typer.Option(
-        None,
-        help="Excel file path (.xlsx). If left empty, it will look for the last one in 'output'.",
-    ),
-    target_folder: Path = typer.Option(
-        "Institutional Strengthening/_Projects/iMarina_load_automation/output",
-        help="Folder to the destination Sharepoint",
-    ),
+    file_path: UploadFilePathOpt = DEFAULT_UPLOAD_FILE_PATH,
+    target_folder: TargetFolderOpt = DEFAULT_TARGET_FOLDER,
 ) -> None:
     print(" Uploading the latest Excel file to SharePoint...")
 
@@ -49,9 +65,10 @@ def upload_controller(
 
         upload_file_sharepoint(file_path, target_folder=str(target_folder))
         print("✅ Upload to SharePoint completed successfully.")
-        # logger.info(f"Successfully uploaded {file_path.name}")
+        logger.info(f"Successfully uploaded {file_path.name}")
 
+    # Broad on purpose: CLI boundary turns any failure into a clean exit(1).
     except Exception as e:
         print(f"❌ Error uploading to SharePoint: {e}")
-        # logger.error(f"Error: {e}")
-        raise typer.Exit(code=1)
+        logger.exception("Error uploading to SharePoint")
+        raise typer.Exit(code=1) from e

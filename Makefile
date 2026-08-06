@@ -52,6 +52,15 @@ $(DEV_STAMP): pyproject.toml $(VENV_BIN)/python
 	@$(PIP) install -e ".[dev]"
 	@touch $(DEV_STAMP)
 
+.git/hooks/pre-commit: $(DEV_STAMP)
+	@$(VENV_BIN)/pre-commit install
+
+.git/hooks/commit-msg: $(DEV_STAMP)
+	@$(VENV_BIN)/pre-commit install --hook-type commit-msg
+
+.git/hooks/pre-push: $(DEV_STAMP)
+	@$(VENV_BIN)/pre-commit install --hook-type pre-push
+
 # Install build tool
 $(VENV_BIN)/pyproject-build: $(VENV_BIN)/python
 	@$(PIP) install build
@@ -62,7 +71,9 @@ venv: $(VENV_BIN)/python  ## Create virtualenv
 
 install: $(VENV_BIN)/imarina  ## Install package in editable mode
 
-dev: $(DEV_STAMP)  ## Install package and dev dependencies
+hooks: .git/hooks/pre-commit .git/hooks/commit-msg .git/hooks/pre-push  ## Install git hooks
+
+dev: $(DEV_STAMP) hooks ## Install package and dev dependencies
 
 # ---- quality --------------------------------------------------------------
 

@@ -1,3 +1,19 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from pathlib import Path
 
 import requests
@@ -36,8 +52,10 @@ def download_controller(
             f" DONE : Input files successfully downloaded to local directory: {target_path}"
         )
     except Exception as e:
-
+        # Intentionally broad: this step's real success/failure is verified by the
+        # missing-file check below, which is what actually fails the pipeline.
         print(f" Error downloading input files from SharePoint: {e}")
+        logger.exception("Error downloading input files from SharePoint")
 
     try:
         # Function get_parameters_list and download the links(url) of Excels (A3 Excel and iMarina Excel)
@@ -65,7 +83,10 @@ def download_controller(
             print(f"✅ {filename} download successful")
 
     except Exception as e:
+        # Intentionally broad: same rationale as above, the missing-file check below
+        # is the actual pass/fail signal for this pipeline stage.
         print(f" Error getting parameters for MS List: {e}")
+        logger.exception("Error getting parameters for MS List")
 
     missing = [
         filename

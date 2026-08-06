@@ -1,3 +1,19 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import argparse
 import smtplib
 
@@ -5,10 +21,11 @@ import smtplib
 from email.mime.text import MIMEText
 
 import requests
-from secret import read_secret
+
+from imarina.core.secret import read_secret
 
 
-def get_access_token(tenant_id, client_id, client_secret):
+def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
     url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
     data = {
         "grant_type": "client_credentials",
@@ -18,10 +35,12 @@ def get_access_token(tenant_id, client_id, client_secret):
     }
     response = requests.post(url, data=data)
     response.raise_for_status()
-    return response.json()["access_token"]
+    return str(response.json()["access_token"])
 
 
-def get_creator_email(token, site_id, list_id, item_id):
+def get_creator_email(
+    token: str, site_id: str, list_id: str, item_id: str
+) -> tuple[str, str]:
     url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_id}/items/{item_id}?expand=fields"
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(url, headers=headers)
@@ -31,8 +50,15 @@ def get_creator_email(token, site_id, list_id, item_id):
 
 
 def send_email(
-    to_email, subject, body, from_email, username, password, server: str, port: int
-):
+    to_email: str,
+    subject: str,
+    body: str,
+    from_email: str,
+    username: str,
+    password: str,
+    server: str,
+    port: int,
+) -> None:
     # Create message
     msg = MIMEText(body)
     msg["Subject"] = subject
@@ -40,16 +66,16 @@ def send_email(
     msg["To"] = to_email
 
     # Connect to Microsoft 365 SMTP
-    with smtplib.SMTP(server, port) as server:
-        server.ehlo()
-        server.starttls()  # Upgrade connection to TLS
-        server.login(username, password)
-        server.sendmail(from_email, [to_email], msg.as_string())
+    with smtplib.SMTP(server, port) as smtp_conn:
+        smtp_conn.ehlo()
+        smtp_conn.starttls()  # Upgrade connection to TLS
+        smtp_conn.login(username, password)
+        smtp_conn.sendmail(from_email, [to_email], msg.as_string())
 
     print("Email sent!")
 
 
-def build_success_body(name, item_id, sharepoint_path):
+def build_success_body(name: str, item_id: str, sharepoint_path: str) -> str:
     return (
         f"Hola {name},\n\n"
         f"T'informem que el workflow d'iMarina amb ID {item_id} s'ha completat correctament.\n\n"
@@ -61,7 +87,7 @@ def build_success_body(name, item_id, sharepoint_path):
     )
 
 
-def build_error_body(name, item_id):
+def build_error_body(name: str, item_id: str) -> str:
     return (
         f"Hola {name},\n\n"
         f"T'informem que el teu workflow d'iMarina amb ID {item_id} ha fallat.\n\n"
@@ -71,12 +97,12 @@ def build_error_body(name, item_id):
     )
 
 
-def mail_process(args):
+def mail_process(args: argparse.Namespace) -> None:
 
     smtp_password = read_secret("SMTP_PASSWORD")
     smtp_user = read_secret("SMTP_USERNAME")
     smtp_server = read_secret("SMTP_HOST")
-    smtp_port = read_secret("SMTP_PORT")
+    smtp_port = int(read_secret("SMTP_PORT"))
 
     # credentials MS GRAPH
     tenant_id = read_secret("TENANT_ID")

@@ -1,3 +1,19 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 from pathlib import Path
 from typing import Any
@@ -7,10 +23,17 @@ import requests
 
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import read_secret
-from imarina.core.TokenManager import TokenManager, get_token_manager
+from imarina.core.token_manager import TokenManager, get_token_manager
+
+# Only re-exported (non-local) name needs listing here for mypy's strict-mode
+# reexport check; functions defined in this module don't need it.
+__all__ = ["get_token_manager"]
 
 logger = get_logger(__name__)
-access_token = get_token_manager()
+
+
+class SharePointError(Exception):
+    """Raised when a SharePoint Graph API call fails or returns unexpected data."""
 
 
 def list_drives() -> None:
@@ -44,7 +67,7 @@ def get_drive_id(
     for drive in drives:
         if drive["name"] == drive_name:
             return drive["id"]
-    raise Exception(f"Drive '{drive_name}' no encontrado en el site.")
+    raise SharePointError(f"Drive '{drive_name}' no encontrado en el site.")
 
 
 def upload_file(
@@ -141,7 +164,7 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
         response = requests.get(url_list, headers=headers, timeout=30)
 
         if response.status_code != 200:
-            raise Exception(
+            raise SharePointError(
                 f"Error al listar SharePoint: {response.status_code} - {response.text}"
             )
 
@@ -173,10 +196,10 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
 
     except Exception as e:
         print(f"❌ Fallo crítico en la descarga: {e}")
-        raise e
+        raise
 
 
-def get_parameters_list(operation_id: str):
+def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
     token_manager = get_token_manager()
     access_token = token_manager.get_token()
 
@@ -186,11 +209,6 @@ def get_parameters_list(operation_id: str):
     # operation_id      = os.environ["OPERATION_ID"]
 
     site_id = get_site_id(token_manager, sharepoint_domain, site_name)
-
-    params = {
-        "$expand": "fields($select=A3 Excel Link,iMarina Excel Link)",
-        "$select": "fields",
-    }
 
     list_url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{quote(list_name, safe='')}/items/{operation_id}?$expand=fields&$select=fields"
     list_resp = requests.get(
@@ -215,21 +233,3 @@ def folder_exists(token_manager: TokenManager, drive_id: str, folder_path: str) 
 
     response = requests.get(url, headers=headers, timeout=60)
     return response.status_code == 200
-
-
-if __name__ == "__main__":
-    token_manager = get_token_manager()
-
-    headers = {
-        "Authorization": f"Bearer {token_manager.get_token()}",
-    }
-
-    site_name = "digitalitzacio-InstitutionalStrengthening"
-    tenant_domain = "iciq.sharepoint.com"
-
-    url = f"https://graph.microsoft.com/v1.0/sites/{tenant_domain}:/sites/{site_name}:/drives"
-
-    print("Requesting drive info from:", url)
-    r = requests.get(url, headers=headers)
-    r.raise_for_status()
-    print(r.json())

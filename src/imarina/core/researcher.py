@@ -1,3 +1,19 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from typing import Any
 
 from imarina.core.log_utils import get_logger
@@ -134,10 +150,7 @@ class Researcher:
             return True
         if self.dni and other.dni and self.dni == other.dni:
             return True
-        if self.email and other.email and self.email == other.email:
-            return True
-
-        return False
+        return bool(self.email and other.email and self.email == other.email)
 
     def has_changed_jobs(self, researcher: Any) -> Any:
         if (
@@ -158,10 +171,7 @@ class Researcher:
         ):
             return False
 
-        if self.job_description == researcher.job_description:
-            return False
-
-        return True
+        return self.job_description != researcher.job_description
 
     def is_visitor(self) -> bool:
         #  Si es codigo centro 4 tiende a ser  visitante
@@ -175,12 +185,8 @@ class Researcher:
                 "head",
             ]  # estos puestos normalmente no son visitantes ya que son puestos fijos
 
-            if any(
-                key in job for key in permanent_keywords
-            ):  # Si el job_description contiene una de esas keywords entonces
-                return False  # retorna False == NO VISITANTE
-
-            return True
+            # Si el job_description contiene una de esas keywords entonces NO es visitante
+            return not any(key in job for key in permanent_keywords)
 
         if self.ini_date and self.end_date:
             duration = (self.end_date - self.ini_date).days

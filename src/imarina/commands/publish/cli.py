@@ -1,13 +1,34 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 from pathlib import Path
 
-import typer
-
+from imarina.core.cli_defaults import (
+    DEFAULT_DRY_RUN,
+    DEFAULT_PUBLISH_FILE_PATH,
+    DryRunOpt,
+    PublishFilePathOpt,
+)
 from imarina.core.defines import (
     DATETIME_FORMAT,
     FILENAME_PREFIX,
     FILENAME_SUFFIX,
     FTP_EXCEL_FILE_DATE_FORMAT,
+    MADRID_TZ,
     OUTPUT_DIR,
 )
 from imarina.core.ftp import upload_file_ftp
@@ -50,7 +71,10 @@ def select_file_to_upload(upload_dir: Path) -> Path | None:
         datetime_part = name[len(FILENAME_PREFIX) : -len(FILENAME_SUFFIX)]
 
         try:
-            parsed_dt = datetime.datetime.strptime(datetime_part, DATETIME_FORMAT)
+            # Filenames are stamped using NOW (core/defines.py), which is Madrid time.
+            parsed_dt = datetime.datetime.strptime(
+                datetime_part, DATETIME_FORMAT
+            ).replace(tzinfo=MADRID_TZ)
         except ValueError:
             logger.debug(
                 f"Could not parse datetime: {datetime_part}, from file: {file.name}"
@@ -72,12 +96,8 @@ def select_file_to_upload(upload_dir: Path) -> Path | None:
 
 
 def publish_controller(
-    file_path: Path = typer.Option(
-        None, help="Path to the iMarina Excel file to upload to the SFTP server"
-    ),
-    dry_run: bool = typer.Option(
-        True, help="Dry run, connect to FTP server but do not upload files"
-    ),
+    file_path: PublishFilePathOpt = DEFAULT_PUBLISH_FILE_PATH,
+    dry_run: DryRunOpt = DEFAULT_DRY_RUN,
 ) -> None:
     """
     Publishes an Excel file into the SFTP server of iMarina service.
@@ -99,7 +119,7 @@ def publish_controller(
     port = int(read_secret("FTP_PORT"))
     username = read_secret("FTP_USER")
     password = read_secret("FTP_PASSWORD")
-    upload_path = f"carga_icolet/icl_ag_personal_12539_{datetime.datetime.now().strftime(FTP_EXCEL_FILE_DATE_FORMAT)}.xlsx"
+    upload_path = f"carga_icolet/icl_ag_personal_12539_{datetime.datetime.now(MADRID_TZ).strftime(FTP_EXCEL_FILE_DATE_FORMAT)}.xlsx"
 
     logger.trace(
         f"path: {file_path}\n"
