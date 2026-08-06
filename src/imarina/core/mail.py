@@ -79,23 +79,23 @@ def send_email(
 
 def build_success_body(name: str, item_id: str, sharepoint_path: str) -> str:
     return (
-        f"Hola {name},\n\n"
-        f"T'informem que el workflow d'iMarina amb ID {item_id} s'ha completat correctament.\n\n"
-        f"El fitxer generat està disponible al SharePoint a la següent ruta:\n"
+        f"Hello {name},\n\n"
+        f"We inform you that the iMarina workflow with ID {item_id} has completed successfully.\n\n"
+        f"The generated file is available on SharePoint at the following path:\n"
         f"{sharepoint_path}\n\n"
-        f"Per a qualsevol dubte, contacta amb l'equip de Digitalització.\n\n"
-        f"Salutacions,\n\n"
-        f"(Aquest missatge ha estat auto-generat.)"
+        f"For any questions, contact the Digitalization team.\n\n"
+        f"Regards,\n\n"
+        f"(This message was auto-generated.)"
     )
 
 
 def build_error_body(name: str, item_id: str) -> str:
     return (
-        f"Hola {name},\n\n"
-        f"T'informem que el teu workflow d'iMarina amb ID {item_id} ha fallat.\n\n"
-        f"Si us plau, contacta amb l'equip de Digitalització per a més informació.\n\n"
-        f"Salutacions,\n\n"
-        f"(Aquest missatge ha estat auto-generat.)"
+        f"Hello {name},\n\n"
+        f"We inform you that your iMarina workflow with ID {item_id} has failed.\n\n"
+        f"Please contact the Digitalization team for more information.\n\n"
+        f"Regards,\n\n"
+        f"(This message was auto-generated.)"
     )
 
 
@@ -127,10 +127,10 @@ def mail_process(args: argparse.Namespace) -> None:
     print(f"Sending email to: {to_email} ({name})")
 
     if args.status == "success":
-        subject = f"iMarina - Workflow ID {args.id} completat correctament"
+        subject = f"iMarina - Workflow ID {args.id} completed successfully"
         body = build_success_body(name, args.id, args.sharepoint_path)
     else:
-        subject = f"iMarina - Workflow ID {args.id} ha fallat"
+        subject = f"iMarina - Workflow ID {args.id} failed"
         body = build_error_body(name, args.id)
 
     send_email(
