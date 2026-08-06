@@ -75,14 +75,14 @@ class TokenManager:
 def _create_token_manager() -> Any:
     # read the secrets and create a unique instance of TokenManager.
     if os.getenv("GITHUB_ACTIONS") == "true":
-        print(" Running in GitHub Actions — skipping TokenManager initialization")
+        logger.info("Running in GitHub Actions — skipping TokenManager initialization")
         return None
     tenant_id = read_secret(SecretName.TENANT_ID)
     client_id = read_secret(SecretName.CLIENT_ID)
     client_secret = read_secret(SecretName.CLIENT_SECRET)
     if not tenant_id or not client_id or not client_secret:
         raise ValueError(
-            "Falten valors de TENANT_ID, CLIENT_ID o CLIENT_SECRET als secrets."
+            "Missing values for TENANT_ID, CLIENT_ID or CLIENT_SECRET in secrets."
         )
     return TokenManager(
         tenant_id=tenant_id, client_id=client_id, client_secret=client_secret

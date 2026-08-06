@@ -68,7 +68,7 @@ def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any
 def upload_file(
     token_manager: TokenManager, drive_id: str, remote_path: str, local_file_path: str
 ) -> None:
-    print(f"Uploading from local path {local_file_path} to {remote_path}")
+    logger.info(f"Uploading from local path {local_file_path} to {remote_path}")
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?@microsoft.graph.conflictBehavior=replace"  # replace if the file have exist
     headers = {
         "Authorization": f"Bearer {token_manager.get_token()}",
@@ -79,7 +79,7 @@ def upload_file(
 
         response = requests.put(url, headers=headers, data=f, timeout=300)
         response.raise_for_status()
-    print("Upload done")
+    logger.info("Upload done")
 
 
 def upload_file_sharepoint(file_path: Path, target_folder: Path, drive_id: str) -> Any:
@@ -107,21 +107,21 @@ def upload_file_sharepoint(file_path: Path, target_folder: Path, drive_id: str) 
             response = requests.put(url, headers=headers, data=f, timeout=300)
 
         if response.status_code in (200, 201):
-            print(f"File '{filename}' uploaded successfully to {target_folder}.")
+            logger.info(f"File '{filename}' uploaded successfully to {target_folder}.")
         else:
 
             response.raise_for_status()
 
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError:
         if response.status_code == 404:
-            print(
-                f"Error: destination folder does not exist ({target_folder}) in SharePoint."
+            logger.error(
+                f"Destination folder does not exist ({target_folder}) in SharePoint."
             )
         else:
-            print(f"HTTP error uploading '{filename}': {e}")
+            logger.exception(f"HTTP error uploading '{filename}'")
         raise
-    except Exception as e:
-        print(f"Unexpected error uploading '{filename}': {e}")
+    except Exception:
+        logger.exception(f"Unexpected error uploading '{filename}'")
         raise
 
 
@@ -146,10 +146,10 @@ def download_files_in_folder_from_sharepoint(
     files_to_download = [f for f in items if f.get("file")]
 
     if not files_to_download:
-        print("No files to download in the SharePoint path.")
+        logger.warning("No files to download in the SharePoint path.")
         return
 
-    print(f"Found {len(files_to_download)} files. Downloading...")
+    logger.info(f"Found {len(files_to_download)} files. Downloading...")
 
     for remote_file in files_to_download:
         name = remote_file["name"]
@@ -161,9 +161,9 @@ def download_files_in_folder_from_sharepoint(
         if res_file.status_code == 200:
             with open(local_destiny_folder / name, "wb") as f:
                 f.write(res_file.content)
-            print(f"  {name} saved successfully.")
+            logger.debug(f"{name} saved successfully.")
         else:
-            print(f"  Error downloading {name}: {res_file.status_code}")
+            logger.error(f"Error downloading {name}: {res_file.status_code}")
 
 
 def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:

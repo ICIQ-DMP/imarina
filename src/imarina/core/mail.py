@@ -16,15 +16,16 @@
 
 import argparse
 import smtplib
-
-# from email.message import EmailMessage
 from email.mime.text import MIMEText
 
 import requests
 
+from imarina.core.log_utils import configure_logging_from_settings, get_logger
 from imarina.core.secret import SecretName, read_secret
 from imarina.core.sharepoint import get_list_id, get_site_id
 from imarina.core.token_manager import get_token_manager
+
+logger = get_logger(__name__)
 
 
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
@@ -74,7 +75,7 @@ def send_email(
         smtp_conn.login(username, password)
         smtp_conn.sendmail(from_email, [to_email], msg.as_string())
 
-    print("Email sent!")
+    logger.info("Email sent!")
 
 
 def build_success_body(name: str, item_id: str, sharepoint_path: str) -> str:
@@ -119,12 +120,12 @@ def mail_process(args: argparse.Namespace) -> None:
         get_token_manager(), site_id, read_secret(SecretName.LIST_NAME)
     )
 
-    print("Getting access token...")
+    logger.info("Getting access token...")
     token = get_access_token(tenant_id, client_id, client_secret)
 
-    print(f"Getting creator info for item ID {args.id}...")
+    logger.info(f"Getting creator info for item ID {args.id}...")
     to_email, name = get_creator_email(token, site_id, list_id, args.id)
-    print(f"Sending email to: {to_email} ({name})")
+    logger.info(f"Sending email to: {to_email} ({name})")
 
     if args.status == "success":
         subject = f"iMarina - Workflow ID {args.id} completed successfully"
@@ -143,10 +144,14 @@ def mail_process(args: argparse.Namespace) -> None:
         smtp_server,
         smtp_port,
     )
-    print("Email sent. Process complete.")
+    logger.info("Email sent. Process complete.")
 
 
 if __name__ == "__main__":
+    # This script is invoked directly by Jenkins (not through the Typer app), so
+    # logging must be configured here for the logger.info() calls above to show.
+    configure_logging_from_settings()
+
     parser = argparse.ArgumentParser(
         description="Send iMarina workflow notification email"
     )

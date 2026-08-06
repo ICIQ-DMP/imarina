@@ -38,20 +38,19 @@ def download_controller(
     input_dir: DirectoryOpt = Path("input"),
 ) -> None:
 
-    print(f" Starting download of input files from SharePoint into: {input_dir}")
+    logger.info(f"Starting download of input files from SharePoint into: {input_dir}")
 
     try:
         download_files_in_folder_from_sharepoint(
             read_secret(SecretName.DRIVE_ID), input_dir, Path(SHAREPOINT_INPUT_FOLDER)
         )
 
-        print(
-            f" DONE : Input files successfully downloaded to local directory: {input_dir}"
+        logger.info(
+            f"DONE: Input files successfully downloaded to local directory: {input_dir}"
         )
-    except Exception as e:
+    except Exception:
         # Intentionally broad: this step's real success/failure is verified by the
         # missing-file check below, which is what actually fails the pipeline.
-        print(f" Error downloading input files from SharePoint: {e}")
         logger.exception("Error downloading input files from SharePoint")
 
     try:
@@ -62,7 +61,7 @@ def download_controller(
 
         for url, filename in [(A3_link, "A3.xlsx"), (imarina_link, "iMarina.xlsx")]:
             if not url:
-                print(f"URL no found {filename}")
+                logger.warning(f"URL not found for {filename}")
                 continue
 
             import base64
@@ -77,12 +76,11 @@ def download_controller(
             response.raise_for_status()
             with open(input_dir / filename, "wb") as f:
                 f.write(response.content)
-            print(f"{filename} download successful")
+            logger.info(f"{filename} download successful")
 
-    except Exception as e:
+    except Exception:
         # Intentionally broad: same rationale as above, the missing-file check below
         # is the actual pass/fail signal for this pipeline stage.
-        print(f" Error getting parameters for MS List: {e}")
         logger.exception("Error getting parameters for MS List")
 
     missing = [
@@ -91,9 +89,9 @@ def download_controller(
         if not (input_dir / filename).exists()
     ]
     if missing:
-        print(f"Missing required input file(s) in {input_dir}:")
+        logger.error(f"Missing required input file(s) in {input_dir}:")
         for filename in missing:
-            print(f"   - {filename}")
+            logger.error(f"   - {filename}")
         raise typer.Exit(code=1)
 
-    print(f"All required input files are present in {input_dir}")
+    logger.info(f"All required input files are present in {input_dir}")

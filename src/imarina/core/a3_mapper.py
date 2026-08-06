@@ -156,7 +156,9 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
             row.values[A3_Field.UNIT_GROUP.value]
         ]
     except KeyError:
-        print(f"KeyError in UNIT_GROUP: {row.values[A3_Field.UNIT_GROUP.value]!r}")
+        logger.exception(
+            f"KeyError in UNIT_GROUP: {row.values[A3_Field.UNIT_GROUP.value]!r}"
+        )
         raise
 
     personal_web_val = translator[A3_Field.PERSONAL_WEB][entity_val]
