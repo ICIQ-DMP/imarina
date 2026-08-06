@@ -14,13 +14,12 @@ from rich.console import Console
 
 import imarina.commands.build.cli
 import imarina.commands.download.cli
-import imarina.commands.upload.cli
 import imarina.commands.publish.cli
-
+import imarina.commands.upload.cli
 import imarina.core.cli_global
 
 console = Console()
-app = typer.Typer(add_completion=False, help="imarina CLI", no_args_is_help=True)  #
+app = typer.Typer(add_completion=False, help="imarina CLI", no_args_is_help=True)
 
 # Use the imported modules directly
 app.callback()(imarina.core.cli_global.cli_global_callback)

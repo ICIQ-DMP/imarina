@@ -1,19 +1,16 @@
 import re
 from pathlib import Path
+from typing import Any, cast
 
 from imarina.core.a3_mapper import parse_a3_row_data
-from imarina.core.defines import PERMANENT_CONTRACT_DATE, NOW_DATA
-
+from imarina.core.defines import NOW_DATA, PERMANENT_CONTRACT_DATE
+from imarina.core.excel import Excel
 from imarina.core.imarina_mapper import (
-    parse_imarina_row_data,
     append_researchers_to_output_data,
+    parse_imarina_row_data,
 )
 from imarina.core.log_utils import get_logger
 from imarina.core.translations import build_translations
-
-from imarina.core.excel import Excel
-
-from typing import Any, cast
 
 logger = get_logger(__name__)
 
@@ -39,8 +36,6 @@ def build_upload_excel(
     entity_type_path: Any,
     job_description_entity_path: Any,
 ) -> None:
-
-
 
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
@@ -76,7 +71,7 @@ def build_upload_excel(
         "Phase 1: Check if the researchers in last upload to iMarina are still in A3"
     )
     for researcher_imarina in im_researchers:
-        logger.debug(f"Parsed data from iMarina row is: {str(researcher_imarina)}")
+        logger.debug(f"Parsed data from iMarina row is: {researcher_imarina!s}")
         researchers_matched_a3 = researcher_imarina.search_data(a3_researchers)
 
         if len(researchers_matched_a3) == 0:
@@ -94,7 +89,7 @@ def build_upload_excel(
                 "The current researcher is still present in A3 meaning the researcher is still in ICIQ."
             )
             researcher_a3 = researchers_matched_a3[0]
-            logger.debug(f"Matched A3 researcher is {str(researcher_a3)}")
+            logger.debug(f"Matched A3 researcher is {researcher_a3!s}")
             if (
                 researcher_a3.end_date is not None
                 and researcher_a3.end_date != PERMANENT_CONTRACT_DATE

@@ -3,7 +3,6 @@ from pathlib import Path
 import paramiko
 
 from imarina.core.log_utils import get_logger
-from typing import Optional
 
 logger = get_logger(__name__)
 
@@ -18,7 +17,7 @@ def upload_file_ftp(
     upload_filename: str,
 ) -> None:
     logger.info("Connecting to FTP server.")
-    ftp: Optional[paramiko.SFTPClient] = None
+    ftp: paramiko.SFTPClient | None = None
     try:
         serv = paramiko.Transport((host, port))
         serv.connect(username=username, password=password)

@@ -1,11 +1,11 @@
+import os
 import time
+from typing import Any
 
 import requests
 
-from imarina.core.secret import read_secret
-import os
 from imarina.core.log_utils import get_logger
-from typing import Any
+from imarina.core.secret import read_secret
 
 logger = get_logger(__name__)
 

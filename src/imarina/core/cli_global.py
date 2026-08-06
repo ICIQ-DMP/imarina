@@ -1,15 +1,17 @@
 import typer
 
-from imarina.core.log_utils import process_log_flags, configure_logging_from_settings
-
-from imarina.core.log_utils import get_logger
+from imarina.core.log_utils import (
+    configure_logging_from_settings,
+    get_logger,
+    process_log_flags,
+)
 from imarina.core.secret import read_secret
 from imarina.core.shared_options import (
-    VerboseOpt,
-    VeryVerboseOpt,
-    QuietOpt,
-    VeryQuietOpt,
     LogFileOpt,
+    QuietOpt,
+    VerboseOpt,
+    VeryQuietOpt,
+    VeryVerboseOpt,
 )
 
 

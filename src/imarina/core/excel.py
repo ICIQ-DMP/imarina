@@ -1,6 +1,9 @@
 from __future__ import annotations
+
+from collections.abc import Callable
 from pathlib import Path
-from typing import Optional, Any, Callable
+from typing import Any
+
 import pandas as pd
 
 from imarina.core.log_utils import get_logger
@@ -8,7 +11,7 @@ from imarina.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
-def get_val(row: pd.Series, field: int) -> Optional[Any]:
+def get_val(row: pd.Series, field: int) -> Any | None:
     val = row.values[field]
     if pd.isna(val):
         return None
@@ -18,9 +21,9 @@ def get_val(row: pd.Series, field: int) -> Optional[Any]:
 class Excel:
     def __init__(
         self,
-        path: Optional[Path],
+        path: Path | None,
         skiprows: int = 0,
-        header: Optional[int] = 0,
+        header: int | None = 0,
     ) -> None:
         if path is None:
             self.dataframe = pd.DataFrame()
@@ -31,8 +34,8 @@ class Excel:
         self,
         key: int,
         value: int,
-        func_apply_key: Optional[Callable[[Any], Any]] = None,
-        func_apply_value: Optional[Callable[[Any], Any]] = None,
+        func_apply_key: Callable[[Any], Any] | None = None,
+        func_apply_value: Callable[[Any], Any] | None = None,
     ) -> dict[Any, Any]:
         val_col = self.dataframe[value]
         key_col = self.dataframe[key]
@@ -52,7 +55,7 @@ class Excel:
         self.dataframe.to_excel(output_path, index=False)
         logger.info(f"iMarina Excel at {output_path} built successfully.")
 
-    def __copy__(self) -> "Excel":
+    def __copy__(self) -> Excel:
         empty = Excel(None)
         empty.dataframe = self.dataframe.copy()
         return empty

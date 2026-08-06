@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
-from typing import Optional, Any, cast
+from typing import Any, cast
+
 from rich.logging import RichHandler
 
 from imarina.core.defines import DATE_FORMAT, LogLevel, get_default_log_path
@@ -38,8 +39,8 @@ class SecretsFilter(logging.Filter):
 
 
 def setup_logging(
-    level: Optional[int | None],
-    log_file: Optional[str | Path] = None,
+    level: int | None,
+    log_file: str | Path | None = None,
     secrets: list[str] | None = None,
 ) -> None:
     # Default level is INFO
@@ -116,9 +117,9 @@ def process_log_flags(
 
 
 def configure_logging_from_settings(
-    level: Optional[LogLevel] = None,
-    log_file: Optional[Path] = None,
-    secrets: Optional[list[str]] = None,
+    level: LogLevel | None = None,
+    log_file: Path | None = None,
+    secrets: list[str] | None = None,
 ) -> None:
     if log_file is None:
         log_file = get_default_log_path()

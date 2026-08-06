@@ -1,10 +1,11 @@
 import argparse
-import requests
 import smtplib
-#from email.message import EmailMessage
-from email.mime.text import MIMEText
-from secret import read_secret
 
+# from email.message import EmailMessage
+from email.mime.text import MIMEText
+
+import requests
+from secret import read_secret
 
 
 def get_access_token(tenant_id, client_id, client_secret):
@@ -29,13 +30,14 @@ def get_creator_email(token, site_id, list_id, item_id):
     return fields.get("email", ""), fields.get("displayName", "")
 
 
-
-def send_email(to_email, subject, body, from_email, username, password, server: str, port: int):
+def send_email(
+    to_email, subject, body, from_email, username, password, server: str, port: int
+):
     # Create message
     msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = from_email
-    msg['To'] = to_email
+    msg["Subject"] = subject
+    msg["From"] = from_email
+    msg["To"] = to_email
 
     # Connect to Microsoft 365 SMTP
     with smtplib.SMTP(server, port) as server:
@@ -45,7 +47,6 @@ def send_email(to_email, subject, body, from_email, username, password, server: 
         server.sendmail(from_email, [to_email], msg.as_string())
 
     print("Email sent!")
-
 
 
 def build_success_body(name, item_id, sharepoint_path):
@@ -68,7 +69,6 @@ def build_error_body(name, item_id):
         f"Salutacions,\n\n"
         f"(Aquest missatge ha estat auto-generat.)"
     )
-
 
 
 def mail_process(args):
@@ -99,19 +99,33 @@ def mail_process(args):
         subject = f"iMarina - Workflow ID {args.id} ha fallat"
         body = build_error_body(name, args.id)
 
-    send_email(to_email, subject, body, smtp_user, smtp_user, smtp_password, smtp_server, smtp_port)
+    send_email(
+        to_email,
+        subject,
+        body,
+        smtp_user,
+        smtp_user,
+        smtp_password,
+        smtp_server,
+        smtp_port,
+    )
     print("Email sent. Process complete.")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Send iMarina workflow notification email")
+    parser = argparse.ArgumentParser(
+        description="Send iMarina workflow notification email"
+    )
     parser.add_argument("--id", required=True, help="MS List item ID")
-    parser.add_argument("--status", required=True, choices=["success", "error"], help="Workflow status")
-    parser.add_argument("--sharepoint-path", required=False, default="Institutional Strengthening/_Projects/iMarina_load_automation/output", help="SharePoint path of the generated file")
+    parser.add_argument(
+        "--status", required=True, choices=["success", "error"], help="Workflow status"
+    )
+    parser.add_argument(
+        "--sharepoint-path",
+        required=False,
+        default="Institutional Strengthening/_Projects/iMarina_load_automation/output",
+        help="SharePoint path of the generated file",
+    )
     args = parser.parse_args()
 
-
-
     mail_process(args)
-
-

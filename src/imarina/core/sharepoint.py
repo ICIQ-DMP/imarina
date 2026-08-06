@@ -1,14 +1,13 @@
 import os
 from pathlib import Path
-
-import requests
+from typing import Any
 from urllib.parse import quote
 
-from imarina.core.TokenManager import get_token_manager, TokenManager
-from datetime import datetime
-from typing import Any
+import requests
+
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import read_secret
+from imarina.core.TokenManager import TokenManager, get_token_manager
 
 logger = get_logger(__name__)
 access_token = get_token_manager()
@@ -72,9 +71,6 @@ def get_sharepoint_drive_id() -> str:
     return read_secret("DRIVE_ID")
 
 
-
-
-
 # Uploads a file to the SharePoint site 'Institutional Strengthening'.
 def upload_file_sharepoint(
     file_path: Path, target_folder: str
@@ -129,12 +125,13 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
     drive_id = get_sharepoint_drive_id()
 
     # sharepoint path
-    sharepoint_path = "Institutional Strengthening/_Projects/iMarina_load_automation/input"
+    sharepoint_path = (
+        "Institutional Strengthening/_Projects/iMarina_load_automation/input"
+    )
 
     # local folder exist
     local_path = Path(local_input_folder)
     local_path.mkdir(parents=True, exist_ok=True)
-
 
     try:
 
@@ -144,20 +141,24 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
         response = requests.get(url_list, headers=headers, timeout=30)
 
         if response.status_code != 200:
-            raise Exception(f"Error al listar SharePoint: {response.status_code} - {response.text}")
+            raise Exception(
+                f"Error al listar SharePoint: {response.status_code} - {response.text}"
+            )
 
-        items = response.json().get('value', [])
+        items = response.json().get("value", [])
         # only files (.xlsx)
-        files_to_download = [f for f in items if f.get('file') and f['name'].endswith('.xlsx')]
+        files_to_download = [
+            f for f in items if f.get("file") and f["name"].endswith(".xlsx")
+        ]
 
         if not files_to_download:
-            print(f"⚠️ No hay archivos .xlsx para descargar en la ruta de SharePoint.")
+            print("⚠️ No hay archivos .xlsx para descargar en la ruta de SharePoint.")
             return
 
         print(f"📂 Encontrados {len(files_to_download)} archivos. Descargando...")
 
         for remote_file in files_to_download:
-            name = remote_file['name']
+            name = remote_file["name"]
 
             url_download = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{remote_file['id']}/content"
 
@@ -175,36 +176,35 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
         raise e
 
 
-
-def get_parameters_list(operation_id : str):
+def get_parameters_list(operation_id: str):
     token_manager = get_token_manager()
     access_token = token_manager.get_token()
 
     sharepoint_domain = os.environ["SHAREPOINT_DOMAIN"]
-    site_name         = os.environ["SITE_NAME"]
-    list_name         = os.environ["LIST_NAME"]
-    #operation_id      = os.environ["OPERATION_ID"]
+    site_name = os.environ["SITE_NAME"]
+    list_name = os.environ["LIST_NAME"]
+    # operation_id      = os.environ["OPERATION_ID"]
 
     site_id = get_site_id(token_manager, sharepoint_domain, site_name)
 
-    #
     params = {
         "$expand": "fields($select=A3 Excel Link,iMarina Excel Link)",
-        "$select": "fields"
+        "$select": "fields",
     }
 
     list_url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{quote(list_name, safe='')}/items/{operation_id}?$expand=fields&$select=fields"
-    list_resp = requests.get(list_url, headers={"Authorization": f"Bearer {access_token}"})
+    list_resp = requests.get(
+        list_url, headers={"Authorization": f"Bearer {access_token}"}
+    )
     list_resp.raise_for_status()
 
     fields = list_resp.json().get("fields", {})
-    #print("DEBUG fields:", fields)
+    # print("DEBUG fields:", fields)
 
     a3_field = fields.get("A3_x0020_Excel_x0020_Link", {})
     imarina_field = fields.get("iMarina_x0020_Excel_x0020_Link", {})
 
     return a3_field.get("Url"), imarina_field.get("Url")
-
 
     ### IN PROCESS
 
