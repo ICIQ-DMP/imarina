@@ -17,12 +17,6 @@
 import datetime
 from pathlib import Path
 
-from imarina.core.cli_defaults import (
-    DEFAULT_DRY_RUN,
-    DEFAULT_PUBLISH_FILE_PATH,
-    DryRunOpt,
-    PublishFilePathOpt,
-)
 from imarina.core.defines import (
     DATETIME_FORMAT,
     FILENAME_PREFIX,
@@ -34,6 +28,12 @@ from imarina.core.defines import (
 from imarina.core.ftp import upload_file_ftp
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import read_secret
+from imarina.core.shared_options import (
+    DEFAULT_DRY_RUN,
+    DEFAULT_PUBLISH_FILE_PATH,
+    DryRunOpt,
+    PublishFilePathOpt,
+)
 
 logger = get_logger(__name__)
 

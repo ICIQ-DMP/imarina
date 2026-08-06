@@ -27,7 +27,7 @@ from imarina.core.token_manager import TokenManager, get_token_manager
 
 # Only re-exported (non-local) name needs listing here for mypy's strict-mode
 # reexport check; functions defined in this module don't need it.
-__all__ = ["get_token_manager"]
+__all__ = ["download_input_from_sharepoint", "get_parameters_list", "get_token_manager"]
 
 logger = get_logger(__name__)
 

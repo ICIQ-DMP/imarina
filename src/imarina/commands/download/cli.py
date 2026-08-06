@@ -21,7 +21,7 @@ import typer
 
 from imarina.core.defines import REQUIRED_INPUT_FILES
 from imarina.core.log_utils import get_logger
-from imarina.core.shared_options import DirectoryOpt
+from imarina.core.shared_options import DirectoryOpt, OperationIdOpt
 from imarina.core.sharepoint import (
     download_input_from_sharepoint,
     get_parameters_list,
@@ -33,20 +33,18 @@ logger = get_logger(__name__)
 
 def download_controller(
     ctx: typer.Context,
-    input_dir: DirectoryOpt = None,
-    id: str = typer.Option(..., help="Operation ID from MS List"),
+    input_dir: DirectoryOpt = Path("input"),
+    id: OperationIdOpt = ...,  # type: ignore[assignment]
 ) -> None:
-    #  path or input default
-    target_path = input_dir if input_dir is not None else Path("input")
 
-    print(f" Starting download of input files from SharePoint into: {target_path}")
+    print(f" Starting download of input files from SharePoint into: {input_dir}")
 
     try:
         # function download_input_from_sharepoint
-        download_input_from_sharepoint(str(target_path))
+        download_input_from_sharepoint(str(input_dir))
 
         print(
-            f" DONE : Input files successfully downloaded to local directory: {target_path}"
+            f" DONE : Input files successfully downloaded to local directory: {input_dir}"
         )
     except Exception as e:
         # Intentionally broad: this step's real success/failure is verified by the
@@ -75,7 +73,7 @@ def download_controller(
 
             response = requests.get(download_url, headers=headers, allow_redirects=True)
             response.raise_for_status()
-            with open(target_path / filename, "wb") as f:
+            with open(input_dir / filename, "wb") as f:
                 f.write(response.content)
             print(f"{filename} download successful")
 
@@ -88,12 +86,12 @@ def download_controller(
     missing = [
         filename
         for filename in REQUIRED_INPUT_FILES.values()
-        if not (target_path / filename).exists()
+        if not (input_dir / filename).exists()
     ]
     if missing:
-        print(f"Missing required input file(s) in {target_path}:")
+        print(f"Missing required input file(s) in {input_dir}:")
         for filename in missing:
             print(f"   - {filename}")
         raise typer.Exit(code=1)
 
-    print(f"All required input files are present in {target_path}")
+    print(f"All required input files are present in {input_dir}")

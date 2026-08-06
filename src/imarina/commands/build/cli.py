@@ -16,7 +16,9 @@
 
 import typer
 
-from imarina.core.cli_defaults import (
+from imarina.core.imarina_excel import build_upload_excel
+from imarina.core.log_utils import get_logger
+from imarina.core.shared_options import (
     DEFAULT_A3_INPUT,
     DEFAULT_COUNTRIES_DICT,
     DEFAULT_ENTITY_TYPE_PATH,
@@ -36,8 +38,6 @@ from imarina.core.cli_defaults import (
     PersonalWebPathOpt,
     UnitGroupPathOpt,
 )
-from imarina.core.imarina_excel import build_upload_excel
-from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
