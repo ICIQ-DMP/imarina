@@ -45,30 +45,28 @@ def upload_controller(
             if files:
                 file_path = max(files, key=lambda f: f.stat().st_mtime)
             else:
-                print(f"❌ Error: Not files Excel in  {uploads_dir}")
+                print(f"Error: Not files Excel in  {uploads_dir}")
                 raise typer.Exit(code=1)
         else:
-            print(
-                "❌ Error: No file specified and the 'output' folder does not exist.."
-            )
+            print("Error: No file specified and the 'output' folder does not exist..")
             raise typer.Exit(code=1)
 
     # the file not exist in the path
     if not file_path.exists():
-        print(f"❌ Error: The file no exist in the path: {file_path}")
+        print(f"Error: The file no exist in the path: {file_path}")
         raise typer.Exit(code=1)
 
-    print(f"📁 Local file detected: {file_path.name}")
-    print(f"☁️ Destination SharePoint: {target_folder}")
+    print(f"Local file detected: {file_path.name}")
+    print(f"Destination SharePoint: {target_folder}")
 
     try:
 
         upload_file_sharepoint(file_path, target_folder=str(target_folder))
-        print("✅ Upload to SharePoint completed successfully.")
+        print("Upload to SharePoint completed successfully.")
         logger.info(f"Successfully uploaded {file_path.name}")
 
     # Broad on purpose: CLI boundary turns any failure into a clean exit(1).
     except Exception as e:
-        print(f"❌ Error uploading to SharePoint: {e}")
+        print(f"Error uploading to SharePoint: {e}")
         logger.exception("Error uploading to SharePoint")
         raise typer.Exit(code=1) from e

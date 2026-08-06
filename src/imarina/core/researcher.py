@@ -174,7 +174,7 @@ class Researcher:
         return self.job_description != researcher.job_description
 
     def is_visitor(self) -> bool:
-        #  Si es codigo centro 4 tiende a ser  visitante
+        # Center code 4 tends to be a visitor
         if self.code_center == 4:
 
             job = str(self.job_description).lower()
@@ -183,20 +183,20 @@ class Researcher:
                 "manager",
                 "principal",
                 "head",
-            ]  # estos puestos normalmente no son visitantes ya que son puestos fijos
+            ]  # these positions are usually not visitors since they are permanent positions
 
-            # Si el job_description contiene una de esas keywords entonces NO es visitante
+            # If the job_description contains one of those keywords, then it's NOT a visitor
             return not any(key in job for key in permanent_keywords)
 
         if self.ini_date and self.end_date:
             duration = (self.end_date - self.ini_date).days
-            if duration < 90:  # Menos de 3 meses es casi siempre VISITANTE
+            if duration < 90:  # Less than 3 months is almost always a VISITOR
                 return True
 
         return False
 
 
-# normalitzar el nom del researcher
+# normalize the researcher's name
 def normalize_name(name: str) -> str:
     if not isinstance(name, str) or not name.strip():
         return ""

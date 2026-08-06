@@ -41,7 +41,7 @@ def upload_file_ftp(
     except Exception:
         logger.exception("Failed to connect to FTP server.")
         return
-    assert ftp is not None  # si ftp
+    assert ftp is not None  # if ftp
     logger.info("Connected to FTP server.")
 
     root_files = ftp.listdir()

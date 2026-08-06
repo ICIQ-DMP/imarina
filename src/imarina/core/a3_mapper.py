@@ -93,10 +93,10 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
             .replace(")", "")
             .strip()
         )
-        name = re.sub(r"\d+", "", name)  # eliminar números
+        name = re.sub(r"\d+", "", name)  # remove numbers
         name = "".join(
             c
-            for c in unicodedata.normalize("NFD", name)  # elimina accents
+            for c in unicodedata.normalize("NFD", name)  # remove accents
             if unicodedata.category(c) != "Mn"
         )
         return name.lower().strip()

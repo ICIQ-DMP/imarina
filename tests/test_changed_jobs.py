@@ -46,5 +46,5 @@ class Researcher:
     date_termination: date | None = None
 
 
-def d(s: str):  # petit helper per fer dates ràpid
+def d(s: str):  # small helper to quickly build dates
     return datetime.strptime(s, "%d/%m/%Y").replace(tzinfo=MADRID_TZ).date()

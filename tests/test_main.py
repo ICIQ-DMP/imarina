@@ -19,7 +19,7 @@ from datetime import date
 from imarina.core.researcher import Researcher
 
 
-# test de prueba
+# placeholder test
 def test_demo():
     assert 1 + 1 == 2
 

@@ -67,7 +67,7 @@ def get_drive_id(
     for drive in drives:
         if drive["name"] == drive_name:
             return drive["id"]
-    raise SharePointError(f"Drive '{drive_name}' no encontrado en el site.")
+    raise SharePointError(f"Drive '{drive_name}' not found in the site.")
 
 
 def upload_file(
@@ -84,7 +84,7 @@ def upload_file(
 
         response = requests.put(url, headers=headers, data=f, timeout=300)
         response.raise_for_status()
-    print("✅ Upload Done")
+    print("Upload done")
 
 
 # in this function read the folder in path: SECRETS / new file added DRIVE_ID
@@ -123,7 +123,7 @@ def upload_file_sharepoint(
             response = requests.put(url, headers=headers, data=f, timeout=300)
 
         if response.status_code in (200, 201):
-            print(f"✅ Archivo '{filename}' subido correctamente a {target_folder}.")
+            print(f"File '{filename}' uploaded successfully to {target_folder}.")
         else:
 
             response.raise_for_status()
@@ -131,18 +131,18 @@ def upload_file_sharepoint(
     except requests.exceptions.HTTPError as e:
         if response.status_code == 404:
             print(
-                f"❌ Error: La carpeta destino no existe ({target_folder}) en SharePoint."
+                f"Error: destination folder does not exist ({target_folder}) in SharePoint."
             )
         else:
-            print(f"❌ Error HTTP al subir '{filename}': {e}")
+            print(f"HTTP error uploading '{filename}': {e}")
         raise
     except Exception as e:
-        print(f"❌ Error inesperado al subir '{filename}': {e}")
+        print(f"Unexpected error uploading '{filename}': {e}")
         raise
 
 
 def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
-    print("--- Iniciando proceso de DESCARGA desde SharePoint ---")
+    print("--- Starting DOWNLOAD process from SharePoint ---")
 
     token_manager = get_token_manager()
     drive_id = get_sharepoint_drive_id()
@@ -165,7 +165,7 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
 
         if response.status_code != 200:
             raise SharePointError(
-                f"Error al listar SharePoint: {response.status_code} - {response.text}"
+                f"Error listing SharePoint: {response.status_code} - {response.text}"
             )
 
         items = response.json().get("value", [])
@@ -175,10 +175,10 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
         ]
 
         if not files_to_download:
-            print("⚠️ No hay archivos .xlsx para descargar en la ruta de SharePoint.")
+            print("No .xlsx files to download in the SharePoint path.")
             return
 
-        print(f"📂 Encontrados {len(files_to_download)} archivos. Descargando...")
+        print(f"Found {len(files_to_download)} files. Downloading...")
 
         for remote_file in files_to_download:
             name = remote_file["name"]
@@ -190,12 +190,12 @@ def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
             if res_file.status_code == 200:
                 with open(local_path / name, "wb") as f:
                     f.write(res_file.content)
-                print(f"  ✅ {name} guardado con éxito.")
+                print(f"  {name} saved successfully.")
             else:
-                print(f"  ❌ Error al bajar {name}: {res_file.status_code}")
+                print(f"  Error downloading {name}: {res_file.status_code}")
 
     except Exception as e:
-        print(f"❌ Fallo crítico en la descarga: {e}")
+        print(f"Critical failure during download: {e}")
         raise
 
 

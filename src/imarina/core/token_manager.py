@@ -47,7 +47,7 @@ class TokenManager:
         # return a valid token and if the token has expired or is about to expire , request a new token.
         if (
             self.access_token is None or time.time() >= self.expires_at - 300
-        ):  # Refresca si falten <5 minuts
+        ):  # Refresh if less than 5 minutes remain
             self._refresh_token()
         return self.access_token
 
@@ -64,7 +64,7 @@ class TokenManager:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             raise RuntimeError(
-                f"Error demanant el token d'accés: {e}\nResposta: {response.text}"
+                f"Error requesting access token: {e}\nResponse: {response.text}"
             )
 
         token_data = response.json()

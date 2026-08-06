@@ -31,9 +31,6 @@ from imarina.core.sharepoint import (
 logger = get_logger(__name__)
 
 
-#  downloads files from sharepoint, configure arg for download dir using the diretoryOpt shared options
-
-
 def download_controller(
     ctx: typer.Context,
     input_dir: DirectoryOpt = None,
@@ -80,7 +77,7 @@ def download_controller(
             response.raise_for_status()
             with open(target_path / filename, "wb") as f:
                 f.write(response.content)
-            print(f"✅ {filename} download successful")
+            print(f"{filename} download successful")
 
     except Exception as e:
         # Intentionally broad: same rationale as above, the missing-file check below
@@ -94,9 +91,9 @@ def download_controller(
         if not (target_path / filename).exists()
     ]
     if missing:
-        print(f"❌ Missing required input file(s) in {target_path}:")
+        print(f"Missing required input file(s) in {target_path}:")
         for filename in missing:
             print(f"   - {filename}")
         raise typer.Exit(code=1)
 
-    print(f"✅ All required input files are present in {target_path}")
+    print(f"All required input files are present in {target_path}")
