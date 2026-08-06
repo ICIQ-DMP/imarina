@@ -45,7 +45,7 @@ DirectoryOpt = Annotated[
         dir_okay=True,
         readable=True,
         resolve_path=True,
-        help="Path to a directory. If omitted, the current directory is used.",
+        help="Path to a directory",
     ),
 ]
 
