@@ -21,39 +21,40 @@ import requests
 import urllib3
 
 from imarina.core.log_utils import get_logger
+from imarina.core.secret_name import SecretName
 
 logger = get_logger(__name__)
 
 _VAULT_BASE_PATH = "secret/data/imarina"
 
 # Maps app-level secret names to (vault subpath, vault field key)
-_SECRET_MAP = {
+_SECRET_MAP: dict[SecretName, tuple[str, str]] = {
     # sharepoint (secret/imarina/runtime/sharepoint)
-    "CLIENT_ID": ("runtime/sharepoint", "client_id"),
-    "CLIENT_NAME": ("runtime/sharepoint", "client_name"),
-    "CLIENT_SECRET": ("runtime/sharepoint", "client_secret"),
-    "DRIVE_ID": ("runtime/sharepoint", "drive_id"),
-    "SHAREPOINT_DOMAIN": ("runtime/sharepoint", "domain"),
-    "SITE_NAME": ("runtime/sharepoint", "site_name"),
-    "TENANT_ID": ("runtime/sharepoint", "tenant_id"),
+    SecretName.CLIENT_ID: ("runtime/sharepoint", "client_id"),
+    SecretName.CLIENT_NAME: ("runtime/sharepoint", "client_name"),
+    SecretName.CLIENT_SECRET: ("runtime/sharepoint", "client_secret"),
+    SecretName.DRIVE_ID: ("runtime/sharepoint", "drive_id"),
+    SecretName.SHAREPOINT_DOMAIN: ("runtime/sharepoint", "domain"),
+    SecretName.SITE_NAME: ("runtime/sharepoint", "site_name"),
+    SecretName.TENANT_ID: ("runtime/sharepoint", "tenant_id"),
     # ftp (secret/imarina/runtime/ftp)
-    "FTP_HOST": ("runtime/ftp", "host"),
-    "FTP_PASSWORD": ("runtime/ftp", "password"),
-    "FTP_PORT": ("runtime/ftp", "port"),
-    "FTP_UPLOAD_FILENAME": ("runtime/ftp", "upload_filename"),
-    "FTP_USER": ("runtime/ftp", "user"),
+    SecretName.FTP_HOST: ("runtime/ftp", "host"),
+    SecretName.FTP_PASSWORD: ("runtime/ftp", "password"),
+    SecretName.FTP_PORT: ("runtime/ftp", "port"),
+    SecretName.FTP_UPLOAD_FILENAME: ("runtime/ftp", "upload_filename"),
+    SecretName.FTP_USER: ("runtime/ftp", "user"),
     # ssh admin (secret/imarina/admin/ssh)
-    "SSH_HOST": ("admin/ssh", "host"),
-    "SSH_PASSWORD": ("admin/ssh", "password"),
-    "SSH_USERNAME": ("admin/ssh", "username"),
+    SecretName.SSH_HOST: ("admin/ssh", "host"),
+    SecretName.SSH_PASSWORD: ("admin/ssh", "password"),
+    SecretName.SSH_USERNAME: ("admin/ssh", "username"),
     # jenkins admin (secret/imarina/admin/jenkins)
-    "JENKINS_PASSWORD": ("admin/jenkins", "password"),
-    "JENKINS_USERNAME": ("admin/jenkins", "username"),
+    SecretName.JENKINS_PASSWORD: ("admin/jenkins", "password"),
+    SecretName.JENKINS_USERNAME: ("admin/jenkins", "username"),
     # smtp credentials (secret/imarina/runtime/smtp)
-    "SMTP_USERNAME": ("runtime/smtp", "username"),
-    "SMTP_PASSWORD": ("runtime/smtp", "password"),
-    "SMTP_HOST": ("runtime/smtp", "host"),
-    "SMTP_PORT": ("runtime/smtp", "port"),
+    SecretName.SMTP_USERNAME: ("runtime/smtp", "username"),
+    SecretName.SMTP_PASSWORD: ("runtime/smtp", "password"),
+    SecretName.SMTP_HOST: ("runtime/smtp", "host"),
+    SecretName.SMTP_PORT: ("runtime/smtp", "port"),
 }
 
 
@@ -135,7 +136,7 @@ class _VaultClient:
         self._cache[subpath] = data
         return data
 
-    def read_secret(self, secret_name: str) -> str:
+    def read_secret(self, secret_name: SecretName) -> str:
         if secret_name not in _SECRET_MAP:
             raise KeyError(f"No vault mapping defined for secret '{secret_name}'")
         subpath, field = _SECRET_MAP[secret_name]
@@ -153,7 +154,7 @@ class _VaultClient:
 _client: _VaultClient | None = None
 
 
-def read_vault_secret(secret_name: str) -> str:
+def read_vault_secret(secret_name: SecretName) -> str:
     """Return the value of *secret_name* fetched from Vault.
 
     Raises KeyError  if the secret has no vault mapping or the field is absent.

@@ -17,46 +17,19 @@
 # import sys
 import os
 from collections.abc import Callable
-from enum import StrEnum
 
 import requests
 
 from imarina.core.filesystem import read_env_var, read_file_content
 from imarina.core.log_utils import get_logger
+from imarina.core.secret_name import SecretName
 from imarina.core.vault import read_vault_secret
 
+# Re-exported (non-local) name needed here for mypy's strict-mode reexport
+# check, since callers do `from imarina.core.secret import SecretName`.
+__all__ = ["SecretName", "read_secret"]
+
 logger = get_logger(__name__)
-
-
-class SecretName(StrEnum):
-    """All secret names that can be resolved via read_secret()."""
-
-    CLIENT_ID = "CLIENT_ID"
-    CLIENT_NAME = "CLIENT_NAME"
-    CLIENT_SECRET = "CLIENT_SECRET"
-    DRIVE_ID = "DRIVE_ID"
-    SHAREPOINT_DOMAIN = "SHAREPOINT_DOMAIN"
-    SITE_NAME = "SITE_NAME"
-    TENANT_ID = "TENANT_ID"
-    LIST_NAME = "LIST_NAME"
-
-    FTP_HOST = "FTP_HOST"
-    FTP_PASSWORD = "FTP_PASSWORD"
-    FTP_PORT = "FTP_PORT"
-    FTP_UPLOAD_FILENAME = "FTP_UPLOAD_FILENAME"
-    FTP_USER = "FTP_USER"
-
-    SSH_HOST = "SSH_HOST"
-    SSH_PASSWORD = "SSH_PASSWORD"
-    SSH_USERNAME = "SSH_USERNAME"
-
-    JENKINS_PASSWORD = "JENKINS_PASSWORD"
-    JENKINS_USERNAME = "JENKINS_USERNAME"
-
-    SMTP_USERNAME = "SMTP_USERNAME"
-    SMTP_PASSWORD = "SMTP_PASSWORD"
-    SMTP_HOST = "SMTP_HOST"
-    SMTP_PORT = "SMTP_PORT"
 
 
 def read_secret(secret_name: SecretName) -> str:
