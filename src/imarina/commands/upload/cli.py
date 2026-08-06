@@ -19,6 +19,7 @@ from pathlib import Path
 import typer
 
 from imarina.core.log_utils import get_logger
+from imarina.core.secret import SecretName, read_secret
 from imarina.core.shared_options import (
     DEFAULT_TARGET_FOLDER,
     DEFAULT_UPLOAD_FILE_PATH,
@@ -61,7 +62,11 @@ def upload_controller(
 
     try:
 
-        upload_file_sharepoint(file_path, target_folder=str(target_folder))
+        upload_file_sharepoint(
+            file_path=file_path,
+            target_folder=target_folder,
+            drive_id=read_secret(SecretName.DRIVE_ID),
+        )
         print("Upload to SharePoint completed successfully.")
         logger.info(f"Successfully uploaded {file_path.name}")
 

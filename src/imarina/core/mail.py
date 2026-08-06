@@ -22,7 +22,9 @@ from email.mime.text import MIMEText
 
 import requests
 
-from imarina.core.secret import read_secret
+from imarina.core.secret import SecretName, read_secret
+from imarina.core.sharepoint import get_list_id, get_site_id
+from imarina.core.token_manager import get_token_manager
 
 
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
@@ -99,17 +101,23 @@ def build_error_body(name: str, item_id: str) -> str:
 
 def mail_process(args: argparse.Namespace) -> None:
 
-    smtp_password = read_secret("SMTP_PASSWORD")
-    smtp_user = read_secret("SMTP_USERNAME")
-    smtp_server = read_secret("SMTP_HOST")
-    smtp_port = int(read_secret("SMTP_PORT"))
+    smtp_password = read_secret(SecretName.SMTP_PASSWORD)
+    smtp_user = read_secret(SecretName.SMTP_USERNAME)
+    smtp_server = read_secret(SecretName.SMTP_HOST)
+    smtp_port = int(read_secret(SecretName.SMTP_PORT))
 
     # credentials MS GRAPH
-    tenant_id = read_secret("TENANT_ID")
-    client_id = read_secret("CLIENT_ID")
-    client_secret = read_secret("CLIENT_SECRET")
-    site_id = read_secret("MS_SITE_ID")
-    list_id = read_secret("MS_LIST_ID")
+    tenant_id = read_secret(SecretName.TENANT_ID)
+    client_id = read_secret(SecretName.CLIENT_ID)
+    client_secret = read_secret(SecretName.CLIENT_SECRET)
+    site_id = get_site_id(
+        get_token_manager(),
+        read_secret(SecretName.SHAREPOINT_DOMAIN),
+        read_secret(SecretName.SITE_NAME),
+    )
+    list_id = get_list_id(
+        get_token_manager(), site_id, read_secret(SecretName.LIST_NAME)
+    )
 
     print("Getting access token...")
     token = get_access_token(tenant_id, client_id, client_secret)

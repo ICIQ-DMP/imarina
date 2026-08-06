@@ -17,6 +17,7 @@
 # import sys
 import os
 from collections.abc import Callable
+from enum import StrEnum
 
 import requests
 
@@ -27,7 +28,38 @@ from imarina.core.vault import read_vault_secret
 logger = get_logger(__name__)
 
 
-def read_secret(secret_name: str) -> str:
+class SecretName(StrEnum):
+    """All secret names that can be resolved via read_secret()."""
+
+    CLIENT_ID = "CLIENT_ID"
+    CLIENT_NAME = "CLIENT_NAME"
+    CLIENT_SECRET = "CLIENT_SECRET"
+    DRIVE_ID = "DRIVE_ID"
+    SHAREPOINT_DOMAIN = "SHAREPOINT_DOMAIN"
+    SITE_NAME = "SITE_NAME"
+    TENANT_ID = "TENANT_ID"
+    LIST_NAME = "LIST_NAME"
+
+    FTP_HOST = "FTP_HOST"
+    FTP_PASSWORD = "FTP_PASSWORD"
+    FTP_PORT = "FTP_PORT"
+    FTP_UPLOAD_FILENAME = "FTP_UPLOAD_FILENAME"
+    FTP_USER = "FTP_USER"
+
+    SSH_HOST = "SSH_HOST"
+    SSH_PASSWORD = "SSH_PASSWORD"
+    SSH_USERNAME = "SSH_USERNAME"
+
+    JENKINS_PASSWORD = "JENKINS_PASSWORD"
+    JENKINS_USERNAME = "JENKINS_USERNAME"
+
+    SMTP_USERNAME = "SMTP_USERNAME"
+    SMTP_PASSWORD = "SMTP_PASSWORD"
+    SMTP_HOST = "SMTP_HOST"
+    SMTP_PORT = "SMTP_PORT"
+
+
+def read_secret(secret_name: SecretName) -> str:
     """Retrieve a secret from predefined sources in order of priority."""
     sources: list[Callable[[], str]] = [
         lambda: read_file_content(f"/run/secrets/{secret_name}"),
@@ -66,6 +98,3 @@ def read_secret(secret_name: str) -> str:
             logger.debug(f"Secret source unavailable for '{secret_name}': {e}")
             continue
     raise RuntimeError(f"Could not read {secret_name} from any source")
-
-    # print(f"Could not read {secret_name} from any source")
-    # sys.exit(1)

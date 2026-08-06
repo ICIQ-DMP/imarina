@@ -62,7 +62,7 @@ pipeline {
 
               '''
               sh """
-                  \$IMARINA_CMD download --id ${params.ID}
+                  \$IMARINA_CMD download ${params.ID}
                   ls -R input
               """
         }

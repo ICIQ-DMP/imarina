@@ -41,6 +41,10 @@ FILENAME_PREFIX = "iMarina_upload_"
 FILENAME_SUFFIX = ".xlsx"
 FTP_EXCEL_FILE_DATE_FORMAT = "%y%m%d"
 
+SHAREPOINT_INPUT_FOLDER = (
+    "Institutional Strengthening/_Projects/iMarina_load_automation/input"
+)
+
 # Single source of truth for the input files `build` needs and `download` must
 # provide, under these exact names, in the same flat directory (default:
 # PROJECT_DIR / "input"). Keyed by role so callers can refer to files by

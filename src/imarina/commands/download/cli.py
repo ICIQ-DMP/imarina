@@ -19,11 +19,12 @@ from pathlib import Path
 import requests
 import typer
 
-from imarina.core.defines import REQUIRED_INPUT_FILES
+from imarina.core.defines import REQUIRED_INPUT_FILES, SHAREPOINT_INPUT_FOLDER
 from imarina.core.log_utils import get_logger
+from imarina.core.secret import SecretName, read_secret
 from imarina.core.shared_options import DirectoryOpt, OperationIdOpt
 from imarina.core.sharepoint import (
-    download_input_from_sharepoint,
+    download_files_in_folder_from_sharepoint,
     get_parameters_list,
     get_token_manager,
 )
@@ -33,15 +34,16 @@ logger = get_logger(__name__)
 
 def download_controller(
     ctx: typer.Context,
+    id_element: OperationIdOpt,
     input_dir: DirectoryOpt = Path("input"),
-    id: OperationIdOpt = ...,  # type: ignore[assignment]
 ) -> None:
 
     print(f" Starting download of input files from SharePoint into: {input_dir}")
 
     try:
-        # function download_input_from_sharepoint
-        download_input_from_sharepoint(str(input_dir))
+        download_files_in_folder_from_sharepoint(
+            read_secret(SecretName.DRIVE_ID), input_dir, Path(SHAREPOINT_INPUT_FOLDER)
+        )
 
         print(
             f" DONE : Input files successfully downloaded to local directory: {input_dir}"
@@ -54,7 +56,7 @@ def download_controller(
 
     try:
         # Function get_parameters_list and download the links(url) of Excels (A3 Excel and iMarina Excel)
-        A3_link, imarina_link = get_parameters_list(id)
+        A3_link, imarina_link = get_parameters_list(str(id_element))
         token_manager = get_token_manager()  # get token
         headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
 

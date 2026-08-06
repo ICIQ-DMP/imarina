@@ -1,3 +1,19 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import typer
 
 from imarina.core.log_utils import (
@@ -5,7 +21,7 @@ from imarina.core.log_utils import (
     get_logger,
     process_log_flags,
 )
-from imarina.core.secret import read_secret
+from imarina.core.secret import SecretName, read_secret
 from imarina.core.shared_options import (
     LogFileOpt,
     QuietOpt,
@@ -39,7 +55,9 @@ def cli_global_callback(
         )
 
     configure_logging_from_settings(
-        level=cli_log_level, log_file=log_file, secrets=[read_secret("FTP_PASSWORD")]
+        level=cli_log_level,
+        log_file=log_file,
+        secrets=[read_secret(SecretName.FTP_PASSWORD)],
     )
     logger = get_logger(__name__)
 

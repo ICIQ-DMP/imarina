@@ -27,7 +27,7 @@ from imarina.core.defines import (
 )
 from imarina.core.ftp import upload_file_ftp
 from imarina.core.log_utils import get_logger
-from imarina.core.secret import read_secret
+from imarina.core.secret import SecretName, read_secret
 from imarina.core.shared_options import (
     DEFAULT_DRY_RUN,
     DEFAULT_PUBLISH_FILE_PATH,
@@ -115,10 +115,10 @@ def publish_controller(
                 f"No Excel file found to upload in directory: {OUTPUT_DIR}"
             )
 
-    host = read_secret("FTP_HOST")
-    port = int(read_secret("FTP_PORT"))
-    username = read_secret("FTP_USER")
-    password = read_secret("FTP_PASSWORD")
+    host = read_secret(SecretName.FTP_HOST)
+    port = int(read_secret(SecretName.FTP_PORT))
+    username = read_secret(SecretName.FTP_USER)
+    password = read_secret(SecretName.FTP_PASSWORD)
     upload_path = f"carga_icolet/icl_ag_personal_12539_{datetime.datetime.now(MADRID_TZ).strftime(FTP_EXCEL_FILE_DATE_FORMAT)}.xlsx"
 
     logger.trace(

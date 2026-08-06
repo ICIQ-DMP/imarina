@@ -14,20 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from urllib.parse import quote
 
 import requests
 
 from imarina.core.log_utils import get_logger
-from imarina.core.secret import read_secret
+from imarina.core.secret import SecretName, read_secret
 from imarina.core.token_manager import TokenManager, get_token_manager
 
 # Only re-exported (non-local) name needs listing here for mypy's strict-mode
 # reexport check; functions defined in this module don't need it.
-__all__ = ["download_input_from_sharepoint", "get_parameters_list", "get_token_manager"]
+__all__ = [
+    "download_files_in_folder_from_sharepoint",
+    "get_parameters_list",
+    "get_token_manager",
+]
 
 logger = get_logger(__name__)
 
@@ -36,14 +39,22 @@ class SharePointError(Exception):
     """Raised when a SharePoint Graph API call fails or returns unexpected data."""
 
 
-def list_drives() -> None:
+def get_list_id(token_manager: TokenManager, site_id: str, list_name: str) -> str:
+    """Return the GUID of the named SharePoint list.
 
-    token_manager = get_token_manager()
+    Args:
+        token_manager: Authenticated token manager.
+        site_id: SharePoint site identifier.
+        list_name: Display name of the target list.
+
+    Returns:
+        The list's Graph API GUID string.
+    """
+    url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_name}"
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
-
-    url = "https://graph.microsoft.com/v1.0/sites/iciq.sharepoint.com:/sites/digitalitzacio-InstitutionalStrengthening:/drives"
     response = requests.get(url, headers=headers)
-    print(response.json())
+    response.raise_for_status()
+    return cast(str, response.json()["id"])
 
 
 def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any:
@@ -52,22 +63,6 @@ def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any
     response = requests.get(url, headers=headers, timeout=60)
     response.raise_for_status()
     return response.json()["id"]
-
-
-def get_drive_id(
-    token_manager: TokenManager, site_id: str, drive_name: str = "Documents"
-) -> Any:
-    encoded_site_id = quote(site_id, safe="")
-
-    url = f"https://graph.microsoft.com/v1.0/sites/{encoded_site_id}/drives"  # Obtain the ID from drive(library documents) from site
-    headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    drives = response.json().get("value", [])
-    for drive in drives:
-        if drive["name"] == drive_name:
-            return drive["id"]
-    raise SharePointError(f"Drive '{drive_name}' not found in the site.")
 
 
 def upload_file(
@@ -87,37 +82,26 @@ def upload_file(
     print("Upload done")
 
 
-# in this function read the folder in path: SECRETS / new file added DRIVE_ID
+def upload_file_sharepoint(file_path: Path, target_folder: Path, drive_id: str) -> Any:
+    """
+    Uploads a file to a SharePoint site
 
+    Args:
+        file_path:
+        target_folder:
+        drive_id:
 
-def get_sharepoint_drive_id() -> str:
-    return read_secret("DRIVE_ID")
+    Returns:
 
-
-# Uploads a file to the SharePoint site 'Institutional Strengthening'.
-def upload_file_sharepoint(
-    file_path: Path, target_folder: str
-) -> (
-    Any
-):  # Args: file_path: Local file path to upload.  target_folder: Relative path inside drive(ex:'Uploads/2025-10').
-    if isinstance(file_path, str):
-        file_path = Path(file_path)
+    """
 
     token_manager = get_token_manager()
 
-    drive_id = (
-        get_sharepoint_drive_id()
-    )  # drive_id is read in a method (get_sharepoint_drive_id)
-
     filename = file_path.name
-    remote_path = f"{target_folder}/{filename}".strip("/")
+    remote_path = f"{target_folder}/{filename}"
 
-    # 5.Return URL confirmation
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?%40microsoft.graph.conflictBehavior=replace"
-    headers = {
-        "Authorization": f"Bearer {token_manager.get_token()}",
-        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    }
+    headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
     try:
         with open(file_path, "rb") as f:
             response = requests.put(url, headers=headers, data=f, timeout=300)
@@ -141,72 +125,54 @@ def upload_file_sharepoint(
         raise
 
 
-def download_input_from_sharepoint(local_input_folder: str = "input") -> Any:
-    print("--- Starting DOWNLOAD process from SharePoint ---")
-
+def download_files_in_folder_from_sharepoint(
+    drive_id: str, local_destiny_folder: Path, remote_origin_folder: Path
+) -> Any:
     token_manager = get_token_manager()
-    drive_id = get_sharepoint_drive_id()
 
-    # sharepoint path
-    sharepoint_path = (
-        "Institutional Strengthening/_Projects/iMarina_load_automation/input"
-    )
+    local_destiny_folder.mkdir(parents=True, exist_ok=True)
 
-    # local folder exist
-    local_path = Path(local_input_folder)
-    local_path.mkdir(parents=True, exist_ok=True)
+    url_list = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_origin_folder}:/children"
+    headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
 
-    try:
+    response = requests.get(url_list, headers=headers, timeout=30)
 
-        url_list = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{sharepoint_path}:/children"
-        headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
+    if response.status_code != 200:
+        raise SharePointError(
+            f"Error listing SharePoint: {response.status_code} - {response.text}"
+        )
 
-        response = requests.get(url_list, headers=headers, timeout=30)
+    items = response.json().get("value", [])
+    files_to_download = [f for f in items if f.get("file")]
 
-        if response.status_code != 200:
-            raise SharePointError(
-                f"Error listing SharePoint: {response.status_code} - {response.text}"
-            )
+    if not files_to_download:
+        print("No files to download in the SharePoint path.")
+        return
 
-        items = response.json().get("value", [])
-        # only files (.xlsx)
-        files_to_download = [
-            f for f in items if f.get("file") and f["name"].endswith(".xlsx")
-        ]
+    print(f"Found {len(files_to_download)} files. Downloading...")
 
-        if not files_to_download:
-            print("No .xlsx files to download in the SharePoint path.")
-            return
+    for remote_file in files_to_download:
+        name = remote_file["name"]
 
-        print(f"Found {len(files_to_download)} files. Downloading...")
+        url_download = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{remote_file['id']}/content"
 
-        for remote_file in files_to_download:
-            name = remote_file["name"]
+        res_file = requests.get(url_download, headers=headers, timeout=300)
 
-            url_download = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{remote_file['id']}/content"
-
-            res_file = requests.get(url_download, headers=headers, timeout=300)
-
-            if res_file.status_code == 200:
-                with open(local_path / name, "wb") as f:
-                    f.write(res_file.content)
-                print(f"  {name} saved successfully.")
-            else:
-                print(f"  Error downloading {name}: {res_file.status_code}")
-
-    except Exception as e:
-        print(f"Critical failure during download: {e}")
-        raise
+        if res_file.status_code == 200:
+            with open(local_destiny_folder / name, "wb") as f:
+                f.write(res_file.content)
+            print(f"  {name} saved successfully.")
+        else:
+            print(f"  Error downloading {name}: {res_file.status_code}")
 
 
 def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
     token_manager = get_token_manager()
     access_token = token_manager.get_token()
 
-    sharepoint_domain = os.environ["SHAREPOINT_DOMAIN"]
-    site_name = os.environ["SITE_NAME"]
-    list_name = os.environ["LIST_NAME"]
-    # operation_id      = os.environ["OPERATION_ID"]
+    sharepoint_domain = read_secret(SecretName.SHAREPOINT_DOMAIN)
+    site_name = read_secret(SecretName.SITE_NAME)
+    list_name = read_secret(SecretName.LIST_NAME)
 
     site_id = get_site_id(token_manager, sharepoint_domain, site_name)
 
@@ -217,19 +183,8 @@ def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
     list_resp.raise_for_status()
 
     fields = list_resp.json().get("fields", {})
-    # print("DEBUG fields:", fields)
 
     a3_field = fields.get("A3_x0020_Excel_x0020_Link", {})
     imarina_field = fields.get("iMarina_x0020_Excel_x0020_Link", {})
 
     return a3_field.get("Url"), imarina_field.get("Url")
-
-    ### IN PROCESS
-
-
-def folder_exists(token_manager: TokenManager, drive_id: str, folder_path: str) -> bool:
-    url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{folder_path}"
-    headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
-
-    response = requests.get(url, headers=headers, timeout=60)
-    return response.status_code == 200

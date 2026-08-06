@@ -21,7 +21,7 @@ from typing import Any
 import requests
 
 from imarina.core.log_utils import get_logger
-from imarina.core.secret import read_secret
+from imarina.core.secret import SecretName, read_secret
 
 logger = get_logger(__name__)
 
@@ -77,9 +77,9 @@ def _create_token_manager() -> Any:
     if os.getenv("GITHUB_ACTIONS") == "true":
         print(" Running in GitHub Actions — skipping TokenManager initialization")
         return None
-    tenant_id = read_secret("TENANT_ID")
-    client_id = read_secret("CLIENT_ID")
-    client_secret = read_secret("CLIENT_SECRET")
+    tenant_id = read_secret(SecretName.TENANT_ID)
+    client_id = read_secret(SecretName.CLIENT_ID)
+    client_secret = read_secret(SecretName.CLIENT_SECRET)
     if not tenant_id or not client_id or not client_secret:
         raise ValueError(
             "Falten valors de TENANT_ID, CLIENT_ID o CLIENT_SECRET als secrets."

@@ -83,7 +83,10 @@ VeryQuietOpt = Annotated[
 
 # --- download ---
 
-OperationIdOpt = Annotated[str, typer.Argument(help="Operation ID from MS List")]
+OperationIdOpt = Annotated[
+    int,
+    typer.Argument(help="Element ID from MS List containing the data of this request"),
+]
 
 # --- build ---
 
