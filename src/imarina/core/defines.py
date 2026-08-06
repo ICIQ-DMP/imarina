@@ -15,10 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import logging
-import os
 import pathlib
-from enum import Enum
 from zoneinfo import ZoneInfo
 
 # All dates in this program's data (A3/iMarina Excel exports, run timestamps)
@@ -58,56 +55,3 @@ REQUIRED_INPUT_FILES = {
     "unit_type": "unit_type.xlsx",
     "job_description_entity": "job_description_entity.xlsx",
 }
-
-
-class LogLevel(str, Enum):
-    """
-    Logical log levels for the CLI.
-
-    Includes a custom TRACE (more verbose than DEBUG) and QUIET
-    (suppresses all output beyond CRITICAL).
-    """
-
-    TRACE = "trace"
-    DEBUG = "debug"
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    QUIET = "quiet"
-
-    @classmethod
-    def parse(cls, value: str | None) -> LogLevel | None:
-        """Parse case-insensitively; returns None if value is falsy."""
-        print("Executing function parse from LogLevel")
-        if not value:
-            return None
-        norm = value.strip().lower()
-        try:
-            return cls(norm)
-        except ValueError as exc:
-            valid = ", ".join(v.value for v in cls)
-            raise ValueError(f"Unknown log level '{value}'. Valid: {valid}") from exc
-
-    @classmethod
-    def get_default_log_level(cls) -> LogLevel:
-        return LogLevel.INFO
-
-    def to_logging_level(self) -> int:
-        if self is LogLevel.TRACE:
-            return 0
-        if self is LogLevel.DEBUG:
-            return logging.DEBUG
-        if self is LogLevel.INFO:
-            return logging.INFO
-        if self is LogLevel.WARNING:
-            return logging.WARNING
-        if self is LogLevel.ERROR:
-            return logging.ERROR
-        if self is LogLevel.QUIET:
-            return logging.CRITICAL + 10
-        # Fallback
-        return logging.INFO
-
-
-def get_default_log_path() -> pathlib.Path:
-    return pathlib.Path(str(os.path.join(PROJECT_DIR, "logs", NOW + ".log")))
