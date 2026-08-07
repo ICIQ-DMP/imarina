@@ -79,16 +79,15 @@ pipeline {
        stage('iMarina upload') {
          steps {
           script {
-              sh 'env | grep SMTP'
           try {
           echo "Upload process"
           sh '${IMARINA_CMD} upload'
           echo "Sending success email"
-          sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --status success'
+          sh '${IMARINA_CMD} notify --id ${OPERATION_ID} --status success'
           }
           catch (Exception e) {
           echo "Sending error email"
-          sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --status error'
+          sh '${IMARINA_CMD} notify --id ${OPERATION_ID} --status error'
           error "Upload ha fallat: ${e.message}"
           }
 

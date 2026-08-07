@@ -14,18 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
 import smtplib
 from email.mime.text import MIMEText
+from enum import StrEnum
 
 import requests
 
 from imarina.core.log_utils import get_logger
-from imarina.core.secret import SecretName, read_secret
-from imarina.core.sharepoint import get_list_id, get_site_id
-from imarina.core.token_manager import get_token_manager
 
 logger = get_logger(__name__)
+
+
+class WorkflowStatus(StrEnum):
+    """Outcome of the iMarina build pipeline, reported by the `notify` command."""
+
+    SUCCESS = "success"
+    ERROR = "error"
 
 
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
@@ -98,50 +102,3 @@ def build_error_body(name: str, item_id: str) -> str:
         f"Regards,\n\n"
         f"(This message was auto-generated.)"
     )
-
-
-def mail_process(args: argparse.Namespace) -> None:
-
-    smtp_password = read_secret(SecretName.SMTP_PASSWORD)
-    smtp_user = read_secret(SecretName.SMTP_USERNAME)
-    smtp_server = read_secret(SecretName.SMTP_HOST)
-    smtp_port = int(read_secret(SecretName.SMTP_PORT))
-
-    # credentials MS GRAPH
-    tenant_id = read_secret(SecretName.TENANT_ID)
-    client_id = read_secret(SecretName.CLIENT_ID)
-    client_secret = read_secret(SecretName.CLIENT_SECRET)
-    site_id = get_site_id(
-        get_token_manager(),
-        read_secret(SecretName.SHAREPOINT_DOMAIN),
-        read_secret(SecretName.SITE_NAME),
-    )
-    list_id = get_list_id(
-        get_token_manager(), site_id, read_secret(SecretName.LIST_NAME)
-    )
-
-    logger.info("Getting access token...")
-    token = get_access_token(tenant_id, client_id, client_secret)
-
-    logger.info(f"Getting creator info for item ID {args.id}...")
-    to_email, name = get_creator_email(token, site_id, list_id, args.id)
-    logger.info(f"Sending email to: {to_email} ({name})")
-
-    if args.status == "success":
-        subject = f"iMarina - Workflow ID {args.id} completed successfully"
-        body = build_success_body(name, args.id, args.sharepoint_path)
-    else:
-        subject = f"iMarina - Workflow ID {args.id} failed"
-        body = build_error_body(name, args.id)
-
-    send_email(
-        to_email,
-        subject,
-        body,
-        smtp_user,
-        smtp_user,
-        smtp_password,
-        smtp_server,
-        smtp_port,
-    )
-    logger.info("Email sent. Process complete.")

@@ -16,9 +16,7 @@
 
 import typer
 
-from imarina.core.imarina_excel import build_upload_excel
-from imarina.core.log_utils import get_logger
-from imarina.core.shared_options import (
+from imarina.core.defines import (
     DEFAULT_A3_INPUT,
     DEFAULT_COUNTRIES_DICT,
     DEFAULT_ENTITY_TYPE_PATH,
@@ -28,6 +26,10 @@ from imarina.core.shared_options import (
     DEFAULT_OUTPUT_PATH,
     DEFAULT_PERSONAL_WEB_PATH,
     DEFAULT_UNIT_GROUP_PATH,
+)
+from imarina.core.imarina_excel import build_upload_excel
+from imarina.core.log_utils import get_logger
+from imarina.core.shared_options import (
     A3InputOpt,
     CountriesDictOpt,
     EntityTypePathOpt,

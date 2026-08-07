@@ -1,3 +1,19 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import re
 from pathlib import Path
 from typing import Any, cast
@@ -60,11 +76,11 @@ def build_upload_excel(
     researchers_output = []
 
     im_researchers = []
-    for index, row in im_data.dataframe.iterrows():
+    for _index, row in im_data.dataframe.iterrows():
         im_researchers.append(parse_imarina_row_data(row))
 
     a3_researchers = []
-    for index, row in a3_data.dataframe.iterrows():
+    for _index, row in a3_data.dataframe.iterrows():
         a3_researchers.append(parse_a3_row_data(row, translator))
 
     logger.info(
@@ -80,7 +96,8 @@ def build_upload_excel(
             )
             logger.debug("Adding researcher data into output with end date of today")
             if researcher_imarina.end_date is None:
-                researcher_imarina.end_date = NOW_DATA  # Use end time already in iMarina if present, if not, set to today
+                # Use end time already in iMarina if present, if not, set to today
+                researcher_imarina.end_date = NOW_DATA
             researchers_left.append(researcher_imarina)
             researchers_output.append(researcher_imarina)
         elif len(researchers_matched_a3) == 1:

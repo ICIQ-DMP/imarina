@@ -10,8 +10,8 @@ iMarina server over FTP (`publish`).
 
 ## CLI commands and the pipeline
 
-Four subcommands, wired in `src/imarina/cli.py`: `download`, `build`, `upload`,
-`publish`. They do **not** pass data to each other directly — there is
+Five subcommands, wired in `src/imarina/cli.py`: `download`, `build`, `upload`,
+`publish`, `notify`. They do **not** pass data to each other directly — there is
 no manifest or explicit handoff. They communicate purely through a **filesystem
 naming convention**: fixed folder names and fixed filenames, all relative to
 `PROJECT_DIR = Path.cwd()` (`core/defines.py`). This is the entire contract
@@ -24,9 +24,10 @@ production — it's the only place the end-to-end flow is written down:
 
 ```
 rm -rf input
-imarina download <OperationID>   # positional int arg, not --id; populates ./input
-imarina build                     # reads ./input, writes ./output
-imarina upload                    # autodetects latest file in ./output, pushes to SharePoint for review
+imarina download <OperationID>            # positional int arg, not --id; populates ./input
+imarina build                              # reads ./input, writes ./output
+imarina upload                             # autodetects latest file in ./output, pushes to SharePoint for review
+imarina notify --id <OperationID> --status success   # or --status error from a catch block
 ```
 
 `publish` (FTP → iMarina server) is **deliberately not** part of the automated
@@ -88,31 +89,47 @@ to the iMarina server (`core/ftp.py`). `--dry-run` defaults to `True` — you
 must explicitly pass `--dry-run false` to actually push. This is intentionally
 never called by CI; it's the manual "go" step.
 
+### `notify` — build-result email to the requester
+
+`commands/notify/cli.py`, backed by `core/mail.py` (Graph API access-token/
+creator-lookup helpers, SMTP send, email-body templates — no CLI concerns).
+Called from the Jenkinsfile's `iMarina upload` stage, once per branch of a
+try/catch around `upload`: `--status success` after `upload` succeeds,
+`--status error` from the `catch` block. `--id` is the same Operation ID
+passed to `download`, used to look up the MS List item's creator (so the
+email goes to whoever triggered the run) — required, no default.
+`--sharepoint-path` defaults to `DEFAULT_TARGET_FOLDER` (`core/defines.py`),
+the same SharePoint review folder `upload` pushes to, and is only used to
+word the success email body. Prior to this
+command existing, Jenkins ran `core/mail.py` directly as a standalone
+script (`python3 src/imarina/core/mail.py --id ... --status ...`); it's now
+invoked like any other subcommand (`imarina notify --id ... --status ...`),
+so it goes through `cli_global_callback` for logging setup like the rest of
+the app instead of needing its own `configure_logging_from_settings()` call.
+
 ## Key files for this pipeline
 
 - `src/imarina/cli.py` — command registration only
 - `src/imarina/core/defines.py` — shared constants: `PROJECT_DIR` (=cwd),
-  `OUTPUT_DIR`, filename prefix/suffix/datetime format used to round-trip the
-  "latest file" between stages, and `MADRID_TZ` (see Dates below). This is
-  the single source of truth for `PROJECT_DIR` — don't recompute a project
-  root elsewhere (e.g. by walking up from `__file__`); import it from here.
+  `INPUT_DIR`/`OUTPUT_DIR`, filename prefix/suffix/datetime format used to
+  round-trip the "latest file" between stages, `MADRID_TZ` (see Dates
+  below), and every CLI option's `DEFAULT_*` value. This is the single
+  source of truth for `PROJECT_DIR` — don't recompute a project root
+  elsewhere (e.g. by walking up from `__file__`); import it from here.
 - `src/imarina/core/sharepoint.py` — all Graph API calls (download, upload,
   MS List lookup)
 - `src/imarina/core/ftp.py` — the `publish` FTP push
 - `src/imarina/core/shared_options.py` — every Typer `Option`/`Argument`
-  annotation used by any command, plus their `DEFAULT_*` default-value
-  constants. Controller functions in `commands/*/cli.py` reference these
-  (`param: SomeOpt = DEFAULT_SOME`) rather than calling `typer.Option(...)`
-  inline in the signature — see "Adding a new CLI option" below.
+  annotation used by any command — metadata (help text, flags) only, no
+  default values. Controller functions in `commands/*/cli.py` import the
+  `*Opt` type from here and the matching `DEFAULT_*` constant from
+  `core/defines.py` (`param: SomeOpt = DEFAULT_SOME`) rather than calling
+  `typer.Option(...)` inline in the signature — see "Adding a new CLI
+  option" below.
 - `src/imarina/core/secret.py`, `secret_name.py`, `vault.py` — see Secrets
   below.
 - `Jenkinsfile` — the authoritative description of the automated portion of
-  the pipeline (download → build → upload); publish is manual. It also
-  invokes `src/imarina/core/mail.py` directly as a standalone script (not
-  through the Typer app) to send build-result notification emails — that
-  file has zero `import` references from anywhere else in `src/`, which
-  makes it look like dead code at a glance. It isn't; check the Jenkinsfile
-  before assuming any file under `core/` is orphaned.
+  the pipeline (download → build → upload → notify); publish is manual.
 - `compose.yml` — local/dev container wiring; mounts `input`, `output`,
   `logs` as volumes
 
@@ -186,23 +203,21 @@ add a `# noqa: BLE001` and then also add `logger.exception(...)` to the same
 handler, re-run ruff before committing — the noqa will likely become an
 "unused directive" error.
 
-**Gotcha**: any module invoked as a standalone script outside the Typer app
-(currently just `core/mail.py`, run directly by Jenkins) needs its own call
-to `configure_logging_from_settings()` before its `logger.*` calls will be
-visible — logging is otherwise only configured by `cli_global_callback`,
-which nothing runs for a bare `python core/mail.py` invocation.
-
 ## Adding a new CLI option
 
 Don't call `typer.Option(...)`/`typer.Argument(...)` as a function-argument
 default inline in a `commands/*/cli.py` controller — ruff's `B008` flags
 this when the default expression involves a call (dict subscript, `Path`
 `/`, f-string, etc.), and even where it doesn't get flagged it's
-inconsistent with the rest of the codebase. Instead, in
-`core/shared_options.py`: add `SomeOpt = Annotated[Type, typer.Option(help=...)]`
-(metadata only, no default value inside the `typer.Option()` call) and, if
-the default isn't a trivial literal, a separate `DEFAULT_SOME = ...` constant
-next to it. Reference both in the controller: `param: SomeOpt = DEFAULT_SOME`.
+inconsistent with the rest of the codebase. Instead: in
+`core/shared_options.py`, add `SomeOpt = Annotated[Type, typer.Option(help=...)]`
+(metadata only — no default value inside the `typer.Option()` call, and no
+`DEFAULT_*` constant in this file); if the default isn't a trivial literal,
+add a separate `DEFAULT_SOME = ...` constant in `core/defines.py` instead,
+next to whatever it's derived from (`INPUT_DIR`, `NOW`,
+`REQUIRED_INPUT_FILES`, etc.). Reference both in the controller —
+`SomeOpt` from `shared_options`, `DEFAULT_SOME` from `defines`:
+`param: SomeOpt = DEFAULT_SOME`.
 For a *required* option, skip the default entirely (`param: SomeOpt`, no
 `=`) rather than using Typer's `...`-means-required idiom — a bare `...`
 default type-checks against a non-Optional annotation just fine at runtime,

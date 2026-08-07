@@ -30,6 +30,7 @@ from rich.console import Console
 
 import imarina.commands.build.cli
 import imarina.commands.download.cli
+import imarina.commands.notify.cli
 import imarina.commands.publish.cli
 import imarina.commands.upload.cli
 import imarina.core.cli_global
@@ -45,6 +46,7 @@ app.command("build")(imarina.commands.build.cli.build_controller)
 app.command("download")(imarina.commands.download.cli.download_controller)
 app.command("upload")(imarina.commands.upload.cli.upload_controller)
 app.command("publish")(imarina.commands.publish.cli.publish_controller)
+app.command("notify")(imarina.commands.notify.cli.notify_controller)
 
 if __name__ == "__main__":
     app()

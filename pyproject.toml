@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "imarina"
 dynamic = ["version"]
@@ -33,6 +37,12 @@ dev = [
   "pre-commit"
 ]
 
+[tool.setuptools_scm]
+# Tag format matches [tool.semantic_release] below (v1.2.3). No .git directory
+# reaches the Docker build context (Dockerfile only COPYs Makefile/pyproject.toml/
+# src), so a fallback is required there or the build fails outright.
+fallback_version = "0.0.0"
+
 [tool.semantic_release]
 version_source = "tag"
 commit_version_number = true
@@ -41,14 +51,18 @@ tag_format = "v{version}"
 [tool.semantic_release.changelog]
 mode = "update"
 
-[tool.semantic_release.commit_parser_options]
-allowed_tags = ["ADDED", "UPDATED", "REMOVED", "FIXED", "RELEASED", "CHANGED"]
-minor_tags = ["ADDED", "UPDATED", "CHANGED"]
-patch_tags = ["FIXED", "REMOVED"]
-major_tags = ["RELEASED"]
-
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "UP", "SIM"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.pytest.ini_options]
 addopts = "-q"

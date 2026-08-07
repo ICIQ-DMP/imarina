@@ -16,13 +16,13 @@
 
 """
 Reusable CLI argument definitions, shared across commands or specific to
-`build`, `publish` and `upload`.
+`build`, `publish`, `upload` and `notify`.
 
-Each `*Opt` alias carries only the CLI metadata (help text, flags); where a
-default value is more than a trivial literal, it's a separate module-level
-constant referenced (not computed) at the controller's function-signature
-default, so `typer.Option(...)` is never called inline in a function
-signature (see ruff rule B008).
+Each `*Opt` alias carries only the CLI metadata (help text, flags) — no
+default values live here. Where a default is more than a trivial literal,
+it's a `DEFAULT_*` constant in `core/defines.py`, referenced (not computed)
+at the controller's function-signature default, so `typer.Option(...)` is
+never called inline in a function signature (see ruff rule B008).
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ from typing import Annotated
 
 import typer
 
-from imarina.core.defines import NOW, PROJECT_DIR, REQUIRED_INPUT_FILES
+from imarina.core.mail import WorkflowStatus
 
 # Argument to send a directory
 DirectoryOpt = Annotated[
@@ -90,20 +90,6 @@ OperationIdOpt = Annotated[
 
 # --- build ---
 
-INPUT_DIR = PROJECT_DIR / "input"
-
-DEFAULT_COUNTRIES_DICT = INPUT_DIR / REQUIRED_INPUT_FILES["countries"]
-DEFAULT_JOBS_DICT = INPUT_DIR / REQUIRED_INPUT_FILES["jobs"]
-DEFAULT_IMARINA_INPUT = INPUT_DIR / REQUIRED_INPUT_FILES["imarina"]
-DEFAULT_A3_INPUT = INPUT_DIR / REQUIRED_INPUT_FILES["a3"]
-DEFAULT_OUTPUT_PATH = PROJECT_DIR / "output" / f"iMarina_upload_{NOW}.xlsx"
-DEFAULT_PERSONAL_WEB_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["personal_web"]
-DEFAULT_UNIT_GROUP_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["unit_group"]
-DEFAULT_ENTITY_TYPE_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["unit_type"]
-DEFAULT_JOB_DESCRIPTION_ENTITY_PATH = (
-    INPUT_DIR / REQUIRED_INPUT_FILES["job_description_entity"]
-)
-
 CountriesDictOpt = Annotated[
     Path, typer.Option(help="Path of the countries dictionary file(.xlsx)")
 ]
@@ -122,9 +108,6 @@ JobDescriptionEntityPathOpt = Annotated[Path | None, typer.Option()]
 
 # --- publish ---
 
-DEFAULT_PUBLISH_FILE_PATH = None
-DEFAULT_DRY_RUN = True
-
 PublishFilePathOpt = Annotated[
     Path | None,
     typer.Option(help="Path to the iMarina Excel file to upload to the SFTP server"),
@@ -134,11 +117,6 @@ DryRunOpt = Annotated[
 ]
 
 # --- upload ---
-
-DEFAULT_UPLOAD_FILE_PATH = None
-DEFAULT_TARGET_FOLDER = Path(
-    "Institutional Strengthening/_Projects/iMarina_load_automation/output"
-)
 
 UploadFilePathOpt = Annotated[
     Path | None,
@@ -150,22 +128,20 @@ TargetFolderOpt = Annotated[
     Path, typer.Option(help="Folder to the destination Sharepoint")
 ]
 
+# --- notify ---
+
+NotifyIdOpt = Annotated[int, typer.Option("--id", help="MS List item ID")]
+NotifyStatusOpt = Annotated[
+    WorkflowStatus, typer.Option("--status", help="Workflow status")
+]
+NotifySharepointPathOpt = Annotated[
+    Path,
+    typer.Option("--sharepoint-path", help="SharePoint path of the generated file"),
+]
+
 
 # Add all opts to this variable so they are marked as publicly exposed
 __all__ = [
-    "DEFAULT_A3_INPUT",
-    "DEFAULT_COUNTRIES_DICT",
-    "DEFAULT_DRY_RUN",
-    "DEFAULT_ENTITY_TYPE_PATH",
-    "DEFAULT_IMARINA_INPUT",
-    "DEFAULT_JOBS_DICT",
-    "DEFAULT_JOB_DESCRIPTION_ENTITY_PATH",
-    "DEFAULT_OUTPUT_PATH",
-    "DEFAULT_PERSONAL_WEB_PATH",
-    "DEFAULT_PUBLISH_FILE_PATH",
-    "DEFAULT_TARGET_FOLDER",
-    "DEFAULT_UNIT_GROUP_PATH",
-    "DEFAULT_UPLOAD_FILE_PATH",
     "A3InputOpt",
     "CountriesDictOpt",
     "DirectoryOpt",
@@ -175,6 +151,9 @@ __all__ = [
     "JobDescriptionEntityPathOpt",
     "JobsDictOpt",
     "LogFileOpt",
+    "NotifyIdOpt",
+    "NotifySharepointPathOpt",
+    "NotifyStatusOpt",
     "OperationIdOpt",
     "OutputPathOpt",
     "PersonalWebPathOpt",

@@ -32,6 +32,13 @@ def upload_file_ftp(
     dry_run: bool,
     upload_filename: str,
 ) -> None:
+    """Upload *path* to the iMarina SFTP server.
+
+    Raises on connection or upload failure instead of swallowing the error,
+    so the caller can tell a failed publish from a successful one. A failure
+    to close the connection afterwards is logged but not raised, since the
+    file has already been delivered by that point.
+    """
     logger.info("Connecting to FTP server.")
     ftp: paramiko.SFTPClient | None = None
     try:
@@ -40,8 +47,9 @@ def upload_file_ftp(
         ftp = paramiko.SFTPClient.from_transport(serv)
     except Exception:
         logger.exception("Failed to connect to FTP server.")
-        return
-    assert ftp is not None  # if ftp
+        raise
+    if ftp is None:
+        raise RuntimeError("Failed to open SFTP session: from_transport returned None.")
     logger.info("Connected to FTP server.")
 
     root_files = ftp.listdir()
@@ -60,6 +68,7 @@ def upload_file_ftp(
         ftp.put(path, upload_filename)
     except Exception:
         logger.exception("Failed to upload file to FTP server.")
+        raise
     logger.info("File uploaded to FTP server.")
 
     logger.info("Closing connection.")
@@ -67,4 +76,5 @@ def upload_file_ftp(
         ftp.close()
     except Exception:
         logger.exception("Failed to close FTP connection.")
-    logger.info("Closed connection.")
+    else:
+        logger.info("Closed connection.")

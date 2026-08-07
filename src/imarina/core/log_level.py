@@ -16,12 +16,12 @@
 
 import logging
 import pathlib
-from enum import Enum
+from enum import StrEnum
 
 from imarina.core.defines import NOW, PROJECT_DIR
 
 
-class LogLevel(str, Enum):
+class LogLevel(StrEnum):
     """
     Logical log levels for the CLI.
 

@@ -17,8 +17,12 @@
 import datetime
 from pathlib import Path
 
+import typer
+
 from imarina.core.defines import (
     DATETIME_FORMAT,
+    DEFAULT_DRY_RUN,
+    DEFAULT_PUBLISH_FILE_PATH,
     FILENAME_PREFIX,
     FILENAME_SUFFIX,
     FTP_EXCEL_FILE_DATE_FORMAT,
@@ -28,12 +32,7 @@ from imarina.core.defines import (
 from imarina.core.ftp import upload_file_ftp
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret
-from imarina.core.shared_options import (
-    DEFAULT_DRY_RUN,
-    DEFAULT_PUBLISH_FILE_PATH,
-    DryRunOpt,
-    PublishFilePathOpt,
-)
+from imarina.core.shared_options import DryRunOpt, PublishFilePathOpt
 
 logger = get_logger(__name__)
 
@@ -119,7 +118,8 @@ def publish_controller(
     port = int(read_secret(SecretName.FTP_PORT))
     username = read_secret(SecretName.FTP_USER)
     password = read_secret(SecretName.FTP_PASSWORD)
-    upload_path = f"carga_icolet/icl_ag_personal_12539_{datetime.datetime.now(MADRID_TZ).strftime(FTP_EXCEL_FILE_DATE_FORMAT)}.xlsx"
+    upload_date = datetime.datetime.now(MADRID_TZ).strftime(FTP_EXCEL_FILE_DATE_FORMAT)
+    upload_path = f"carga_icolet/icl_ag_personal_12539_{upload_date}.xlsx"
 
     logger.trace(
         f"path: {file_path}\n"
@@ -131,12 +131,17 @@ def publish_controller(
         f"upload_path: {upload_path}\n"
     )
 
-    upload_file_ftp(
-        path=file_path,
-        host=host,
-        port=port,
-        username=username,
-        password=password,
-        dry_run=dry_run,
-        upload_filename=upload_path,
-    )
+    try:
+        upload_file_ftp(
+            path=file_path,
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            dry_run=dry_run,
+            upload_filename=upload_path,
+        )
+    # Broad on purpose: CLI boundary turns any failure into a clean exit(1).
+    except Exception as e:
+        logger.exception("Error publishing file to iMarina FTP server")
+        raise typer.Exit(code=1) from e

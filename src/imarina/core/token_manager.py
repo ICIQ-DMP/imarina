@@ -65,7 +65,7 @@ class TokenManager:
         except requests.exceptions.HTTPError as e:
             raise RuntimeError(
                 f"Error requesting access token: {e}\nResponse: {response.text}"
-            )
+            ) from e
 
         token_data = response.json()
         self.access_token = token_data["access_token"]

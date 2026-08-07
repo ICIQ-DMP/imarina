@@ -9,7 +9,7 @@ services:
     volumes:
     - ./input:/app/input
     - ./output:/app/output
-    - ./logs:/app/logs  # folder logs of the process
+    - ./logs:/app/logs
     secrets:
       - FTP_HOST
       - FTP_PASSWORD

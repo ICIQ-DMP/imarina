@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+import datetime
+from dataclasses import dataclass, replace
 from typing import Any
 
 from imarina.core.log_utils import get_logger
@@ -21,45 +25,77 @@ from imarina.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
+@dataclass(kw_only=True)
 class Researcher:
+    dni: Any = None
+    email: Any = None
+    name: Any = None
+    surname: Any = None
+    second_surname: Any = None
+    ini_date: datetime.datetime | None = None
+    end_date: datetime.datetime | None = None
+    ini_prorrog: datetime.datetime | None = None
+    end_prorrog: datetime.datetime | None = None
+    date_termination: datetime.datetime | None = None
+    sex: Any = None
+    personal_web: Any = None
+    signature: Any = None
+    signature_custom: Any = None
+    country: Any = None
+    born_country: Any = None
+    job_description: Any = None
+    code_center: Any = None
+    unit_group: Any = None
+    entity_type: Any = None
+    orcid: Any = None
+    scopus_id: Any = None
+    google_scholar_id: Any = None
 
-    def __init__(self, **kwargs: Any) -> None:
-        self.dni = kwargs.get("dni")
-        self.email = kwargs.get("email")
-        self.name = kwargs.get("name")
-        self.surname = kwargs.get("surname")
-        self.second_surname = kwargs.get("second_surname")
-        self.ini_date = kwargs.get("ini_date")
-        self.end_date = kwargs.get("end_date")
-        self.ini_prorrog = kwargs.get("ini_prorrog")
-        self.end_prorrog = kwargs.get("end_prorrog")
-        self.date_termination = kwargs.get("date_termination")
-        self.sex = kwargs.get("sex")
-        self.personal_web = kwargs.get("personal_web")
-        self.signature = kwargs.get("signature")
-        self.signature_custom = kwargs.get("signature_custom")
-        self.country = kwargs.get("country")
-        self.born_country = kwargs.get("born_country")
-        self.job_description = kwargs.get("job_description")
-        self.code_center = kwargs.get("code_center")
-        self.adscription_type = "Research"
-        self.unit_group = kwargs.get("unit_group")
-        self.entity_type = kwargs.get("entity_type")
+    # ICIQ's fixed institutional info. Every researcher works at ICIQ, so
+    # these are the same for everyone unless a caller supplies its own value
+    # (e.g. iMarina rows carry their own copy of this data; A3 rows don't
+    # have these columns at all and always fall back to the default).
+    adscription_type: str | None = None
+    entity_country: str | None = None
+    entity_community: str | None = None
+    entity_province: str | None = None
+    entity_city: str | None = None
+    entity_postal_code: str | None = None
+    entity_address: str | None = None
+    entity_web: str | None = None
+    contact_phone: str | None = None
 
-        self.entity_country = "Spain"
-        self.entity_community = "Cataluña"
-        self.entity_province = "Tarragona"
-        self.entity_city = "Tarragona"
-        self.entity_postal_code = "43007"
-        self.entity_address = "Av. Països Catalans, 16"
-        self.entity_web = "https://iciq.org/"
-        self.contact_phone = "34977920200"
+    def __post_init__(self) -> None:
+        defaults = self._institutional_defaults()
+        self.adscription_type = self.adscription_type or defaults["adscription_type"]
+        self.entity_country = self.entity_country or defaults["entity_country"]
+        self.entity_community = self.entity_community or defaults["entity_community"]
+        self.entity_province = self.entity_province or defaults["entity_province"]
+        self.entity_city = self.entity_city or defaults["entity_city"]
+        self.entity_postal_code = (
+            self.entity_postal_code or defaults["entity_postal_code"]
+        )
+        self.entity_address = self.entity_address or defaults["entity_address"]
+        self.entity_web = self.entity_web or defaults["entity_web"]
+        self.contact_phone = self.contact_phone or defaults["contact_phone"]
 
-        self.orcid = kwargs.get("orcid")
-        self.scopus_id = kwargs.get("scopus_id")
-        self.google_scholar_id = kwargs.get("google_scholar_id")
+    @staticmethod
+    def _institutional_defaults() -> dict[str, str]:
+        """ICIQ's fixed institutional/contact info, used to fill in any of
+        these fields a caller didn't supply its own value for."""
+        return {
+            "adscription_type": "Research",
+            "entity_country": "Spain",
+            "entity_community": "Cataluña",
+            "entity_province": "Tarragona",
+            "entity_city": "Tarragona",
+            "entity_postal_code": "43007",
+            "entity_address": "Av. Països Catalans, 16",
+            "entity_web": "https://iciq.org/",
+            "contact_phone": "34977920200",
+        }
 
-    def __str__(self) -> Any:
+    def __str__(self) -> str:
         return (
             f"\nResearcher:\n"
             f"  DNI: {self.dni}\n"
@@ -96,48 +132,13 @@ class Researcher:
             f"  Google scholar ID: {self.google_scholar_id}\n"
         )
 
-    def copy(self) -> Any:
-        return Researcher(
-            dni=self.dni,
-            email=self.email,
-            name=self.name,
-            surname=self.surname,
-            second_surname=self.second_surname,
-            ini_date=self.ini_date,
-            end_date=self.end_date,
-            ini_prorrog=self.ini_prorrog,
-            end_prorrog=self.end_prorrog,
-            date_termination=self.date_termination,
-            sex=self.sex,
-            personal_web=self.personal_web,
-            signature=self.signature,
-            signature_custom=self.signature_custom,
-            country=self.country,
-            born_country=self.born_country,
-            job_description=self.job_description,
-            code_center=self.code_center,
-            adscription_type=self.adscription_type,
-            unit_group=self.unit_group,
-            entity_type=self.entity_type,
-            entity_country=self.entity_country,
-            entity_community=self.entity_community,
-            entity_province=self.entity_province,
-            entity_city=self.entity_city,
-            entity_postal_code=self.entity_postal_code,
-            entity_address=self.entity_address,
-            entity_web=self.entity_web,
-            contact_phone=self.contact_phone,
-            orcid=self.orcid,
-            scopus_id=self.scopus_id,
-            google_scholar_id=self.google_scholar_id,
-        )
+    def copy(self) -> Researcher:
+        return replace(self)
 
-    def search_data(self, data_input: Any) -> Any:
-        matches = []
-
-        for researcher in data_input:
-            if self.is_same_person(researcher):
-                matches.append(researcher)
+    def search_data(self, data_input: list[Researcher]) -> list[Researcher]:
+        matches = [
+            researcher for researcher in data_input if self.is_same_person(researcher)
+        ]
 
         if matches:
             same_ini = [r for r in matches if r.ini_date == self.ini_date]
@@ -145,14 +146,14 @@ class Researcher:
 
         return []
 
-    def is_same_person(self, other: Any) -> bool:
+    def is_same_person(self, other: Researcher) -> bool:
         if self.orcid and other.orcid and self.orcid == other.orcid:
             return True
         if self.dni and other.dni and self.dni == other.dni:
             return True
         return bool(self.email and other.email and self.email == other.email)
 
-    def has_changed_jobs(self, researcher: Any) -> Any:
+    def has_changed_jobs(self, researcher: Researcher) -> bool:
         if (
             self.job_description == "Postdoctoral researcher"
             and researcher.job_description == "Associated researcher"
@@ -171,7 +172,7 @@ class Researcher:
         ):
             return False
 
-        return self.job_description != researcher.job_description
+        return bool(self.job_description != researcher.job_description)
 
     def is_visitor(self) -> bool:
         # Center code 4 tends to be a visitor
@@ -203,10 +204,6 @@ def normalize_name(name: str) -> str:
 
     name = name.strip()
 
-    if name.isupper() or name.islower():
-        fixed = name.title()
-
-    else:
-        fixed = name
+    fixed = name.title() if name.isupper() or name.islower() else name
 
     return fixed

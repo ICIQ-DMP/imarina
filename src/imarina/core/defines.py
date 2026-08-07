@@ -29,6 +29,7 @@ NOW_DATA = datetime.datetime.now(MADRID_TZ)
 NOW = NOW_DATA.strftime(DATETIME_FORMAT)
 
 PROJECT_DIR = pathlib.Path.cwd()
+INPUT_DIR = PROJECT_DIR / "input"
 OUTPUT_DIR = PROJECT_DIR / "output"
 date_str = "31/12/2099"
 DATE_FORMAT = "%d/%m/%Y"
@@ -59,3 +60,40 @@ REQUIRED_INPUT_FILES = {
     "unit_type": "unit_type.xlsx",
     "job_description_entity": "job_description_entity.xlsx",
 }
+
+# --- CLI option defaults ---
+# Kept alongside the constants they're derived from (INPUT_DIR, NOW,
+# REQUIRED_INPUT_FILES above) rather than in core/shared_options.py, which
+# holds only `*Opt` CLI metadata. Controllers reference these directly:
+# `param: SomeOpt = DEFAULT_SOME` (see "Adding a new CLI option" in
+# CLAUDE.md).
+
+# --- build ---
+
+DEFAULT_COUNTRIES_DICT = INPUT_DIR / REQUIRED_INPUT_FILES["countries"]
+DEFAULT_JOBS_DICT = INPUT_DIR / REQUIRED_INPUT_FILES["jobs"]
+DEFAULT_IMARINA_INPUT = INPUT_DIR / REQUIRED_INPUT_FILES["imarina"]
+DEFAULT_A3_INPUT = INPUT_DIR / REQUIRED_INPUT_FILES["a3"]
+DEFAULT_OUTPUT_PATH = OUTPUT_DIR / f"iMarina_upload_{NOW}.xlsx"
+DEFAULT_PERSONAL_WEB_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["personal_web"]
+DEFAULT_UNIT_GROUP_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["unit_group"]
+DEFAULT_ENTITY_TYPE_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["unit_type"]
+DEFAULT_JOB_DESCRIPTION_ENTITY_PATH = (
+    INPUT_DIR / REQUIRED_INPUT_FILES["job_description_entity"]
+)
+
+# --- publish ---
+
+DEFAULT_PUBLISH_FILE_PATH = None
+DEFAULT_DRY_RUN = True
+
+# --- upload ---
+
+DEFAULT_UPLOAD_FILE_PATH = None
+DEFAULT_TARGET_FOLDER = pathlib.Path(
+    "Institutional Strengthening/_Projects/iMarina_load_automation/output"
+)
+
+# --- notify ---
+
+DEFAULT_NOTIFY_SHAREPOINT_PATH = DEFAULT_TARGET_FOLDER

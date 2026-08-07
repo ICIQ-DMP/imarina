@@ -1,3 +1,19 @@
+# imarina-load - Automated imarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -45,7 +61,7 @@ class Excel:
         if func_apply_key is not None:
             key_col = key_col.apply(func_apply_key)
 
-        return dict(zip(key_col, val_col))
+        return dict(zip(key_col, val_col, strict=True))
 
     def empty(self) -> None:
         # retains columns, types, and headers if any, but 0 rows

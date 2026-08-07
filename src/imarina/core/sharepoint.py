@@ -58,7 +58,7 @@ def get_list_id(token_manager: TokenManager, site_id: str, list_name: str) -> st
 
 
 def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any:
-    url = f"https://graph.microsoft.com/v1.0/sites/{domain}:/sites/{site_name}"  # Obtain the ID of site from SharePoint.
+    url = f"https://graph.microsoft.com/v1.0/sites/{domain}:/sites/{site_name}"  # Obtain the ID of site from SharePoint
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
     response = requests.get(url, headers=headers, timeout=60)
     response.raise_for_status()
@@ -69,7 +69,10 @@ def upload_file(
     token_manager: TokenManager, drive_id: str, remote_path: str, local_file_path: str
 ) -> None:
     logger.info(f"Uploading from local path {local_file_path} to {remote_path}")
-    url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?@microsoft.graph.conflictBehavior=replace"  # replace if the file have exist
+    url = (
+        f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content"
+        f"?@microsoft.graph.conflictBehavior=replace"
+    )  # replace if the file have exist
     headers = {
         "Authorization": f"Bearer {token_manager.get_token()}",
         "Content-Type": "application/octet-stream",
@@ -176,7 +179,10 @@ def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
 
     site_id = get_site_id(token_manager, sharepoint_domain, site_name)
 
-    list_url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{quote(list_name, safe='')}/items/{operation_id}?$expand=fields&$select=fields"
+    list_url = (
+        f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{quote(list_name, safe='')}/items/"
+        f"{operation_id}?$expand=fields&$select=fields"
+    )
     list_resp = requests.get(
         list_url, headers={"Authorization": f"Bearer {access_token}"}
     )

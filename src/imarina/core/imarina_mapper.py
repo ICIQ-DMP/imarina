@@ -125,14 +125,38 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
 # parse the data from imarina
 def parse_imarina_row_data(row: pd.Series) -> Researcher:
 
-    entity_val = get_val(row, ImarinaField.UNIT_GROUP.value)
-    entity_val = str(entity_val).strip() if pd.notna(entity_val) else ""
-
     entity_type_val = get_val(row, ImarinaField.ENTITY_TYPE.value)
     entity_type_val = str(entity_type_val).strip() if pd.notna(entity_type_val) else ""
 
     entity_web_val = get_val(row, ImarinaField.ENTITY_WEB.value)
     entity_web_val = str(entity_web_val).strip() if pd.notna(entity_web_val) else ""
+
+    entity_country_val = get_val(row, ImarinaField.ENTITY_COUNTRY.value)
+    entity_country_val = str(entity_country_val).strip() if entity_country_val else ""
+
+    entity_community_val = get_val(row, ImarinaField.ENTITY_COMMUNITY.value)
+    entity_community_val = (
+        str(entity_community_val).strip() if entity_community_val else ""
+    )
+
+    entity_province_val = get_val(row, ImarinaField.ENTITY_PROVINCE.value)
+    entity_province_val = (
+        str(entity_province_val).strip() if entity_province_val else ""
+    )
+
+    entity_city_val = get_val(row, ImarinaField.ENTITY_CITY.value)
+    entity_city_val = str(entity_city_val).strip() if entity_city_val else ""
+
+    entity_postal_code_val = get_val(row, ImarinaField.ENTITY_POSTAL_CODE.value)
+    entity_postal_code_val = (
+        str(entity_postal_code_val).strip() if entity_postal_code_val else ""
+    )
+
+    entity_address_val = get_val(row, ImarinaField.ENTITY_ADDRESS.value)
+    entity_address_val = str(entity_address_val).strip() if entity_address_val else ""
+
+    contact_phone_val = get_val(row, ImarinaField.CONTACT_PHONE.value)
+    contact_phone_val = str(contact_phone_val).strip() if contact_phone_val else ""
 
     scopus_id_val = get_val(row, ImarinaField.SCOPUS_ID.value)
     if scopus_id_val is not None:
@@ -181,18 +205,17 @@ def parse_imarina_row_data(row: pd.Series) -> Researcher:
         job_description=job_description_val,
         adscription_type=get_val(row, ImarinaField.ADSCRIPTION_TYPE.value),
         unit_group=get_val(row, ImarinaField.UNIT_GROUP.value),
-        entity=entity_val,  # entity_val (value)
         entity_type=entity_type_val,  # entity_type_val (value)
         entity_web=entity_web_val,  # entity_web_val (value)
-        entity_country=str(get_val(row, ImarinaField.ENTITY_COUNTRY.value)),
-        entity_community=str(get_val(row, ImarinaField.ENTITY_COMMUNITY.value)),
-        entity_province=str(get_val(row, ImarinaField.ENTITY_PROVINCE.value)),
-        entity_city=str(get_val(row, ImarinaField.ENTITY_CITY.value)),
-        entity_postal_code=str(get_val(row, ImarinaField.ENTITY_POSTAL_CODE.value)),
-        entity_address=str(get_val(row, ImarinaField.ENTITY_ADDRESS.value)),
+        entity_country=entity_country_val,
+        entity_community=entity_community_val,
+        entity_province=entity_province_val,
+        entity_city=entity_city_val,
+        entity_postal_code=entity_postal_code_val,
+        entity_address=entity_address_val,
         scopus_id=str(scopus_id_val),
         google_scholar_id=google_scholar_val,
-        contact_phone=str(get_val(row, ImarinaField.CONTACT_PHONE.value)),
+        contact_phone=contact_phone_val,
     )
 
     return data

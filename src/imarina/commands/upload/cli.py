@@ -18,14 +18,10 @@ from pathlib import Path
 
 import typer
 
+from imarina.core.defines import DEFAULT_TARGET_FOLDER, DEFAULT_UPLOAD_FILE_PATH
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret
-from imarina.core.shared_options import (
-    DEFAULT_TARGET_FOLDER,
-    DEFAULT_UPLOAD_FILE_PATH,
-    TargetFolderOpt,
-    UploadFilePathOpt,
-)
+from imarina.core.shared_options import TargetFolderOpt, UploadFilePathOpt
 from imarina.core.sharepoint import upload_file_sharepoint
 
 logger = get_logger(__name__)
