@@ -17,8 +17,11 @@
 
 import typer
 
-from build.lib.imarina.core.defines import OUTPUT_DIR
-from imarina.core.defines import DEFAULT_TARGET_FOLDER, DEFAULT_UPLOAD_FILE_PATH
+from imarina.core.defines import (
+    DEFAULT_TARGET_FOLDER,
+    DEFAULT_UPLOAD_FILE_PATH,
+    OUTPUT_DIR,
+)
 from imarina.core.file_select import select_file_to_upload
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret

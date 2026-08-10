@@ -16,7 +16,7 @@
 
 from datetime import date
 
-from imarina.core.researcher import Researcher
+from conftest import build_researcher
 
 # --- is_visitor -------------------------------------------------------------
 #
@@ -28,19 +28,21 @@ from imarina.core.researcher import Researcher
 
 
 def test_is_visitor_code_center_4_without_permanent_keyword_is_visitor():
-    researcher = Researcher(code_center=4, job_description="Predoctoral researcher")
+    researcher = build_researcher(
+        code_center=4, job_description="Predoctoral researcher"
+    )
     assert researcher.is_visitor() is True
 
 
 def test_is_visitor_code_center_4_with_permanent_keyword_is_not_visitor():
-    researcher = Researcher(code_center=4, job_description="Group Leader")
+    researcher = build_researcher(code_center=4, job_description="Group Leader")
     assert researcher.is_visitor() is False
 
 
 def test_is_visitor_code_center_4_ignores_date_span():
     # Even a multi-year ini/end date gap doesn't matter for code_center 4 -
     # only the job title does.
-    researcher = Researcher(
+    researcher = build_researcher(
         code_center=4,
         job_description="Predoctoral researcher",
         ini_date=date(2023, 9, 30),
@@ -50,7 +52,7 @@ def test_is_visitor_code_center_4_ignores_date_span():
 
 
 def test_is_visitor_short_duration_is_visitor():
-    researcher = Researcher(
+    researcher = build_researcher(
         ini_date=date(2025, 9, 30),
         end_date=date(2025, 10, 5),
     )
@@ -58,7 +60,7 @@ def test_is_visitor_short_duration_is_visitor():
 
 
 def test_is_visitor_long_duration_is_not_visitor():
-    researcher = Researcher(
+    researcher = build_researcher(
         ini_date=date(2023, 9, 30),
         end_date=date(2025, 10, 5),
     )
@@ -66,12 +68,12 @@ def test_is_visitor_long_duration_is_not_visitor():
 
 
 def test_is_visitor_missing_start_date_is_not_visitor():
-    researcher = Researcher(ini_date=None, end_date=date(2025, 1, 1))
+    researcher = build_researcher(ini_date=None, end_date=date(2025, 1, 1))
     assert researcher.is_visitor() is False
 
 
 def test_is_visitor_missing_end_date_is_not_visitor():
-    researcher = Researcher(ini_date=date(2025, 1, 1), end_date=None)
+    researcher = build_researcher(ini_date=date(2025, 1, 1), end_date=None)
     assert researcher.is_visitor() is False
 
 
@@ -79,30 +81,30 @@ def test_is_visitor_missing_end_date_is_not_visitor():
 
 
 def test_is_same_person_matching_orcid():
-    a = Researcher(orcid="0000-0001-2345-6789", dni="X", email="a@example.com")
-    b = Researcher(orcid="0000-0001-2345-6789", dni="Y", email="b@example.com")
+    a = build_researcher(orcid="0000-0001-2345-6789", dni="X", email="a@example.com")
+    b = build_researcher(orcid="0000-0001-2345-6789", dni="Y", email="b@example.com")
     assert a.is_same_person(b) is True
 
 
 def test_is_same_person_matching_dni():
-    a = Researcher(dni="12345678A")
-    b = Researcher(dni="12345678A")
+    a = build_researcher(dni="12345678A")
+    b = build_researcher(dni="12345678A")
     assert a.is_same_person(b) is True
 
 
 def test_is_same_person_matching_email():
-    a = Researcher(email="person@example.com")
-    b = Researcher(email="person@example.com")
+    a = build_researcher(email="person@example.com")
+    b = build_researcher(email="person@example.com")
     assert a.is_same_person(b) is True
 
 
 def test_is_same_person_no_matching_identifiers():
-    a = Researcher(orcid="1", dni="A", email="a@example.com")
-    b = Researcher(orcid="2", dni="B", email="b@example.com")
+    a = build_researcher(orcid="1", dni="A", email="a@example.com")
+    b = build_researcher(orcid="2", dni="B", email="b@example.com")
     assert a.is_same_person(b) is False
 
 
 def test_is_same_person_no_identifiers_at_all():
-    a = Researcher()
-    b = Researcher()
+    a = build_researcher(orcid="", dni="", email="")
+    b = build_researcher(orcid="", dni="", email="")
     assert a.is_same_person(b) is False

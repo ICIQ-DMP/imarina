@@ -14,11 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from conftest import build_researcher
+
 from imarina.core.researcher import Researcher
 
 
 def _researcher(job_description: str) -> Researcher:
-    return Researcher(job_description=job_description)
+    return build_researcher(job_description=job_description)
 
 
 def test_has_changed_jobs_same_description_is_not_changed():
