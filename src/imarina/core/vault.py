@@ -43,15 +43,7 @@ _SECRET_MAP: dict[SecretName, tuple[str, str]] = {
     SecretName.FTP_HOST: ("runtime/ftp", "host"),
     SecretName.FTP_PASSWORD: ("runtime/ftp", "password"),
     SecretName.FTP_PORT: ("runtime/ftp", "port"),
-    SecretName.FTP_UPLOAD_FILENAME: ("runtime/ftp", "upload_filename"),
     SecretName.FTP_USER: ("runtime/ftp", "user"),
-    # ssh admin (secret/imarina/admin/ssh)
-    SecretName.SSH_HOST: ("admin/ssh", "host"),
-    SecretName.SSH_PASSWORD: ("admin/ssh", "password"),
-    SecretName.SSH_USERNAME: ("admin/ssh", "username"),
-    # jenkins admin (secret/imarina/admin/jenkins)
-    SecretName.JENKINS_PASSWORD: ("admin/jenkins", "password"),
-    SecretName.JENKINS_USERNAME: ("admin/jenkins", "username"),
     # smtp credentials (secret/imarina/runtime/smtp)
     SecretName.SMTP_USERNAME: ("runtime/smtp", "username"),
     SecretName.SMTP_PASSWORD: ("runtime/smtp", "password"),
