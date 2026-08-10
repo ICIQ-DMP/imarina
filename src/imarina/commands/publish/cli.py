@@ -121,16 +121,6 @@ def publish_controller(
     upload_date = datetime.datetime.now(MADRID_TZ).strftime(FTP_EXCEL_FILE_DATE_FORMAT)
     upload_path = f"carga_icolet/icl_ag_personal_12539_{upload_date}.xlsx"
 
-    logger.trace(
-        f"path: {file_path}\n"
-        f"host: {host}\n"
-        f"port: {port}\n"
-        f"username: {username}\n"
-        f"password: {password}\n"
-        f"dry_run: {dry_run}\n"
-        f"upload_path: {upload_path}\n"
-    )
-
     try:
         upload_file_ftp(
             path=file_path,

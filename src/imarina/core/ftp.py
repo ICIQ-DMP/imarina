@@ -40,7 +40,6 @@ def upload_file_ftp(
     file has already been delivered by that point.
     """
     logger.info("Connecting to FTP server.")
-    ftp: paramiko.SFTPClient | None = None
     try:
         serv = paramiko.Transport((host, port))
         serv.connect(username=username, password=password)
