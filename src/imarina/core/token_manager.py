@@ -16,7 +16,6 @@
 
 import os
 import time
-from typing import Any
 
 import requests
 
@@ -40,15 +39,17 @@ class TokenManager:
         self.client_id = client_id
         self.client_secret = client_secret
         self.scope = scope
-        self.access_token = None
-        self.expires_at = 0
+        self.access_token: str | None = None
+        self.expires_at: float = 0
 
-    def get_token(self) -> Any:
+    def get_token(self) -> str:
         # return a valid token and if the token has expired or is about to expire , request a new token.
         if (
             self.access_token is None or time.time() >= self.expires_at - 300
         ):  # Refresh if less than 5 minutes remain
             self._refresh_token()
+        if self.access_token is None:
+            raise RuntimeError("Token refresh did not set an access token.")
         return self.access_token
 
     def _refresh_token(self) -> None:
@@ -72,7 +73,7 @@ class TokenManager:
         self.expires_at = time.time() + token_data.get("expires_in", 3600)
 
 
-def _create_token_manager() -> Any:
+def _create_token_manager() -> TokenManager | None:
     # read the secrets and create a unique instance of TokenManager.
     if os.getenv("GITHUB_ACTIONS") == "true":
         logger.info("Running in GitHub Actions — skipping TokenManager initialization")
@@ -97,4 +98,9 @@ def get_token_manager() -> TokenManager:
     global _manager_instance
     if _manager_instance is None:
         _manager_instance = _create_token_manager()
+    if _manager_instance is None:
+        raise RuntimeError(
+            "No TokenManager available (running under GITHUB_ACTIONS with no "
+            "credentials configured)."
+        )
     return _manager_instance

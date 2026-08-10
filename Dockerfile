@@ -11,7 +11,5 @@ COPY ./pyproject.toml /app
 COPY src /app/src
 RUN make install
 
-# script python for main
-#lo comento para hacer pruebas CMD ["python", "/app/src/main.py", "--imarina-input", "/input/iMarina.xlsx", "--a3-input", "/input/A3.xlsx", "--countries-dict", "/input/countries.xlsx", "--jobs-dict", "/input/Job_Descriptions.xlsx"]
 ENTRYPOINT ["./venv/bin/python", "-m", "imarina"]
 CMD []

@@ -57,7 +57,7 @@ def cli_global_callback(
     configure_logging_from_settings(
         level=cli_log_level,
         log_file=log_file,
-        secrets=[read_secret(SecretName.FTP_PASSWORD)],
+        secrets=[read_secret(key) for key in SecretName],
     )
     logger = get_logger(__name__)
 

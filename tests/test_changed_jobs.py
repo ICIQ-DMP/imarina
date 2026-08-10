@@ -14,37 +14,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# from imarina.core.researcher import Researcher
-from dataclasses import dataclass
-from datetime import date, datetime
-
-from imarina.core.a3_mapper import A3_Field
-from imarina.core.defines import MADRID_TZ
-
-translator = {
-    A3_Field.JOB_DESCRIPTION: {
-        "Investigador": "Researcher",
-        "Técnico": "Technician",
-        "Group Leader Starting Career": "Group Leader",
-        "Director/a Administrativo/a": "Administrative/Director",
-        "Coordinador/a científico/a de laboratorio": "Scientific Coordinator",
-        "visitantes": "Visitors",
-        "Asistente dirección": "Technician",
-        "Técnico de laboratorio": "Laboratory Technician",
-    }
-}
+from imarina.core.researcher import Researcher
 
 
-@dataclass
-class Researcher:
-    name: str
-    job_description: str
-    ini_date: date | None = None
-    end_date: date | None = None
-    ini_prorrog: date | None = None
-    end_prorrog: date | None = None
-    date_termination: date | None = None
+def _researcher(job_description: str) -> Researcher:
+    return Researcher(job_description=job_description)
 
 
-def d(s: str):  # small helper to quickly build dates
-    return datetime.strptime(s, "%d/%m/%Y").replace(tzinfo=MADRID_TZ).date()
+def test_has_changed_jobs_same_description_is_not_changed():
+    before = _researcher("Researcher")
+    after = _researcher("Researcher")
+    assert before.has_changed_jobs(after) is False
+
+
+def test_has_changed_jobs_different_description_is_changed():
+    before = _researcher("Researcher")
+    after = _researcher("Technician")
+    assert before.has_changed_jobs(after) is True
+
+
+def test_has_changed_jobs_postdoc_and_associated_researcher_is_not_changed():
+    # Special case: these two titles are treated as the same job.
+    postdoc = _researcher("Postdoctoral researcher")
+    associated = _researcher("Associated researcher")
+    assert postdoc.has_changed_jobs(associated) is False
+    assert associated.has_changed_jobs(postdoc) is False
+
+
+def test_has_changed_jobs_icrea_professor_and_group_leader_is_not_changed():
+    # Special case: ICREA-funded group leaders are also just "Group Leader".
+    icrea_professor = _researcher("Group Leader / ICREA Professor")
+    group_leader = _researcher("Group Leader")
+    assert icrea_professor.has_changed_jobs(group_leader) is False
+    assert group_leader.has_changed_jobs(icrea_professor) is False

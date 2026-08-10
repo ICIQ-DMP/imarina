@@ -133,12 +133,12 @@ Follow these steps to set up the project locally.
 
 ### Prerequisites
 
-Install Python version 3.12.3 or above, `git` and other essentials for building the project. 
+Install Python version 3.14 or above, `git` and other essentials for building the project.
 
 In Ubuntu is:
 
 ```shell
- sudo apt install python3.12-venv gcc build-essential git -y
+ sudo apt install python3.14-venv gcc build-essential git -y
 ```
 
 ### Installation
@@ -193,9 +193,20 @@ been deleted in Sharepoint `cleanup_local_files = "true"` and to only do downloa
 ## Usage
 ### Run program
 #### Run in host
-To start the program execute this command:
+`make install` installs the `imarina` console script into the virtualenv. To see the available subcommands:
 ```shell
-./venv/bin/python src/main.py 
+./venv/bin/imarina --help
+```
+
+Equivalently, you can invoke it as a module:
+```shell
+./venv/bin/python -m imarina --help
+```
+
+The automated pipeline is `download` → `build` → `upload` (see the [Jenkinsfile](Jenkinsfile) for the exact
+invocation used in CI); `publish` is a separate, manually-triggered step. For example, to run the build step alone:
+```shell
+./venv/bin/imarina build
 ```
 
 
@@ -204,8 +215,8 @@ To start the program execute this command:
 Use the provided `Dockerfile` and `compose.yml` to build and run the iMarina-load service in a containerized 
 environment.  
 
-`Dockerfile` Builds a lightweight Python 3.12 Alpine image that installs dependencies and 
-runs the main script with predefined input file paths.
+`Dockerfile` Builds a lightweight Python 3.14 Alpine image that installs dependencies and runs the `imarina`
+CLI as its entrypoint (`compose.yml` passes the subcommand to run, e.g. `command: "build"`).
 
 `compose.yml` Defines a service that builds and runs the iMarina-load container, mounts input/output folders, 
 and securely injects FTP credentials as secrets for automated data processing.
@@ -251,7 +262,8 @@ Other useful commands:
 ## Testing
 
 ### Prerequisites
-Install the `requirements-dev.txt` to install the dependencies for the tests.
+Install the dev dependencies declared in `pyproject.toml` (`[project.optional-dependencies].dev`: black, pytest,
+mypy, ruff, pre-commit):
 ```shell
 make dev
 ```

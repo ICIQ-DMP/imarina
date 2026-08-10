@@ -11,29 +11,9 @@ pipeline {
          string(name: 'NAME', defaultValue: '', description: 'Creator name')
     }
 
-    // environment variables
     environment {
          PYTHON_PATH = "/usr/bin/python3"
-         IMARINA_CMD = "venv/bin/python3 -m imarina"
-         OPERATION_ID = "${params.ID}"
-         CREATOR_EMAIL = "${params.EMAIL}"
-         CREATOR_NAME = "${params.NAME}"
-         TENANT_ID = credentials('TENANT_ID')
-         CLIENT_ID = credentials('CLIENT_ID')
-         DRIVE_ID = credentials('DRIVE_ID')
-         CLIENT_SECRET = credentials('CLIENT_SECRET')
-         FTP_PASSWORD = credentials('FTP_PASSWORD')
-         MS_LIST_ID = credentials('MS_LIST_ID')
-         MS_SITE_ID = credentials('MS_SITE_ID')
-         SHAREPOINT_DOMAIN = credentials('SHAREPOINT_DOMAIN')
-         SITE_NAME = credentials('SITE_NAME')
-         LIST_NAME = credentials('LIST_NAME')
-
-         SMTP_USERNAME = credentials('SMTP_USERNAME')
-         SMTP_PASSWORD = credentials('SMTP_PASSWORD')
-         SMTP_HOST = credentials('SMTP_HOST')
-         SMTP_PORT = credentials('SMTP_PORT')
-
+         IMARINA_CMD = "venv/bin/imarina"
     }
 
     stages {
@@ -49,8 +29,6 @@ pipeline {
            """
         }
     }
-
-        // stage imarina download
         stage('iMarina Download') {
           steps {
               echo "DEBUG: ID recibido: ${params.ID}"
@@ -67,33 +45,28 @@ pipeline {
               """
         }
     }
-       // imarina build
        stage(' iMarina Build ') {
        steps {
           echo "Build process for iMarina"
           sh "$IMARINA_CMD build"
         }
     }
-
-    // imarina upload
        stage('iMarina upload') {
          steps {
           script {
-          try {
-          echo "Upload process"
-          sh '${IMARINA_CMD} upload'
-          echo "Sending success email"
-          sh '${IMARINA_CMD} notify --id ${OPERATION_ID} --status success'
+              try {
+                  echo "Upload process"
+                  sh '${IMARINA_CMD} upload'
+                  echo "Sending success email"
+                  sh '${IMARINA_CMD} notify --id ${OPERATION_ID} --status success'
+              }
+              catch (Exception e) {
+                  echo "Sending error email"
+                  sh '${IMARINA_CMD} notify --id ${OPERATION_ID} --status error'
+                  error "Upload ha fallat: ${e.message}"
+              }
           }
-          catch (Exception e) {
-          echo "Sending error email"
-          sh '${IMARINA_CMD} notify --id ${OPERATION_ID} --status error'
-          error "Upload ha fallat: ${e.message}"
-          }
-
-        }
-
-        }
+       }
     }
 
 

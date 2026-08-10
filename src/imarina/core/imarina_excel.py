@@ -191,24 +191,3 @@ def build_upload_excel(
     excel_output = im_data_empty.__copy__()
     append_researchers_to_output_data(researchers_output, excel_output)
     excel_output.to_excel(Path(output_path))
-
-    """
-    # TODO: parametrize behaviour with arg 
-    output_path_str = str(output_path)
-    
-    excel_left = im_data_empty.__copy__()
-    append_researchers_to_output_data(researchers_left, excel_left)
-    excel_left.to_excel(Path(output_path_str + "left.xlsx"))
-
-    excel_visitor = im_data_empty.__copy__()
-    append_researchers_to_output_data(researchers_visitor, excel_visitor)
-    excel_visitor.to_excel(Path(output_path_str + "visitor.xlsx"))
-
-    excel_new = im_data_empty.__copy__()
-    append_researchers_to_output_data(researchers_new, excel_new)
-    excel_new.to_excel(Path(output_path_str + "new.xlsx"))
-
-    excel_changed = im_data_empty.__copy__()
-    append_researchers_to_output_data(researchers_changed, excel_changed)
-    excel_changed.to_excel(Path(output_path_str + "changed.xlsx"))
-    """
