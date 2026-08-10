@@ -14,12 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from http import HTTPStatus
 from pathlib import Path
 from typing import Any, cast
 from urllib.parse import quote
 
 import requests
 
+from imarina.core.exceptions import SharePointError
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret
 from imarina.core.token_manager import TokenManager, get_token_manager
@@ -35,10 +37,6 @@ __all__ = [
 logger = get_logger(__name__)
 
 
-class SharePointError(Exception):
-    """Raised when a SharePoint Graph API call fails or returns unexpected data."""
-
-
 def get_list_id(token_manager: TokenManager, site_id: str, list_name: str) -> str:
     """Return the GUID of the named SharePoint list.
 
@@ -52,7 +50,7 @@ def get_list_id(token_manager: TokenManager, site_id: str, list_name: str) -> st
     """
     url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_name}"
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=60)
     response.raise_for_status()
     return cast(str, response.json()["id"])
 
@@ -116,8 +114,8 @@ def upload_file_sharepoint(file_path: Path, target_folder: Path, drive_id: str) 
             response.raise_for_status()
 
     except requests.exceptions.HTTPError:
-        if response.status_code == 404:
-            logger.error(
+        if response.status_code == HTTPStatus.NOT_FOUND:
+            logger.exception(
                 f"Destination folder does not exist ({target_folder}) in SharePoint."
             )
         else:
@@ -140,10 +138,8 @@ def download_files_in_folder_from_sharepoint(
 
     response = requests.get(url_list, headers=headers, timeout=30)
 
-    if response.status_code != 200:
-        raise SharePointError(
-            f"Error listing SharePoint: {response.status_code} - {response.text}"
-        )
+    if response.status_code != HTTPStatus.OK:
+        raise SharePointError(response.status_code, response.text)
 
     items = response.json().get("value", [])
     files_to_download = [f for f in items if f.get("file")]
@@ -161,7 +157,7 @@ def download_files_in_folder_from_sharepoint(
 
         res_file = requests.get(url_download, headers=headers, timeout=300)
 
-        if res_file.status_code == 200:
+        if res_file.status_code == HTTPStatus.OK:
             with open(local_destiny_folder / name, "wb") as f:
                 f.write(res_file.content)
             logger.debug(f"{name} saved successfully.")
@@ -184,7 +180,7 @@ def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
         f"{operation_id}?$expand=fields&$select=fields"
     )
     list_resp = requests.get(
-        list_url, headers={"Authorization": f"Bearer {access_token}"}
+        list_url, headers={"Authorization": f"Bearer {access_token}"}, timeout=60
     )
     list_resp.raise_for_status()
 

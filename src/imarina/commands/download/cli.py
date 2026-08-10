@@ -14,12 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import base64
 from pathlib import Path
 
 import requests
 import typer
 
-from imarina.core.defines import REQUIRED_INPUT_FILES, SHAREPOINT_INPUT_FOLDER
+from imarina.core.defines import (
+    INPUT_DIR,
+    REQUIRED_INPUT_FILES,
+    SHAREPOINT_INPUT_FOLDER,
+)
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret
 from imarina.core.shared_options import DirectoryOpt, OperationIdOpt
@@ -35,7 +40,7 @@ logger = get_logger(__name__)
 def download_controller(
     ctx: typer.Context,
     id_element: OperationIdOpt,
-    input_dir: DirectoryOpt = Path("input"),
+    input_dir: DirectoryOpt = INPUT_DIR,
 ) -> None:
 
     logger.info(f"Starting download of input files from SharePoint into: {input_dir}")
@@ -55,16 +60,14 @@ def download_controller(
 
     try:
         # Function get_parameters_list and download the links(url) of Excels (A3 Excel and iMarina Excel)
-        A3_link, imarina_link = get_parameters_list(str(id_element))
+        a3_link, imarina_link = get_parameters_list(str(id_element))
         token_manager = get_token_manager()  # get token
         headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
 
-        for url, filename in [(A3_link, "A3.xlsx"), (imarina_link, "iMarina.xlsx")]:
+        for url, filename in [(a3_link, "A3.xlsx"), (imarina_link, "iMarina.xlsx")]:
             if not url:
                 logger.warning(f"URL not found for {filename}")
                 continue
-
-            import base64
 
             encoded = base64.b64encode(url.encode()).decode()
             encoded = encoded.rstrip("=").replace("/", "_").replace("+", "-")
@@ -72,7 +75,9 @@ def download_controller(
                 f"https://graph.microsoft.com/v1.0/shares/u!{encoded}/driveItem/content"
             )
 
-            response = requests.get(download_url, headers=headers, allow_redirects=True)
+            response = requests.get(
+                download_url, headers=headers, allow_redirects=True, timeout=300
+            )
             response.raise_for_status()
             with open(input_dir / filename, "wb") as f:
                 f.write(response.content)

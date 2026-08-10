@@ -11,5 +11,5 @@ cleanup_local_files = "true"
 
 bypass_data_preservation = "true"
 
-resync = "true"
+#resync = "true"
 resync_auth = "true"

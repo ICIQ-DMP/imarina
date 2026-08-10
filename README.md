@@ -23,12 +23,12 @@
     <img src="https://raw.githubusercontent.com/ICIQ-DMP/ICIQ-DMP.github.io/refs/heads/master/assets/images/logo-ICIQ-horizontal-catalan.png" alt="Logo" width="all" height="all">
   </a>
 
-<h3 align="center">iMarina-load</h3>
+<h3 align="center">imarina</h3>
 
   <p align="center">
     Scripts to obtain A3 data, transform it into iMarina load format, and upload it to iMarina server using SFTP
     <br />
-    <a href="https://iciq-dmp.github.io/_posts/iMarina/2025-07-07-iMarina-load.html"><strong>Explore the docs »</strong></a>
+    <a href="https://iciq-dmp.github.io/_posts/iMarina/2025-07-07-imarina.html"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/ICIQ-DMP/imarina">View Demo</a>
@@ -145,7 +145,7 @@ In Ubuntu is:
 
 ###### Clone repository
 ```shell
-git clone https://github.com/ICIQ-DMP/iMarina-load.git
+git clone https://github.com/ICIQ-DMP/imarina.git
 ```
 
 
@@ -212,13 +212,13 @@ invocation used in CI); `publish` is a separate, manually-triggered step. For ex
 
 #### Run in Docker
 
-Use the provided `Dockerfile` and `compose.yml` to build and run the iMarina-load service in a containerized 
+Use the provided `Dockerfile` and `compose.yml` to build and run the imarina service in a containerized 
 environment.  
 
 `Dockerfile` Builds a lightweight Python 3.14 Alpine image that installs dependencies and runs the `imarina`
 CLI as its entrypoint (`compose.yml` passes the subcommand to run, e.g. `command: "build"`).
 
-`compose.yml` Defines a service that builds and runs the iMarina-load container, mounts input/output folders, 
+`compose.yml` Defines a service that builds and runs the imarina container, mounts input/output folders, 
 and securely injects FTP credentials as secrets for automated data processing.
 
 First, you will need to create a `.env` file at the root of the project with the `UID` and `GID` of the user on your 
@@ -247,7 +247,7 @@ To build the Docker image and run it you can use:
 Other useful commands:
 ##### Build Docker image
 ```shell
-  sudo docker build . -t aleixmt/imarina-load --progress=plain
+  sudo docker build . -t aleixmt/imarina --progress=plain
 ```
 
 ##### Access the container shell
@@ -274,7 +274,7 @@ make dev
 <!-- convert into makefile target -->
 We have to be at the root of the project, otherwise we will get an error
 ```shell
-cd ~/Desktop/iMarina-load
+cd ~/Desktop/imarina
 ```
 
 After that, we can use this to run all tests at the same time:
@@ -325,7 +325,7 @@ The workflow is defined in `.github/workflows/docker.yml`
  
       
 
-See the [open issues](https://github.com/ICIQ-DMP/iMarina-load/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/ICIQ-DMP/imarina/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -344,7 +344,7 @@ If you’d like to report a bug, request a feature, or propose an improvement, p
 
 ### Create an Issue
 
-Create a new Issue [in here](https://github.com/ICIQ-DMP/iMarina-load/issues/new).
+Create a new Issue [in here](https://github.com/ICIQ-DMP/imarina/issues/new).
 
 * Title: A short, descriptive summary of the issue.
 * Description: Provide as much context as possible.
@@ -356,8 +356,8 @@ The maintainers will review it and may ask for further clarification.
 
 ### Create a Pull Request
 
-[Fork](https://github.com/ICIQ-DMP/iMarina-load/fork) the repository, implement the changes that you want on your fork 
-and create a Pull Request in [here](https://github.com/ICIQ-DMP/iMarina-load/compare).
+[Fork](https://github.com/ICIQ-DMP/imarina/fork) the repository, implement the changes that you want on your fork 
+and create a Pull Request in [here](https://github.com/ICIQ-DMP/imarina/compare).
 
 The maintainers will try to integrate it into the `master` branch.
 
@@ -388,7 +388,7 @@ The maintainers will try to integrate it into the `master` branch.
 <!-- LICENSE -->
 ## License
 
-Distributed under the GNU GPL v3. See [LICENSE](https://github.com/ICIQ-DMP/iMarina-load/blob/master/LICENSE) for more information.
+Distributed under the GNU GPL v3. See [LICENSE](https://github.com/ICIQ-DMP/imarina/blob/master/LICENSE) for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -409,17 +409,12 @@ Distributed under the GNU GPL v3. See [LICENSE](https://github.com/ICIQ-DMP/iMar
 [contributors-url]: https://github.com/ICIQ-DMP/imarina/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ICIQ-DMP/imarina.svg?style=for-the-badge&color=orange
 [forks-url]: https://github.com/ICIQ-DMP/imarina/forks
-[forks-url]: https://img.shields.io/badge/Forks-blue?style=for-the-badge
 [stars-shield]: https://img.shields.io/github/stars/ICIQ-DMP/imarina.svg?style=for-the-badge&color=yellow
 [stars-url]: https://github.com/ICIQ-DMP/imarina/stargazers
 [issues-shield]: https://img.shields.io/github/issues/ICIQ-DMP/imarina.svg?style=for-the-badge&color=brightgreen
 [issues-url]: https://github.com/ICIQ-DMP/imarina/issues
-[issues-url]: https://img.shields.io/badge/Issues-red?style=for-the-badge&logo=github&logoColor=white
-[license-shield]: https://img.shields.io/github/license/ICIQ-DMP/imarina.svg?style=for-the-badge
-[license-url]: https://github.com/ICIQ-DMP/imarina/blob/master/LICENSE
-
 [license-shield]: https://img.shields.io/github/license/ICIQ-DMP/imarina.svg?style=for-the-badge&color=red
-[license-url]:https://github.com/ICIQ-DMP/imarina/blob/master
+[license-url]:https://github.com/ICIQ-DMP/imarina/blob/master/LICENSE
 
 [linkedin-shield]: https://img.shields.io/badge/LinkedIn-blue?style=for-the-badge&logo=linkedin&logoColor=white
 [linkedin-url]: https://es.linkedin.com/company/iciq

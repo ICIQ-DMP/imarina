@@ -15,10 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import pathlib
 from enum import StrEnum
 
-from imarina.core.defines import NOW, PROJECT_DIR
+from imarina.core.exceptions import UnknownLogLevelError
 
 
 class LogLevel(StrEnum):
@@ -46,27 +45,24 @@ class LogLevel(StrEnum):
             return cls(norm)
         except ValueError as exc:
             valid = ", ".join(v.value for v in cls)
-            raise ValueError(f"Unknown log level '{value}'. Valid: {valid}") from exc
+            raise UnknownLogLevelError(value, valid) from exc
 
     @classmethod
     def get_default_log_level(cls) -> LogLevel:
         return LogLevel.INFO
 
     def to_logging_level(self) -> int:
+        r = logging.INFO
         if self is LogLevel.TRACE:
-            return 0
+            r = 0
         if self is LogLevel.DEBUG:
-            return logging.DEBUG
+            r = logging.DEBUG
         if self is LogLevel.INFO:
-            return logging.INFO
+            r = logging.INFO
         if self is LogLevel.WARNING:
-            return logging.WARNING
+            r = logging.WARNING
         if self is LogLevel.ERROR:
-            return logging.ERROR
+            r = logging.ERROR
         if self is LogLevel.QUIET:
-            return logging.CRITICAL + 10
-        return logging.INFO
-
-
-def get_default_log_path() -> pathlib.Path:
-    return PROJECT_DIR / "logs" / f"{NOW}.log"
+            r = logging.CRITICAL + 10
+        return r

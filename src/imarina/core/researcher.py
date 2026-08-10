@@ -18,52 +18,54 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass, replace
-from typing import Any
 
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
+VISITOR_CENTER_CODE = 4
+VISITOR_MAX_DURATION_DAYS = 90
+
 
 @dataclass(kw_only=True)
 class Researcher:
-    dni: Any = None
-    email: Any = None
-    name: Any = None
-    surname: Any = None
-    second_surname: Any = None
-    ini_date: datetime.datetime | None = None
-    end_date: datetime.datetime | None = None
+    dni: str
+    email: str
+    name: str
+    surname: str
+    second_surname: str
+    ini_date: datetime.datetime
+    end_date: datetime.datetime
     ini_prorrog: datetime.datetime | None = None
     end_prorrog: datetime.datetime | None = None
     date_termination: datetime.datetime | None = None
-    sex: Any = None
-    personal_web: Any = None
-    signature: Any = None
-    signature_custom: Any = None
-    country: Any = None
-    born_country: Any = None
-    job_description: Any = None
-    code_center: Any = None
-    unit_group: Any = None
-    entity_type: Any = None
-    orcid: Any = None
-    scopus_id: Any = None
-    google_scholar_id: Any = None
+    sex: str
+    personal_web: str
+    signature: str
+    signature_custom: str
+    country: str
+    born_country: str
+    job_description: str
+    code_center: int | None = None
+    unit_group: str
+    entity_type: str
+    orcid: str
+    scopus_id: str
+    google_scholar_id: str
 
     # ICIQ's fixed institutional info. Every researcher works at ICIQ, so
     # these are the same for everyone unless a caller supplies its own value
     # (e.g. iMarina rows carry their own copy of this data; A3 rows don't
     # have these columns at all and always fall back to the default).
-    adscription_type: str | None = None
-    entity_country: str | None = None
-    entity_community: str | None = None
-    entity_province: str | None = None
-    entity_city: str | None = None
-    entity_postal_code: str | None = None
-    entity_address: str | None = None
-    entity_web: str | None = None
-    contact_phone: str | None = None
+    adscription_type: str
+    entity_country: str
+    entity_community: str
+    entity_province: str
+    entity_city: str
+    entity_postal_code: str
+    entity_address: str
+    entity_web: str
+    contact_phone: str
 
     def __post_init__(self) -> None:
         defaults = self._institutional_defaults()
@@ -176,7 +178,7 @@ class Researcher:
 
     def is_visitor(self) -> bool:
         # Center code 4 tends to be a visitor
-        if self.code_center == 4:
+        if self.code_center == VISITOR_CENTER_CODE:
 
             job = str(self.job_description).lower()
             permanent_keywords = [
@@ -191,7 +193,9 @@ class Researcher:
 
         if self.ini_date and self.end_date:
             duration = (self.end_date - self.ini_date).days
-            if duration < 90:  # Less than 3 months is almost always a VISITOR
+            if (
+                duration < VISITOR_MAX_DURATION_DAYS
+            ):  # Less than 3 months is almost always a VISITOR
                 return True
 
         return False

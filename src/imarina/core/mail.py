@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import smtplib
+from dataclasses import dataclass
 from email.mime.text import MIMEText
 from enum import StrEnum
 
@@ -40,7 +41,7 @@ def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
         "client_secret": client_secret,
         "scope": "https://graph.microsoft.com/.default",
     }
-    response = requests.post(url, data=data)
+    response = requests.post(url, data=data, timeout=10)
     response.raise_for_status()
     return str(response.json()["access_token"])
 
@@ -50,34 +51,39 @@ def get_creator_email(
 ) -> tuple[str, str]:
     url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_id}/items/{item_id}?expand=fields"
     headers = {"Authorization": f"Bearer {token}"}
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=60)
     response.raise_for_status()
     fields = response.json().get("createdBy", {}).get("user", {})
     return fields.get("email", ""), fields.get("displayName", "")
 
 
+@dataclass
+class EmailContent:
+    to_email: str
+    subject: str
+    body: str
+    from_email: str
+
+
 def send_email(
-    to_email: str,
-    subject: str,
-    body: str,
-    from_email: str,
+    message: EmailContent,
     username: str,
     password: str,
     server: str,
     port: int,
 ) -> None:
     # Create message
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = from_email
-    msg["To"] = to_email
+    msg = MIMEText(message.body)
+    msg["Subject"] = message.subject
+    msg["From"] = message.from_email
+    msg["To"] = message.to_email
 
     # Connect to Microsoft 365 SMTP
     with smtplib.SMTP(server, port) as smtp_conn:
         smtp_conn.ehlo()
         smtp_conn.starttls()  # Upgrade connection to TLS
         smtp_conn.login(username, password)
-        smtp_conn.sendmail(from_email, [to_email], msg.as_string())
+        smtp_conn.sendmail(message.from_email, [message.to_email], msg.as_string())
 
     logger.info("Email sent!")
 

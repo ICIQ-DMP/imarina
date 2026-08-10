@@ -19,6 +19,7 @@ from collections.abc import Callable
 import requests
 
 from imarina.core.defines import PROJECT_DIR
+from imarina.core.exceptions import SecretUnavailableError
 from imarina.core.filesystem import read_env_var, read_file_content
 from imarina.core.log_utils import get_logger
 from imarina.core.secret_name import SecretName
@@ -59,4 +60,4 @@ def read_secret(secret_name: SecretName) -> str:
         except expected_errors as e:
             logger.debug(f"Secret source unavailable for '{secret_name}': {e}")
             continue
-    raise RuntimeError(f"Could not read {secret_name} from any source")
+    raise SecretUnavailableError(secret_name)

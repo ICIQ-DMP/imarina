@@ -11,5 +11,5 @@ COPY ./pyproject.toml /app
 COPY src /app/src
 RUN make install
 
-ENTRYPOINT ["./venv/bin/python", "-m", "imarina"]
+ENTRYPOINT ["/app/venv/bin/python", "-m", "imarina"]
 CMD []

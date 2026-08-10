@@ -55,8 +55,11 @@ mode = "update"
 line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "UP", "SIM"]
+select = ["E", "F", "B", "I", "UP", "SIM", "S", "TRY", "DTZ", "PL", "N", "RUF"]
 ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
 
 [tool.ruff.format]
 quote-style = "double"

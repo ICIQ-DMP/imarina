@@ -27,7 +27,7 @@ from imarina.core.researcher import Researcher, normalize_name
 logger = get_logger(__name__)
 
 
-class A3_Field(Enum):
+class A3Field(Enum):
     CODE_CENTER = 1
     NAME = 2
     SURNAME = 3
@@ -110,11 +110,11 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
     }
     translator_countries = {
         normalize_country_name(k): v.strip()
-        for k, v in translator[A3_Field.COUNTRY].items()
+        for k, v in translator[A3Field.COUNTRY].items()
     }
 
     born_country_raw = str(
-        row.values[A3_Field.BORN_COUNTRY.value]
+        row.values[A3Field.BORN_COUNTRY.value]
     ).strip()  # Read the value of cell A3 in Excel (row.values) and the value of Field.BORN_COUNTRY. Remove any spaces
     born_country_clean = normalize_country_name(
         born_country_raw
@@ -128,9 +128,7 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
         born_country_clean, born_country_clean.capitalize()
     )  # born country fully translated
 
-    country_raw = str(
-        row.values[A3_Field.COUNTRY.value]
-    ).strip()  # read row.values of Country field A3
+    country_raw = str(row.values[A3Field.COUNTRY.value]).strip()
     country_clean = normalize_country_name(country_raw)  #  country normalized
 
     country_clean = manual_country_aliases.get(country_clean, country_clean)
@@ -146,62 +144,74 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
     logger.debug(f"Clean country: {country_clean}")
     logger.debug(f"Translated country: {country}")
 
-    email_val = get_val(row, A3_Field.EMAIL.value)
+    email_val = get_val(row, A3Field.EMAIL.value)
     if email_val is not None:
         email_val = email_val.lower()
 
     # Translates unit_group into entity
     try:
-        entity_val = translator[A3_Field.UNIT_GROUP][
-            row.values[A3_Field.UNIT_GROUP.value]
+        entity_val = translator[A3Field.UNIT_GROUP][
+            row.values[A3Field.UNIT_GROUP.value]
         ]
     except KeyError:
         logger.exception(
-            f"KeyError in UNIT_GROUP: {row.values[A3_Field.UNIT_GROUP.value]!r}"
+            f"KeyError in UNIT_GROUP: {row.values[A3Field.UNIT_GROUP.value]!r}"
         )
         raise
 
-    personal_web_val = translator[A3_Field.PERSONAL_WEB][entity_val]
+    personal_web_val = translator[A3Field.PERSONAL_WEB][entity_val]
 
-    orcid_val = get_val(row, A3_Field.ORCID.value)
+    orcid_val = get_val(row, A3Field.ORCID.value)
     if orcid_val is None:
         orcid_val = ""
 
-    job_description_val = translator[A3_Field.JOB_DESCRIPTION][
-        row.values[A3_Field.JOB_DESCRIPTION.value]
-    ]
+    try:
+        job_description_val = translator[A3Field.JOB_DESCRIPTION][
+            row.values[A3Field.JOB_DESCRIPTION.value]
+        ]
+    except KeyError:
+        logger.exception(
+            f"KeyError in JOB DESCRIPTION: {row.values[A3Field.JOB_DESCRIPTION.value]!r}"
+        )
+        raise
 
     # The job description is one of the special job descriptions that are used to determine the entity
     if (
-        row.values[A3_Field.JOB_DESCRIPTION.value]
-        in translator[A3_Field.JOB_DESCRIPTION_ENTITY]
+        row.values[A3Field.JOB_DESCRIPTION.value]
+        in translator[A3Field.JOB_DESCRIPTION_ENTITY]
     ):
         logger.debug(
             f"Special job description found, translating to entity. entity_val was going to be: {entity_val!s}"
         )
-        entity_val = translator[A3_Field.JOB_DESCRIPTION_ENTITY][
-            row.values[A3_Field.JOB_DESCRIPTION.value]
+        entity_val = translator[A3Field.JOB_DESCRIPTION_ENTITY][
+            row.values[A3Field.JOB_DESCRIPTION.value]
         ]
         logger.debug(f"Entity translated is: {entity_val!s}")
 
     # Special case for ICREA group leaders, which needs also info from group unit field
-    if row.values[A3_Field.UNIT_GROUP.value] == "ICREA":
+    if row.values[A3Field.UNIT_GROUP.value] == "ICREA":
         job_description_val = "Group Leader / ICREA Professor"
 
+    try:
+        sex_val = translator[A3Field.SEX][row.values[A3Field.SEX.value]]
+    except KeyError:
+        logger.exception(f"KeyError in SEX: {row.values[A3Field.SEX.value]!r}")
+        raise
+
     data = Researcher(
-        code_center=row.values[A3_Field.CODE_CENTER.value],
-        dni=row.values[A3_Field.DNI.value],
+        code_center=row.values[A3Field.CODE_CENTER.value],
+        dni=row.values[A3Field.DNI.value],
         email=email_val,
         orcid=transform_orcid(orcid_val),
-        name=normalize_name(row.values[A3_Field.NAME.value]),
-        surname=normalize_name(row.values[A3_Field.SURNAME.value]),
-        second_surname=normalize_name(row.values[A3_Field.SECOND_SURNAME.value]),
-        ini_date=sanitize_date(row.values[A3_Field.INI_DATE.value]),
-        end_date=sanitize_date(row.values[A3_Field.END_DATE.value]),
-        ini_prorrog=sanitize_date(row.values[A3_Field.INI_PRORROG.value]),
-        end_prorrog=sanitize_date(row.values[A3_Field.END_PRORROG.value]),
-        date_termination=sanitize_date(row.values[A3_Field.DATE_TERMINATION.value]),
-        sex=translator[A3_Field.SEX][row.values[A3_Field.SEX.value]],
+        name=normalize_name(row.values[A3Field.NAME.value]),
+        surname=normalize_name(row.values[A3Field.SURNAME.value]),
+        second_surname=normalize_name(row.values[A3Field.SECOND_SURNAME.value]),
+        ini_date=sanitize_date(row.values[A3Field.INI_DATE.value]),
+        end_date=sanitize_date(row.values[A3Field.END_DATE.value]),
+        ini_prorrog=sanitize_date(row.values[A3Field.INI_PRORROG.value]),
+        end_prorrog=sanitize_date(row.values[A3Field.END_PRORROG.value]),
+        date_termination=sanitize_date(row.values[A3Field.DATE_TERMINATION.value]),
+        sex=sex_val,
         personal_web=personal_web_val,
         signature="",
         signature_custom="",
@@ -209,6 +219,17 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
         born_country=born_country,
         job_description=job_description_val,
         unit_group=entity_val,
-        entity_type=translator[A3_Field.ENTITY_TYPE][entity_val],
+        entity_type=translator[A3Field.ENTITY_TYPE][entity_val],
+        google_scholar_id="",
+        adscription_type="",
+        entity_country="",
+        entity_community="",
+        entity_province="",
+        entity_city="",
+        entity_postal_code="",
+        entity_address="",
+        entity_web="",
+        contact_phone="",
+        scopus_id="",
     )
     return data

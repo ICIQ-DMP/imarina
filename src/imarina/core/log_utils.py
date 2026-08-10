@@ -20,8 +20,8 @@ from typing import Any, cast
 
 from rich.logging import RichHandler
 
-from imarina.core.defines import DATE_FORMAT
-from imarina.core.log_level import LogLevel, get_default_log_path
+from imarina.core.defines import DATE_FORMAT, DEFAULT_LOG_PATH
+from imarina.core.log_level import LogLevel
 
 # ---- extend the logging module with TRACE
 TRACE_LEVEL_NUM = 1
@@ -135,11 +135,9 @@ def process_log_flags(
 
 def configure_logging_from_settings(
     level: LogLevel | None = None,
-    log_file: Path | None = None,
+    log_file: Path = DEFAULT_LOG_PATH,
     secrets: list[str] | None = None,
 ) -> None:
-    if log_file is None:
-        log_file = get_default_log_path()
 
     if level is None:
         level = LogLevel.get_default_log_level()

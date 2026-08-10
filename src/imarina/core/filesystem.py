@@ -19,6 +19,13 @@ import os
 # from typing import cast
 from pathlib import Path
 
+from imarina.core.exceptions import (
+    EnvVarEmptyError,
+    EnvVarMissingError,
+    FileContentEmptyError,
+    FileMissingError,
+    FileUnreadableError,
+)
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
@@ -40,14 +47,14 @@ def read_env_var(var_name: str) -> str:
     """
     # Check if the environment variable exists
     if var_name not in os.environ:
-        raise KeyError(f"The environment variable '{var_name}' does not exist.")
+        raise EnvVarMissingError(var_name)
 
     # Read the value
     value = os.environ[var_name]
 
     # Check if the value is empty
     if not value:
-        raise ValueError(f"The environment variable '{var_name}' is empty.")
+        raise EnvVarEmptyError(var_name)
 
     return value
 
@@ -56,7 +63,7 @@ def read_file_content(file_path: str | Path) -> str:
     content = read_file(file_path)
 
     if not content:
-        raise ValueError(f"The file '{file_path}' is empty.")
+        raise FileContentEmptyError(file_path)
 
     return content
 
@@ -80,13 +87,11 @@ def read_file(file_path: str | Path) -> str:
 
     # Check if the file exists
     if not path.exists():
-        raise FileNotFoundError(f"The file '{file_path}' does not exist.")
+        raise FileMissingError(file_path)
 
     # Check if the file is readable
     if not os.access(path, os.R_OK):
-        raise PermissionError(
-            f"The file '{file_path}' cannot be read. Check permissions."
-        )
+        raise FileUnreadableError(file_path)
 
     # Read the file
     return path.read_text()

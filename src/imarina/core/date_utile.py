@@ -19,13 +19,13 @@ from typing import Any
 
 import pandas as pd
 
-from imarina.core.defines import DATE_FORMAT, MADRID_TZ
+from imarina.core.defines import DATE_FORMAT, MADRID_TZ, PERMANENT_CONTRACT_DATE
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
 
-def sanitize_date(date_dirty: Any) -> datetime.datetime | None:
+def sanitize_date(date_dirty: Any) -> datetime.datetime:
     if (
         type(date_dirty) is pd._libs.tslibs.timestamps.Timestamp
         or type(date_dirty) is datetime.datetime
@@ -37,13 +37,13 @@ def sanitize_date(date_dirty: Any) -> datetime.datetime | None:
             return date_dirty.replace(tzinfo=MADRID_TZ)
         return date_dirty
     elif type(date_dirty) is pd._libs.tslibs.nattype.NaTType:
-        return None
+        return PERMANENT_CONTRACT_DATE
     elif isinstance(date_dirty, str):
         return datetime.datetime.strptime(date_dirty.strip("'"), "%d/%m/%Y").replace(
             tzinfo=MADRID_TZ
         )
     elif isinstance(date_dirty, float) or date_dirty is None:
-        return None
+        return PERMANENT_CONTRACT_DATE
     else:
         raise ValueError(
             "Unknown type for date to sanitize: "

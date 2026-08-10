@@ -25,6 +25,7 @@ from imarina.core.defines import (
     DEFAULT_JOBS_DICT,
     DEFAULT_OUTPUT_PATH,
     DEFAULT_PERSONAL_WEB_PATH,
+    DEFAULT_SEX_PATH,
     DEFAULT_UNIT_GROUP_PATH,
 )
 from imarina.core.imarina_excel import build_upload_excel
@@ -38,13 +39,15 @@ from imarina.core.shared_options import (
     JobsDictOpt,
     OutputPathOpt,
     PersonalWebPathOpt,
+    SexPathOpt,
     UnitGroupPathOpt,
 )
+from imarina.core.translations import TranslationDictionaryPaths
 
 logger = get_logger(__name__)
 
 
-def build_controller(
+def build_controller(  # noqa: PLR0913, PLR0917
         ctx: typer.Context,
         countries_dict: CountriesDictOpt = DEFAULT_COUNTRIES_DICT,
         jobs_dict: JobsDictOpt = DEFAULT_JOBS_DICT,
@@ -55,16 +58,20 @@ def build_controller(
         unit_group_path: UnitGroupPathOpt = DEFAULT_UNIT_GROUP_PATH,
         entity_type_path: EntityTypePathOpt = DEFAULT_ENTITY_TYPE_PATH,
         job_description_entity_path: JobDescriptionEntityPathOpt = DEFAULT_JOB_DESCRIPTION_ENTITY_PATH,
+        sex_path: SexPathOpt = DEFAULT_SEX_PATH
 ) -> None:
     build_upload_excel(
         output_path,
-        countries_dict,
-        jobs_dict,
         imarina_input,
         a3_input,
-        personal_web_path,
-        unit_group_path,
-        entity_type_path,
-        job_description_entity_path
+        TranslationDictionaryPaths(
+            countries_path=countries_dict,
+            jobs_path=jobs_dict,
+            personal_web_path=personal_web_path,
+            unit_group_path=unit_group_path,
+            entity_type_path=entity_type_path,
+            job_description_entity_path=job_description_entity_path,
+            sex_path=sex_path,
+        ),
     )
 

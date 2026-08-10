@@ -41,6 +41,11 @@ ICIQ_WEBPAGE = "https://iciq.org/"
 FILENAME_PREFIX = "iMarina_upload_"
 FILENAME_SUFFIX = ".xlsx"
 FTP_EXCEL_FILE_DATE_FORMAT = "%y%m%d"
+FTP_UPLOAD_DATE = datetime.datetime.now(MADRID_TZ).strftime(FTP_EXCEL_FILE_DATE_FORMAT)
+FTP_FILENAME = f"icl_ag_personal_12539_{FTP_UPLOAD_DATE}.xlsx"
+FTP_UPLOAD_PATH = f"carga_icolet/{FTP_FILENAME}"
+
+DEFAULT_LOG_PATH = PROJECT_DIR / "logs" / f"{NOW}.log"
 
 SHAREPOINT_INPUT_FOLDER = (
     "Institutional Strengthening/_Projects/iMarina_load_automation/input"
@@ -59,6 +64,7 @@ REQUIRED_INPUT_FILES = {
     "unit_group": "unit_group.xlsx",
     "unit_type": "unit_type.xlsx",
     "job_description_entity": "job_description_entity.xlsx",
+    "sex": "sex.xlsx",
 }
 
 # --- CLI option defaults ---
@@ -81,15 +87,16 @@ DEFAULT_ENTITY_TYPE_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["unit_type"]
 DEFAULT_JOB_DESCRIPTION_ENTITY_PATH = (
     INPUT_DIR / REQUIRED_INPUT_FILES["job_description_entity"]
 )
+DEFAULT_SEX_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["sex"]
 
 # --- publish ---
 
-DEFAULT_PUBLISH_FILE_PATH = None
+DEFAULT_PUBLISH_FILE_PATH = OUTPUT_DIR / FTP_FILENAME
 DEFAULT_DRY_RUN = True
 
 # --- upload ---
 
-DEFAULT_UPLOAD_FILE_PATH = None
+DEFAULT_UPLOAD_FILE_PATH = OUTPUT_DIR / FTP_FILENAME
 DEFAULT_TARGET_FOLDER = pathlib.Path(
     "Institutional Strengthening/_Projects/iMarina_load_automation/output"
 )

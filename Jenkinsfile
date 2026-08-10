@@ -7,8 +7,6 @@ pipeline {
     }
     parameters {
          string(name: 'ID', defaultValue: '' , description: 'ID operation in iMarina')
-         string(name: 'EMAIL', defaultValue: '', description: 'Creator email')
-         string(name: 'NAME', defaultValue: '', description: 'Creator name')
     }
 
     environment {

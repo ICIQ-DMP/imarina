@@ -14,21 +14,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import paramiko
 
+from imarina.core.exceptions import SftpSessionError
 from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
 
+@dataclass
+class FtpCredentials:
+    host: str
+    port: int
+    username: str
+    password: str
+
+
 def upload_file_ftp(
     path: Path,
-    host: str,
-    port: int,
-    username: str,
-    password: str,
+    credentials: FtpCredentials,
     dry_run: bool,
     upload_filename: str,
 ) -> None:
@@ -41,14 +48,14 @@ def upload_file_ftp(
     """
     logger.info("Connecting to FTP server.")
     try:
-        serv = paramiko.Transport((host, port))
-        serv.connect(username=username, password=password)
+        serv = paramiko.Transport((credentials.host, credentials.port))
+        serv.connect(username=credentials.username, password=credentials.password)
         ftp = paramiko.SFTPClient.from_transport(serv)
     except Exception:
         logger.exception("Failed to connect to FTP server.")
         raise
     if ftp is None:
-        raise RuntimeError("Failed to open SFTP session: from_transport returned None.")
+        raise SftpSessionError
     logger.info("Connected to FTP server.")
 
     root_files = ftp.listdir()

@@ -16,6 +16,7 @@
 
 import typer
 
+from imarina.core.defines import DEFAULT_LOG_PATH
 from imarina.core.log_utils import (
     configure_logging_from_settings,
     get_logger,
@@ -31,18 +32,18 @@ from imarina.core.shared_options import (
 )
 
 
-def cli_global_callback(
+def cli_global_callback(  # noqa: PLR0913, PLR0917
     ctx: typer.Context,
     verbose: VerboseOpt = False,
     very_verbose: VeryVerboseOpt = False,
     quiet: QuietOpt = False,
     very_quiet: VeryQuietOpt = False,
-    log_file: LogFileOpt = None,
+    log_file: LogFileOpt = DEFAULT_LOG_PATH,
 ) -> None:
     """
     Global option callback. Executed if no command is provided.
     """
-    configure_logging_from_settings()
+    # configure_logging_from_settings()
     logger = get_logger(__name__)
 
     cli_log_level, more_than_one_flag = process_log_flags(

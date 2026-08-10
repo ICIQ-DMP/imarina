@@ -26,12 +26,12 @@ from imarina.core.imarina_mapper import (
     parse_imarina_row_data,
 )
 from imarina.core.log_utils import get_logger
-from imarina.core.translations import build_translations
+from imarina.core.researcher import Researcher
+from imarina.core.translations import TranslationDictionaryPaths, build_translations
 
 logger = get_logger(__name__)
 
 
-# typed string dni
 def normalized_dni(dni: str) -> str:
     if not dni:
         return ""
@@ -40,52 +40,17 @@ def normalized_dni(dni: str) -> str:
     return dni
 
 
-# constructor of excel
-def build_upload_excel(
-    output_path: Path,
-    countries_path: Any,
-    jobs_path: Any,
-    imarina_path: Any,
-    a3_path: Any,
-    personal_web_path: Any,
-    unit_group_path: Any,
-    entity_type_path: Any,
-    job_description_entity_path: Any,
-) -> None:
+def _match_last_upload_against_a3(
+    im_researchers: list[Researcher], a3_researchers: list[Researcher]
+) -> tuple[list[Researcher], list[Researcher], list[Researcher]]:
+    """Phase 1: Check if the researchers in last upload to iMarina are still in A3.
 
-    # Get A3 data
-    a3_data = Excel(a3_path, skiprows=2, header=0)
+    Returns (researchers_left, researchers_changed, researchers_output).
+    """
+    researchers_left: list[Researcher] = []
+    researchers_changed: list[Researcher] = []
+    researchers_output: list[Researcher] = []
 
-    # Get iMarina last upload data
-    im_data = Excel(imarina_path, header=0)
-
-    # load the translators fields: country, job_description
-    translator = build_translations(
-        countries_path=countries_path,
-        jobs_path=jobs_path,
-        personal_web_path=personal_web_path,
-        unit_group_path=unit_group_path,
-        entity_type_path=entity_type_path,
-        job_description_entity_path=job_description_entity_path,
-    )
-
-    researchers_left = []
-    researchers_visitor = []
-    researchers_new = []
-    researchers_changed = []
-    researchers_output = []
-
-    im_researchers = []
-    for _index, row in im_data.dataframe.iterrows():
-        im_researchers.append(parse_imarina_row_data(row))
-
-    a3_researchers = []
-    for _index, row in a3_data.dataframe.iterrows():
-        a3_researchers.append(parse_a3_row_data(row, translator))
-
-    logger.info(
-        "Phase 1: Check if the researchers in last upload to iMarina are still in A3"
-    )
     for researcher_imarina in im_researchers:
         logger.debug(f"Parsed data from iMarina row is: {researcher_imarina!s}")
         researchers_matched_a3 = researcher_imarina.search_data(a3_researchers)
@@ -141,9 +106,19 @@ def build_upload_excel(
             for res in researchers_matched_a3:
                 logger.debug(res)
 
-        # input("Press Enter to continue...")
+    return researchers_left, researchers_changed, researchers_output
 
-    logger.info("Phase 2: Add researchers in A3 that are not present in iMarina")
+
+def _find_new_researchers_in_a3(
+    a3_researchers: list[Researcher], im_researchers: list[Researcher]
+) -> tuple[list[Researcher], list[Researcher]]:
+    """Phase 2: Add researchers in A3 that are not present in iMarina.
+
+    Returns (researchers_new, researchers_output).
+    """
+    researchers_new: list[Researcher] = []
+    researchers_output: list[Researcher] = []
+
     for researcher_a3 in a3_researchers:
         researchers_matched_im = researcher_a3.search_data(
             im_researchers
@@ -160,9 +135,49 @@ def build_upload_excel(
             )
             # No action, he has already been prosecuted in Phase 1
 
-    for researcher in researchers_output:
-        if researcher.is_visitor():
-            researchers_visitor.append(researcher)
+    return researchers_new, researchers_output
+
+
+def build_upload_excel(
+    output_path: Path,
+    imarina_path: Path,
+    a3_path: Path,
+    translation_paths: TranslationDictionaryPaths,
+) -> None:
+
+    # Get A3 data
+    a3_data = Excel(a3_path, skiprows=2, header=0)
+
+    # Get iMarina last upload data
+    im_data = Excel(imarina_path, header=0)
+
+    # load the translators fields: country, job_description
+    translator = build_translations(translation_paths)
+
+    im_researchers = []
+    for _index, row in im_data.dataframe.iterrows():
+        im_researchers.append(parse_imarina_row_data(row))
+
+    a3_researchers = []
+    for _index, row in a3_data.dataframe.iterrows():
+        a3_researchers.append(parse_a3_row_data(row, translator))
+
+    logger.info(
+        "Phase 1: Check if the researchers in last upload to iMarina are still in A3"
+    )
+    researchers_left, researchers_changed, researchers_output = (
+        _match_last_upload_against_a3(im_researchers, a3_researchers)
+    )
+
+    logger.info("Phase 2: Add researchers in A3 that are not present in iMarina")
+    researchers_new, researchers_output_phase2 = _find_new_researchers_in_a3(
+        a3_researchers, im_researchers
+    )
+    researchers_output.extend(researchers_output_phase2)
+
+    researchers_visitor = [
+        researcher for researcher in researchers_output if researcher.is_visitor()
+    ]
 
     num_changed = len(researchers_changed)
     num_left = len(researchers_left)
@@ -184,7 +199,9 @@ def build_upload_excel(
     # with CSC, so its data from A3 needs to be added to the output.
     # retains columns, types, and headers if any
 
-    im_data_any = cast(Any, im_data)  # data cast pass variable type to other type
+    im_data_any = cast(
+        Any, im_data
+    )  # data cast pass variable type to any type to use copy method
     im_data_empty: Any = im_data_any.__copy__()
     im_data_empty.empty()
 

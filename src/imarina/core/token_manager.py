@@ -14,11 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+import functools
 import time
 
 import requests
 
+from imarina.core.exceptions import (
+    MissingCredentialsError,
+    TokenManagerUnavailableError,
+    TokenNotSetError,
+    TokenRequestError,
+)
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret
 
@@ -49,7 +55,7 @@ class TokenManager:
         ):  # Refresh if less than 5 minutes remain
             self._refresh_token()
         if self.access_token is None:
-            raise RuntimeError("Token refresh did not set an access token.")
+            raise TokenNotSetError
         return self.access_token
 
     def _refresh_token(self) -> None:
@@ -60,13 +66,11 @@ class TokenManager:
             "client_secret": self.client_secret,
             "scope": self.scope,
         }
-        response = requests.post(self.token_url, data=token_data)
+        response = requests.post(self.token_url, data=token_data, timeout=10)
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            raise RuntimeError(
-                f"Error requesting access token: {e}\nResponse: {response.text}"
-            ) from e
+            raise TokenRequestError(e, response.text) from e
 
         token_data = response.json()
         self.access_token = token_data["access_token"]
@@ -75,32 +79,19 @@ class TokenManager:
 
 def _create_token_manager() -> TokenManager | None:
     # read the secrets and create a unique instance of TokenManager.
-    if os.getenv("GITHUB_ACTIONS") == "true":
-        logger.info("Running in GitHub Actions — skipping TokenManager initialization")
-        return None
     tenant_id = read_secret(SecretName.TENANT_ID)
     client_id = read_secret(SecretName.CLIENT_ID)
     client_secret = read_secret(SecretName.CLIENT_SECRET)
     if not tenant_id or not client_id or not client_secret:
-        raise ValueError(
-            "Missing values for TENANT_ID, CLIENT_ID or CLIENT_SECRET in secrets."
-        )
+        raise MissingCredentialsError
     return TokenManager(
         tenant_id=tenant_id, client_id=client_id, client_secret=client_secret
     )
 
 
-# global variable _manager_instance
-_manager_instance: TokenManager | None = None
-
-
+@functools.cache
 def get_token_manager() -> TokenManager:
-    global _manager_instance
-    if _manager_instance is None:
-        _manager_instance = _create_token_manager()
-    if _manager_instance is None:
-        raise RuntimeError(
-            "No TokenManager available (running under GITHUB_ACTIONS with no "
-            "credentials configured)."
-        )
-    return _manager_instance
+    manager = _create_token_manager()
+    if manager is None:
+        raise TokenManagerUnavailableError
+    return manager

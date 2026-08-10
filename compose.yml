@@ -31,10 +31,14 @@ services:
    image: docker.io/driveone/onedrive:edge
    container_name: onedrive
    userns_mode: keep-id
+   entrypoint: ["/entrypoint-wrapper.sh"]
    volumes:
      - ./services/onedrive/conf:/onedrive/conf
      - ./services/onedrive/data:/onedrive/data
      - ./services/onedrive/logs:/onedrive/logs
+     - ./services/onedrive/entrypoint-wrapper.sh:/entrypoint-wrapper.sh:ro
+   secrets:
+     - DRIVE_ID
    restart: unless-stopped
    networks:
      - imarina_net

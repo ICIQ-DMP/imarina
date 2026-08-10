@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,12 @@ import requests
 import urllib3
 
 from imarina.core.defines import PROJECT_DIR
+from imarina.core.exceptions import (
+    VaultCredentialMissingError,
+    VaultFieldMissingError,
+    VaultMappingMissingError,
+    VaultSecretEmptyError,
+)
 from imarina.core.log_utils import get_logger
 from imarina.core.secret_name import SecretName
 
@@ -66,7 +73,7 @@ def _read_credential(name: str) -> str:
     value = os.environ.get(name, "").strip()
     if value:
         return value
-    raise KeyError(f"Vault credential '{name}' not found in secrets or environment")
+    raise VaultCredentialMissingError(name)
 
 
 class _VaultClient:
@@ -91,9 +98,10 @@ class _VaultClient:
         # 1. Try a pre-issued Vault token.
         try:
             self._token = _read_credential("VAULT_TOKEN")
-            return
         except KeyError:
             pass
+        else:
+            return
 
         # 2. Try AppRole (VAULT_ROLE_ID + VAULT_SECRET_ID).
         role_id = _read_credential("VAULT_ROLE_ID")
@@ -128,20 +136,20 @@ class _VaultClient:
 
     def read_secret(self, secret_name: SecretName) -> str:
         if secret_name not in _SECRET_MAP:
-            raise KeyError(f"No vault mapping defined for secret '{secret_name}'")
+            raise VaultMappingMissingError(secret_name)
         subpath, field = _SECRET_MAP[secret_name]
         data = self._fetch_subpath(subpath)
         if field not in data:
-            raise KeyError(
-                f"Field '{field}' not found at vault path '{_VAULT_BASE_PATH}/{subpath}'"
-            )
+            raise VaultFieldMissingError(field, f"{_VAULT_BASE_PATH}/{subpath}")
         value = data[field]
         if value is None or str(value).strip() == "":
-            raise ValueError(f"Vault secret '{secret_name}' (field '{field}') is empty")
+            raise VaultSecretEmptyError(secret_name, field)
         return str(value)
 
 
-_client: _VaultClient | None = None
+@lru_cache(maxsize=1)
+def _get_client() -> _VaultClient:
+    return _VaultClient()
 
 
 def read_vault_secret(secret_name: SecretName) -> str:
@@ -152,7 +160,4 @@ def read_vault_secret(secret_name: SecretName) -> str:
     Raises requests.HTTPError / ConnectionError on network / auth failures.
     """
     logger.debug(f"Requesting secret from Vault: {secret_name}")
-    global _client
-    if _client is None:
-        _client = _VaultClient()
-    return _client.read_secret(secret_name)
+    return _get_client().read_secret(secret_name)

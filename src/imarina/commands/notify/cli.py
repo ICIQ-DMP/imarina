@@ -17,6 +17,7 @@
 from imarina.core.defines import DEFAULT_NOTIFY_SHAREPOINT_PATH
 from imarina.core.log_utils import get_logger
 from imarina.core.mail import (
+    EmailContent,
     WorkflowStatus,
     build_error_body,
     build_success_body,
@@ -73,10 +74,9 @@ def notify_controller(
 
     smtp_user = read_secret(SecretName.SMTP_USERNAME)
     send_email(
-        to_email,
-        subject,
-        body,
-        smtp_user,
+        EmailContent(
+            to_email=to_email, subject=subject, body=body, from_email=smtp_user
+        ),
         smtp_user,
         read_secret(SecretName.SMTP_PASSWORD),
         read_secret(SecretName.SMTP_HOST),

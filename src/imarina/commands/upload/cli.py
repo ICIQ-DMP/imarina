@@ -14,11 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pathlib import Path
 
 import typer
 
+from build.lib.imarina.core.defines import OUTPUT_DIR
 from imarina.core.defines import DEFAULT_TARGET_FOLDER, DEFAULT_UPLOAD_FILE_PATH
+from imarina.core.file_select import select_file_to_upload
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret
 from imarina.core.shared_options import TargetFolderOpt, UploadFilePathOpt
@@ -35,25 +36,7 @@ def upload_controller(
     logger.info("Uploading the latest Excel file to SharePoint...")
 
     if file_path is None:
-        uploads_dir = Path.cwd() / "output"
-        if uploads_dir.exists():
-            # recent file in uploads folder
-            files = list(uploads_dir.glob("*.xlsx"))
-            if files:
-                file_path = max(files, key=lambda f: f.stat().st_mtime)
-            else:
-                logger.error(f"Error: Not files Excel in  {uploads_dir}")
-                raise typer.Exit(code=1)
-        else:
-            logger.error(
-                "Error: No file specified and the 'output' folder does not exist.."
-            )
-            raise typer.Exit(code=1)
-
-    # the file not exist in the path
-    if not file_path.exists():
-        logger.error(f"Error: The file no exist in the path: {file_path}")
-        raise typer.Exit(code=1)
+        file_path = select_file_to_upload(OUTPUT_DIR)
 
     logger.info(f"Local file detected: {file_path.name}")
     logger.info(f"Destination SharePoint: {target_folder}")

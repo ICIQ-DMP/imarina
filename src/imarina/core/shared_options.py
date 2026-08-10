@@ -51,7 +51,7 @@ DirectoryOpt = Annotated[
 
 
 LogFileOpt = Annotated[
-    Path | None, typer.Option("-l", "--log-file", help="Path to log file (optional)")
+    Path, typer.Option("-l", "--log-file", help="Path to log file (optional)")
 ]
 
 VerboseOpt = Annotated[
@@ -101,15 +101,16 @@ ImarinaInputOpt = Annotated[
 ]
 A3InputOpt = Annotated[Path, typer.Option(help="Path to A3 input file(.xlsx)")]
 OutputPathOpt = Annotated[Path, typer.Option()]
-PersonalWebPathOpt = Annotated[Path | None, typer.Option()]
-UnitGroupPathOpt = Annotated[Path | None, typer.Option()]
-EntityTypePathOpt = Annotated[Path | None, typer.Option()]
-JobDescriptionEntityPathOpt = Annotated[Path | None, typer.Option()]
+PersonalWebPathOpt = Annotated[Path, typer.Option()]
+UnitGroupPathOpt = Annotated[Path, typer.Option()]
+EntityTypePathOpt = Annotated[Path, typer.Option()]
+JobDescriptionEntityPathOpt = Annotated[Path, typer.Option()]
+SexPathOpt = Annotated[Path, typer.Option()]
 
 # --- publish ---
 
 PublishFilePathOpt = Annotated[
-    Path | None,
+    Path,
     typer.Option(help="Path to the iMarina Excel file to upload to the SFTP server"),
 ]
 DryRunOpt = Annotated[
@@ -119,7 +120,7 @@ DryRunOpt = Annotated[
 # --- upload ---
 
 UploadFilePathOpt = Annotated[
-    Path | None,
+    Path,
     typer.Option(
         help="Excel file path (.xlsx). If left empty, it will look for the last one in 'output'."
     ),

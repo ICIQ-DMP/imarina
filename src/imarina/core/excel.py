@@ -27,7 +27,7 @@ from imarina.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
-def get_val(row: pd.Series, field: int) -> Any | None:
+def get_val(row: pd.Series, field: int) -> Any:
     val = row.values[field]
     if pd.isna(val):
         return None
