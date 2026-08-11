@@ -27,14 +27,14 @@ from imarina.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
-def get_val(row: pd.Series, field: int) -> Any:
-    val = row.values[field]
+def get_val(row: pd.Series, field: str) -> Any:
+    val = row[field]
     if pd.isna(val):
         return None
     return val
 
 
-def get_str_val(row: pd.Series, field: int) -> str:
+def get_str_val(row: pd.Series, field: str) -> str:
     val = get_val(row, field)
     return str(val).strip() if val is not None else ""
 

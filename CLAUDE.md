@@ -43,7 +43,7 @@ happen, both writing flat into that same folder:
 1. `download_files_in_folder_from_sharepoint()` (`core/sharepoint.py`) lists
    **every** `.xlsx` file in a fixed SharePoint library folder
    (`SHAREPOINT_INPUT_FOLDER`, `core/defines.py` —
-   `Institutional Strengthening/_Projects/iMarina_load_automation/input`) and
+   `_Projects/iMarina_load_automation/input`) and
    downloads all of them as-is. This is how the 6 static "dictionary" files
    arrive (`countries.xlsx`, `Job_Descriptions.xlsx`, `Personal_web.xlsx`,
    `unit_group.xlsx`, `unit_type.xlsx`, `job_description_entity.xlsx`) — they're

@@ -28,94 +28,99 @@ logger = get_logger(__name__)
 
 
 class ImarinaField(Enum):
-    NAME = 1
-    SURNAME = 2
-    SECOND_SURNAME = 3
-    SIGNATURE = 4
-    SIGNATURE_CUSTOM = 5
-    DNI = 6
-    BIRTH_DATE = 7
-    SEX = 8
-    COUNTRY = 9
-    # BORN_COUNTRY = -1
-    EMAIL = 12
-    PERSONAL_WEB = 13
-    ADSCRIPTION_TYPE = 15
-    JOB_DESCRIPTION = 16
-    DEDICATION = 17
-    INI_DATE = 18
-    END_DATE = 19
-    UNIT_GROUP = 20
+    # Values are the exact iMarina.xlsx column headers, so row[field.value]
+    # resolves by column name instead of position - adding, removing or
+    # reordering unrelated columns in the iMarina export no longer breaks
+    # this mapping. Only renaming one of these headers would (and that now
+    # fails loudly as a KeyError instead of silently reading/writing the
+    # wrong column).
+    NAME = "nombre"
+    SURNAME = "primer_apellido"
+    SECOND_SURNAME = "segundo_apellido"
+    SIGNATURE = "signature"
+    SIGNATURE_CUSTOM = "signature_custom"
+    DNI = "DNI/NIE/NIF"
+    BIRTH_DATE = "Fecha de Nacimiento"
+    SEX = "Sexo"
+    COUNTRY = "País de Nacimiento"
+    EMAIL = "Correo Electrónico"
+    PERSONAL_WEB = "Web Personal"
+    ADSCRIPTION_TYPE = "Tipo de Adscripción"
+    JOB_DESCRIPTION = "Categoría Investigadora/Docente"
+    DEDICATION = "Dedicación"
+    INI_DATE = "Fecha de Inicio"
+    END_DATE = "Fecha de Fin"
+    UNIT_GROUP = "Entidad (Nivel 1)"
 
-    ENTITY_TYPE = 22
-    ENTITY_COUNTRY = 23
-    ENTITY_COMMUNITY = 24
-    ENTITY_PROVINCE = 25
-    ENTITY_CITY = 26
-    ENTITY_POSTAL_CODE = 27
-    ENTITY_ADDRESS = 28
-    ENTITY_WEB = 29
-    ORCID = 35
-    GOOGLE_SCHOLAR_ID = 39
-    SCOPUS_ID = 37
-    CONTACT_PHONE = 46
+    ENTITY_TYPE = "Tipo de Entidad"
+    ENTITY_COUNTRY = "País de la Entidad"
+    ENTITY_COMMUNITY = "Region/Comunidad de la Entidad"
+    ENTITY_PROVINCE = "Provincia de la Entidad"
+    ENTITY_CITY = "Ciudad de la Entidad"
+    ENTITY_POSTAL_CODE = "Código Postal de la Entidad"
+    ENTITY_ADDRESS = "Dirección de la Entidad"
+    ENTITY_WEB = "Web de la Entidad"
+    ORCID = "ORCID"
+    GOOGLE_SCHOLAR_ID = "Google Scholar ID"
+    SCOPUS_ID = "AuthorID (Scopus)"
+    CONTACT_PHONE = "Teléfono de Contacto"
 
 
 def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel) -> Any:
-    empty_output_row.dataframe.iat[0, ImarinaField.DNI.value] = data.dni
-    empty_output_row.dataframe.iat[0, ImarinaField.EMAIL.value] = data.email
-    empty_output_row.dataframe.iat[0, ImarinaField.ORCID.value] = data.orcid
-    empty_output_row.dataframe.iat[0, ImarinaField.NAME.value] = data.name
-    empty_output_row.dataframe.iat[0, ImarinaField.SURNAME.value] = data.surname
-    empty_output_row.dataframe.iat[0, ImarinaField.SECOND_SURNAME.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.DNI.value] = data.dni
+    empty_output_row.dataframe.at[0, ImarinaField.EMAIL.value] = data.email
+    empty_output_row.dataframe.at[0, ImarinaField.ORCID.value] = data.orcid
+    empty_output_row.dataframe.at[0, ImarinaField.NAME.value] = data.name
+    empty_output_row.dataframe.at[0, ImarinaField.SURNAME.value] = data.surname
+    empty_output_row.dataframe.at[0, ImarinaField.SECOND_SURNAME.value] = (
         data.second_surname
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.INI_DATE.value] = unparse_date(
+    empty_output_row.dataframe.at[0, ImarinaField.INI_DATE.value] = unparse_date(
         data.ini_date
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.END_DATE.value] = unparse_date(
+    empty_output_row.dataframe.at[0, ImarinaField.END_DATE.value] = unparse_date(
         data.end_date
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.SEX.value] = data.sex
-    empty_output_row.dataframe.iat[0, ImarinaField.PERSONAL_WEB.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.SEX.value] = data.sex
+    empty_output_row.dataframe.at[0, ImarinaField.PERSONAL_WEB.value] = (
         data.personal_web
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.SIGNATURE.value] = data.signature
-    empty_output_row.dataframe.iat[0, ImarinaField.SIGNATURE_CUSTOM.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.SIGNATURE.value] = data.signature
+    empty_output_row.dataframe.at[0, ImarinaField.SIGNATURE_CUSTOM.value] = (
         data.signature_custom
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.COUNTRY.value] = data.country
-    empty_output_row.dataframe.iat[0, ImarinaField.JOB_DESCRIPTION.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.COUNTRY.value] = data.country
+    empty_output_row.dataframe.at[0, ImarinaField.JOB_DESCRIPTION.value] = (
         data.job_description
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.ADSCRIPTION_TYPE.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.ADSCRIPTION_TYPE.value] = (
         data.adscription_type
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.UNIT_GROUP.value] = data.unit_group
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_TYPE.value] = data.entity_type
+    empty_output_row.dataframe.at[0, ImarinaField.UNIT_GROUP.value] = data.unit_group
+    empty_output_row.dataframe.at[0, ImarinaField.ENTITY_TYPE.value] = data.entity_type
 
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_COUNTRY.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.ENTITY_COUNTRY.value] = (
         data.entity_country
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_COMMUNITY.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.ENTITY_COMMUNITY.value] = (
         data.entity_community
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_PROVINCE.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.ENTITY_PROVINCE.value] = (
         data.entity_province
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_CITY.value] = data.entity_city
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_POSTAL_CODE.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.ENTITY_CITY.value] = data.entity_city
+    empty_output_row.dataframe.at[0, ImarinaField.ENTITY_POSTAL_CODE.value] = (
         data.entity_postal_code
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_ADDRESS.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.ENTITY_ADDRESS.value] = (
         data.entity_address
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_WEB.value] = data.entity_web
-    empty_output_row.dataframe.iat[0, ImarinaField.SCOPUS_ID.value] = data.scopus_id
-    empty_output_row.dataframe.iat[0, ImarinaField.GOOGLE_SCHOLAR_ID.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.ENTITY_WEB.value] = data.entity_web
+    empty_output_row.dataframe.at[0, ImarinaField.SCOPUS_ID.value] = data.scopus_id
+    empty_output_row.dataframe.at[0, ImarinaField.GOOGLE_SCHOLAR_ID.value] = (
         data.google_scholar_id
     )
-    empty_output_row.dataframe.iat[0, ImarinaField.CONTACT_PHONE.value] = (
+    empty_output_row.dataframe.at[0, ImarinaField.CONTACT_PHONE.value] = (
         data.contact_phone
     )
 

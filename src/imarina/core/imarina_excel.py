@@ -45,6 +45,22 @@ def _match_last_upload_against_a3(
 ) -> tuple[list[Researcher], list[Researcher], list[Researcher]]:
     """Phase 1: Check if the researchers in last upload to iMarina are still in A3.
 
+    Each bulk load is applied as an update on top of the previous iMarina
+    upload:
+      - a researcher no longer present in A3 gets an end date, meaning
+        they've left ICIQ (below: the "not present in A3" case);
+      - a researcher whose group or position has changed per A3 should get
+        an end date on their existing (outgoing) row, and a new row should
+        be created carrying the new position's start date (below: the
+        "has_changed_jobs" case).
+
+    NOTE: the "has_changed_jobs" case below only appends the new A3 row
+    (researcher_a3) to the output; the outgoing iMarina row
+    (researcher_imarina) is not re-added with an end date, so today it's
+    simply dropped rather than closed out. Flagging this here since it
+    doesn't match the policy above - fix if that turns out to be
+    unintentional.
+
     Returns (researchers_left, researchers_changed, researchers_output).
     """
     researchers_left: list[Researcher] = []
@@ -88,6 +104,9 @@ def _match_last_upload_against_a3(
                 logger.debug(
                     "Adding new row from A3 with the data of the new position."
                 )
+                # NOTE: policy also calls for closing out researcher_imarina
+                # (the outgoing row) with an end date, but that's not done
+                # here - see this function's docstring.
                 researchers_changed.append(researcher_a3)
                 researchers_output.append(researcher_a3)
 
@@ -143,6 +162,12 @@ def build_upload_excel(
     a3_path: Path,
     translation_paths: TranslationDictionaryPaths,
 ) -> None:
+    """Build the next iMarina upload as an update on top of the previous one.
+
+    See _match_last_upload_against_a3's docstring for the exact per-case
+    policy (left ICIQ / changed position) and _find_new_researchers_in_a3
+    for new hires.
+    """
 
     # Get A3 data
     a3_data = Excel(a3_path, skiprows=2, header=0)
@@ -174,6 +199,16 @@ def build_upload_excel(
     )
     researchers_output.extend(researchers_output_phase2)
 
+    # The A3 snapshot has more people than iMarina needs, because visitors
+    # aren't meant to be loaded into iMarina - see Researcher.is_visitor for
+    # how a visitor is identified (center code 4, with ICREA/CSC-predoc
+    # exceptions).
+    #
+    # NOTE: researchers_visitor is currently only used to report a count in
+    # the log line below; visitors are not actually excluded from
+    # researchers_output/the generated file today. Flagging this since it
+    # doesn't match the "visitors aren't loaded" policy above - fix if
+    # that's unintentional.
     researchers_visitor = [
         researcher for researcher in researchers_output if researcher.is_visitor()
     ]
@@ -192,12 +227,8 @@ def build_upload_excel(
 
     # IF GROUP UNIT = DIRECCIO OR GROUP UNIT = GESTIO OR GROUP UNIT = OUTREACH DELETE OF OUTPUT
 
-    # For each researcher in A3, check if they are not present in iMarina
-    # If they are not present, it has a code 4, it begins and end date is outside a range
-    # to determine from fields to determine, then the current row from A3 corresponds to ICREA researcher or predoc
-    # with CSC, so its data from A3 needs to be added to the output.
-    # retains columns, types, and headers if any
-
+    # Build the output file starting from an empty copy of the previous
+    # iMarina upload, so it retains its columns, types, and headers.
     im_data_any = cast(
         Any, im_data
     )  # data cast pass variable type to any type to use copy method

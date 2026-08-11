@@ -47,9 +47,7 @@ FTP_UPLOAD_PATH = f"carga_icolet/{FTP_FILENAME}"
 
 DEFAULT_LOG_PATH = PROJECT_DIR / "logs" / f"{NOW}.log"
 
-SHAREPOINT_INPUT_FOLDER = (
-    "Institutional Strengthening/_Projects/iMarina_load_automation/input"
-)
+SHAREPOINT_INPUT_FOLDER = "_Projects/iMarina_load_automation/input"
 
 # Single source of truth for the input files `build` needs and `download` must
 # provide, under these exact names, in the same flat directory (default:
@@ -97,9 +95,7 @@ DEFAULT_DRY_RUN = True
 # --- upload ---
 
 DEFAULT_UPLOAD_FILE_PATH = OUTPUT_DIR / FTP_FILENAME
-DEFAULT_TARGET_FOLDER = pathlib.Path(
-    "Institutional Strengthening/_Projects/iMarina_load_automation/output"
-)
+DEFAULT_TARGET_FOLDER = pathlib.Path("_Projects/iMarina_load_automation/output")
 
 # --- notify ---
 

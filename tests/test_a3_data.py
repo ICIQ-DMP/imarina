@@ -31,14 +31,14 @@ def test_no_duplicates_in_a3():
             else ""
         )
 
-    dnis = a3_data.iloc[:, A3Field.DNI.value].apply(clean)
+    dnis = a3_data[A3Field.DNI.value].apply(clean)
     dnis = dnis[dnis != ""]
 
     assert (
         not dnis.duplicated().any()
     ), f"S'han trobat DNIs duplicats: {dnis[dnis.duplicated()].unique()}"
 
-    emails = a3_data.iloc[:, A3Field.EMAIL.value].apply(clean)
+    emails = a3_data[A3Field.EMAIL.value].apply(clean)
     emails = emails[emails != ""]
 
     assert (

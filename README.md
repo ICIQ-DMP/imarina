@@ -175,8 +175,8 @@ bash run.sh
 # The program will display a link and ask you to authenticate and paste the answered URL into the terminal
 ```
 <!-- TODO: remove specific data from share point
-After following the steps, OneDrive will be syncing the folder `Institutional Strengthening/_Projects/iMarina_load_automation/input`-->
-`Institutional Strengthening/_Projects/iMarina_load_automation/input` from Sharepoint into `services/onedrive/data`. Add 
+After following the steps, OneDrive will be syncing the folder `_Projects/iMarina_load_automation/input`-->
+`_Projects/iMarina_load_automation/input` from Sharepoint into `services/onedrive/data`. Add 
 or change the necessary arguments to read from this new source, instead of `input/`, so that data consumed by the 
 program is always updated. 
 

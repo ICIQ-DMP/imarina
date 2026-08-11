@@ -32,41 +32,53 @@ logger = get_logger(__name__)
 
 
 class A3Field(Enum):
-    CODE_CENTER = 1
-    NAME = 2
-    SURNAME = 3
-    SECOND_SURNAME = 4
-    DNI = 5
-    SEX = 6
-    COUNTRY = 7
-    BORN_COUNTRY = 8
-    EMAIL = 9
-    JOB_DESCRIPTION = 10
-    UNIT_GROUP = 11
-    ORCID = 13
-    INI_DATE = 14
-    END_DATE = 15
-    INI_PRORROG = 16
-    END_PRORROG = 17
-    DATE_TERMINATION = 18
-    # Negative values are not mapped in A3 sheet. They also must have unique values.
-    PERSONAL_WEB = -1
-    SIGNATURE = -2
-    SIGNATURE_CUSTOM = -3
-    BIRTH_DATE = -4
-    ADSCRIPTION_TYPE = -5
-    ENTITY_TYPE = -6
-    ENTITY_COUNTRY = -7
-    ENTITY_COMMUNITY = -8
-    ENTITY_PROVINCE = -9
-    ENTITY_CITY = -10
-    ENTITY_POSTAL_CODE = -11
-    ENTITY_ADDRESS = -12
-    ENTITY_WEB = -13
-    GOOGLE_SCHOLAR_ID = -14
-    CONTACT_PHONE = -15
+    # Values are the exact A3.xlsx column headers (row after skiprows=2), so
+    # row[field.value] resolves by column name instead of position - adding,
+    # removing or reordering unrelated columns in the A3 export no longer
+    # breaks this mapping. Only renaming one of these headers would (and
+    # that now fails loudly as a KeyError instead of silently reading the
+    # wrong column).
+    CODE_CENTER = "Código Centro"
+    NAME = "Nombre trabajador"
+    SURNAME = "Primer apellido trabajador"
+    SECOND_SURNAME = "Segundo apellido trabajador"
+    DNI = "NIF"
+    SEX = "Sexo"
+    COUNTRY = "Nacionalidad"
+    BORN_COUNTRY = "Pais nacimiento _"
+    EMAIL = "E-mail profesional"
+    JOB_DESCRIPTION = "Puesto de trabajo"
+    UNIT_GROUP = "Grupo Unidad"
+    ORCID = "ORCID"
+    INI_DATE = "Fecha Inicio Contrato"
+    END_DATE = "Fecha Fin Contrato"
+    INI_PRORROG = "Fecha Inicio Prórroga"
+    END_PRORROG = "Fecha Fin Prórroga"
+    DATE_TERMINATION = "Fecha de baja en compañía"
 
-    JOB_DESCRIPTION_ENTITY = -16  # Special type for 2 columns at the same time
+    # Below: not real A3 columns - these members are only ever used as
+    # translator-dictionary keys (see Translator/build_translations), never
+    # to index a row. Values just need to be unique and are never matched
+    # against a spreadsheet header, so each is simply its own member name.
+    PERSONAL_WEB = "PERSONAL_WEB"
+    SIGNATURE = "SIGNATURE"
+    SIGNATURE_CUSTOM = "SIGNATURE_CUSTOM"
+    BIRTH_DATE = "BIRTH_DATE"
+    ADSCRIPTION_TYPE = "ADSCRIPTION_TYPE"
+    ENTITY_TYPE = "ENTITY_TYPE"
+    ENTITY_COUNTRY = "ENTITY_COUNTRY"
+    ENTITY_COMMUNITY = "ENTITY_COMMUNITY"
+    ENTITY_PROVINCE = "ENTITY_PROVINCE"
+    ENTITY_CITY = "ENTITY_CITY"
+    ENTITY_POSTAL_CODE = "ENTITY_POSTAL_CODE"
+    ENTITY_ADDRESS = "ENTITY_ADDRESS"
+    ENTITY_WEB = "ENTITY_WEB"
+    GOOGLE_SCHOLAR_ID = "GOOGLE_SCHOLAR_ID"
+    CONTACT_PHONE = "CONTACT_PHONE"
+
+    JOB_DESCRIPTION_ENTITY = (
+        "JOB_DESCRIPTION_ENTITY"  # Special type for 2 columns at the same time
+    )
 
 
 def transform_orcid(orcid: str) -> str:
@@ -121,8 +133,8 @@ def parse_a3_row_data(row: Any, translator: Translator) -> Any:
     translator_countries = translator[A3Field.COUNTRY]
 
     born_country_raw = str(
-        row.values[A3Field.BORN_COUNTRY.value]
-    ).strip()  # Read the value of cell A3 in Excel (row.values) and the value of Field.BORN_COUNTRY. Remove any spaces
+        row[A3Field.BORN_COUNTRY.value]
+    ).strip()  # Read the value of the BORN_COUNTRY column for this row. Remove any spaces
     born_country_clean = normalize_country_name(
         born_country_raw
     )  # born country normalize and find in translator_countries
@@ -135,7 +147,7 @@ def parse_a3_row_data(row: Any, translator: Translator) -> Any:
         born_country_clean, born_country_clean.capitalize()
     )  # born country fully translated
 
-    country_raw = str(row.values[A3Field.COUNTRY.value]).strip()
+    country_raw = str(row[A3Field.COUNTRY.value]).strip()
     country_clean = normalize_country_name(country_raw)  #  country normalized
 
     country_clean = MANUAL_COUNTRY_ALIASES.get(country_clean, country_clean)
@@ -157,13 +169,9 @@ def parse_a3_row_data(row: Any, translator: Translator) -> Any:
 
     # Translates unit_group into entity
     try:
-        entity_val = translator[A3Field.UNIT_GROUP][
-            row.values[A3Field.UNIT_GROUP.value]
-        ]
+        entity_val = translator[A3Field.UNIT_GROUP][row[A3Field.UNIT_GROUP.value]]
     except KeyError:
-        logger.exception(
-            f"KeyError in UNIT_GROUP: {row.values[A3Field.UNIT_GROUP.value]!r}"
-        )
+        logger.exception(f"KeyError in UNIT_GROUP: {row[A3Field.UNIT_GROUP.value]!r}")
         raise
 
     personal_web_val = translator[A3Field.PERSONAL_WEB][entity_val]
@@ -174,50 +182,47 @@ def parse_a3_row_data(row: Any, translator: Translator) -> Any:
 
     try:
         job_description_val = translator[A3Field.JOB_DESCRIPTION][
-            row.values[A3Field.JOB_DESCRIPTION.value]
+            row[A3Field.JOB_DESCRIPTION.value]
         ]
     except KeyError:
         logger.exception(
-            f"KeyError in JOB DESCRIPTION: {row.values[A3Field.JOB_DESCRIPTION.value]!r}"
+            f"KeyError in JOB DESCRIPTION: {row[A3Field.JOB_DESCRIPTION.value]!r}"
         )
         raise
 
     # The job description is one of the special job descriptions that are used to determine the entity
-    if (
-        row.values[A3Field.JOB_DESCRIPTION.value]
-        in translator[A3Field.JOB_DESCRIPTION_ENTITY]
-    ):
+    if row[A3Field.JOB_DESCRIPTION.value] in translator[A3Field.JOB_DESCRIPTION_ENTITY]:
         logger.debug(
             f"Special job description found, translating to entity. entity_val was going to be: {entity_val!s}"
         )
         entity_val = translator[A3Field.JOB_DESCRIPTION_ENTITY][
-            row.values[A3Field.JOB_DESCRIPTION.value]
+            row[A3Field.JOB_DESCRIPTION.value]
         ]
         logger.debug(f"Entity translated is: {entity_val!s}")
 
     # Special case for ICREA group leaders, which needs also info from group unit field
-    if row.values[A3Field.UNIT_GROUP.value] == "ICREA":
+    if row[A3Field.UNIT_GROUP.value] == "ICREA":
         job_description_val = JOB_TITLE_GROUP_LEADER_ICREA
 
     try:
-        sex_val = translator[A3Field.SEX][row.values[A3Field.SEX.value]]
+        sex_val = translator[A3Field.SEX][row[A3Field.SEX.value]]
     except KeyError:
-        logger.exception(f"KeyError in SEX: {row.values[A3Field.SEX.value]!r}")
+        logger.exception(f"KeyError in SEX: {row[A3Field.SEX.value]!r}")
         raise
 
     data = Researcher(
-        code_center=row.values[A3Field.CODE_CENTER.value],
-        dni=row.values[A3Field.DNI.value],
+        code_center=row[A3Field.CODE_CENTER.value],
+        dni=row[A3Field.DNI.value],
         email=email_val,
         orcid=transform_orcid(orcid_val),
-        name=normalize_name(row.values[A3Field.NAME.value]),
-        surname=normalize_name(row.values[A3Field.SURNAME.value]),
-        second_surname=normalize_name(row.values[A3Field.SECOND_SURNAME.value]),
-        ini_date=sanitize_date(row.values[A3Field.INI_DATE.value]),
-        end_date=sanitize_date(row.values[A3Field.END_DATE.value]),
-        ini_prorrog=sanitize_date(row.values[A3Field.INI_PRORROG.value]),
-        end_prorrog=sanitize_date(row.values[A3Field.END_PRORROG.value]),
-        date_termination=sanitize_date(row.values[A3Field.DATE_TERMINATION.value]),
+        name=normalize_name(row[A3Field.NAME.value]),
+        surname=normalize_name(row[A3Field.SURNAME.value]),
+        second_surname=normalize_name(row[A3Field.SECOND_SURNAME.value]),
+        ini_date=sanitize_date(row[A3Field.INI_DATE.value]),
+        end_date=sanitize_date(row[A3Field.END_DATE.value]),
+        ini_prorrog=sanitize_date(row[A3Field.INI_PRORROG.value]),
+        end_prorrog=sanitize_date(row[A3Field.END_PRORROG.value]),
+        date_termination=sanitize_date(row[A3Field.DATE_TERMINATION.value]),
         sex=sex_val,
         personal_web=personal_web_val,
         signature="",

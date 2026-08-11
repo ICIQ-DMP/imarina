@@ -23,7 +23,15 @@ from imarina.core.log_utils import get_logger
 
 logger = get_logger(__name__)
 
+
+# The A3 snapshot includes more people than iMarina needs, because visitors
+# aren't meant to be loaded into iMarina. Center code 4 generally marks a
+# visitor, but ICREA group leaders and CSC-scholarship predoctoral
+# researchers are also filed under code 4 despite not being visitors - see
+# is_visitor()'s docstring for how that's meant to be disambiguated.
 VISITOR_CENTER_CODE = 4
+# General visitor heuristic for researchers NOT under VISITOR_CENTER_CODE:
+# a contract shorter than this is almost always a short-term visit.
 VISITOR_MAX_DURATION_DAYS = 90
 
 # Job-description strings that job-matching/visitor-detection logic below
@@ -181,6 +189,24 @@ class Researcher:
         return bool(self.job_description != researcher.job_description)
 
     def is_visitor(self) -> bool:
+        """Whether this researcher is a short-term visitor, who shouldn't be
+        loaded into iMarina.
+
+        Center code 4 (VISITOR_CENTER_CODE) generally marks a visitor, but
+        ICREA group leaders and CSC-scholarship predoctoral researchers are
+        also filed under code 4 despite not being visitors. Per policy,
+        code-4 people should be disambiguated using their ini/end date span
+        (a real visit is under about a year) - the job-description keyword
+        check below only catches the ICREA case (title contains "leader"),
+        not CSC predocs, since a predoc's title doesn't match any of
+        PERMANENT_POSITION_KEYWORDS.
+
+        NOTE: the duration check described above isn't implemented for the
+        code_center == VISITOR_CENTER_CODE branch - only the keyword check
+        is. This means a code-4 CSC predoc is currently misclassified as a
+        visitor. Flagging this since it doesn't match the policy above -
+        fix if that's unintentional.
+        """
         # Center code 4 tends to be a visitor
         if self.code_center == VISITOR_CENTER_CODE:
             job = str(self.job_description).lower()

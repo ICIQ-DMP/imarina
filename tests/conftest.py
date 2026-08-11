@@ -67,14 +67,12 @@ def build_researcher(**overrides: Any) -> Researcher:
 
 # --- A3 row / translator fixtures -------------------------------------------
 #
-# parse_a3_row_data() reads a row positionally (row.values[A3Field.X.value]),
-# the same way it does when called from a real `dataframe.iterrows()`, so a
-# pandas Series built from a plain list reproduces that access pattern
-# exactly. Only A3Field members with a non-negative value are ever read this
-# way - negative ones (PERSONAL_WEB, ENTITY_TYPE, ...) are translator-dict
-# keys instead, never row positions.
-_A3_ROW_LENGTH = max(field.value for field in A3Field if field.value >= 0) + 1
-
+# parse_a3_row_data() reads a row by column name (row[A3Field.X.value]), the
+# same way it does when called from a real `dataframe.iterrows()`, so a
+# pandas Series keyed by those column names reproduces that access pattern
+# exactly. Only A3Field members backed by a real A3.xlsx column are ever
+# read this way - the rest (PERSONAL_WEB, ENTITY_TYPE, ...) are
+# translator-dict keys instead, never row labels, so they're absent here.
 _A3_ROW_DEFAULTS: dict[A3Field, Any] = {
     A3Field.CODE_CENTER: 1,
     A3Field.NAME: "john",
@@ -99,10 +97,8 @@ _A3_ROW_DEFAULTS: dict[A3Field, Any] = {
 
 
 def build_a3_row(overrides: dict[A3Field, Any] | None = None) -> pd.Series:
-    values: list[Any] = [None] * _A3_ROW_LENGTH
-    for field, value in {**_A3_ROW_DEFAULTS, **(overrides or {})}.items():
-        values[field.value] = value
-    return pd.Series(values)
+    data = {**_A3_ROW_DEFAULTS, **(overrides or {})}
+    return pd.Series({field.value: value for field, value in data.items()})
 
 
 # translator[A3Field.COUNTRY] keys are pre-normalized (lowercase, no accents)
@@ -131,8 +127,6 @@ def build_a3_translator(
 
 
 # --- iMarina row fixtures -----------------------------------------------------
-_IMARINA_ROW_LENGTH = max(field.value for field in ImarinaField) + 1
-
 _IMARINA_ROW_DEFAULTS: dict[ImarinaField, Any] = {
     ImarinaField.NAME: "john",
     ImarinaField.SURNAME: "smith",
@@ -167,7 +161,5 @@ _IMARINA_ROW_DEFAULTS: dict[ImarinaField, Any] = {
 
 
 def build_imarina_row(overrides: dict[ImarinaField, Any] | None = None) -> pd.Series:
-    values: list[Any] = [None] * _IMARINA_ROW_LENGTH
-    for field, value in {**_IMARINA_ROW_DEFAULTS, **(overrides or {})}.items():
-        values[field.value] = value
-    return pd.Series(values)
+    data = {**_IMARINA_ROW_DEFAULTS, **(overrides or {})}
+    return pd.Series({field.value: value for field, value in data.items()})
