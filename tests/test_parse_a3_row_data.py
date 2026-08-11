@@ -1,4 +1,4 @@
-# imarina-load - Automated imarina data loads
+# imarina-load-researchers - Automated iMarina data loads
 # Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
 import pytest
 from conftest import build_a3_row, build_a3_translator
 
-from imarina.core.a3_mapper import A3Field, parse_a3_row_data
-from imarina.core.researcher import JOB_TITLE_GROUP_LEADER_ICREA
+from imarina_load_researchers.core.a3_mapper import A3Field, parse_a3_row_data
+from imarina_load_researchers.core.researcher import JOB_TITLE_GROUP_LEADER_ICREA
 
 
 def test_parse_a3_row_data_translates_country_and_born_country():

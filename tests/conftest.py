@@ -1,4 +1,4 @@
-# imarina-load - Automated imarina data loads
+# imarina-load-researchers - Automated iMarina data loads
 # Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,9 +20,9 @@ from typing import Any
 
 import pandas as pd
 
-from imarina.core.a3_mapper import A3Field, Translator
-from imarina.core.imarina_mapper import ImarinaField
-from imarina.core.researcher import Researcher
+from imarina_load_researchers.core.a3_mapper import A3Field, Translator
+from imarina_load_researchers.core.imarina_mapper import ImarinaField
+from imarina_load_researchers.core.researcher import Researcher
 
 # Researcher is a kw_only dataclass with no defaults for most fields (see
 # core/researcher.py). Tests only care about a handful of fields at a time,

@@ -1,4 +1,4 @@
-# imarina-load - Automated imarina data loads
+# imarina-load-researchers - Automated iMarina data loads
 # Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from imarina.core.researcher import normalize_name
+from imarina_load_researchers.core.researcher import normalize_name
 
 
 def test_normalize_name_all_uppercase_is_title_cased():

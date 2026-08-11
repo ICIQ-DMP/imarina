@@ -1,4 +1,4 @@
-# imarina — architecture notes
+# imarina-load-researchers — architecture notes
 
 ## What this does
 
@@ -10,7 +10,7 @@ iMarina server over FTP (`publish`).
 
 ## CLI commands and the pipeline
 
-Five subcommands, wired in `src/imarina/cli.py`: `download`, `build`, `upload`,
+Five subcommands, wired in `src/imarina_load_researchers/cli.py`: `download`, `build`, `upload`,
 `publish`, `notify`. They do **not** pass data to each other directly — there is
 no manifest or explicit handoff. They communicate purely through a **filesystem
 naming convention**: fixed folder names and fixed filenames, all relative to
@@ -24,10 +24,10 @@ production — it's the only place the end-to-end flow is written down:
 
 ```
 rm -rf input
-imarina download <OperationID>            # positional int arg, not --id; populates ./input
-imarina build                              # reads ./input, writes ./output
-imarina upload                             # autodetects latest file in ./output, pushes to SharePoint for review
-imarina notify --id <OperationID> --status success   # or --status error from a catch block
+imarina-load-researchers download <OperationID>            # positional int arg, not --id; populates ./input
+imarina-load-researchers build                              # reads ./input, writes ./output
+imarina-load-researchers upload                             # autodetects latest file in ./output, pushes to SharePoint for review
+imarina-load-researchers notify --id <OperationID> --status success   # or --status error from a catch block
 ```
 
 `publish` (FTP → iMarina server) is **deliberately not** part of the automated
@@ -43,7 +43,7 @@ happen, both writing flat into that same folder:
 1. `download_files_in_folder_from_sharepoint()` (`core/sharepoint.py`) lists
    **every** `.xlsx` file in a fixed SharePoint library folder
    (`SHAREPOINT_INPUT_FOLDER`, `core/defines.py` —
-   `_Projects/iMarina_load_automation/input`) and
+   `_Projects/imarina-load-researchers/input`) and
    downloads all of them as-is. This is how the 6 static "dictionary" files
    arrive (`countries.xlsx`, `Job_Descriptions.xlsx`, `Personal_web.xlsx`,
    `unit_group.xlsx`, `unit_type.xlsx`, `job_description_entity.xlsx`) — they're
@@ -76,7 +76,7 @@ must be supplied fresh by `download` (or manually) on every run.
 `commands/upload/cli.py`. If no `--file-path` given, scans `./output/*.xlsx`
 and picks the most recent by mtime (not by the timestamp in the filename).
 Pushes it to a SharePoint review folder
-(`.../iMarina_load_automation/output`) via `upload_file_sharepoint`. This is
+(`.../imarina-load-researchers/output`) via `upload_file_sharepoint`. This is
 the file a human reviews before deciding to `publish`.
 
 ### `publish` — the real, human-gated production push
@@ -102,31 +102,31 @@ email goes to whoever triggered the run) — required, no default.
 the same SharePoint review folder `upload` pushes to, and is only used to
 word the success email body. Prior to this
 command existing, Jenkins ran `core/mail.py` directly as a standalone
-script (`python3 src/imarina/core/mail.py --id ... --status ...`); it's now
-invoked like any other subcommand (`imarina notify --id ... --status ...`),
+script (`python3 src/imarina_load_researchers/core/mail.py --id ... --status ...`); it's now
+invoked like any other subcommand (`imarina-load-researchers notify --id ... --status ...`),
 so it goes through `cli_global_callback` for logging setup like the rest of
 the app instead of needing its own `configure_logging_from_settings()` call.
 
 ## Key files for this pipeline
 
-- `src/imarina/cli.py` — command registration only
-- `src/imarina/core/defines.py` — shared constants: `PROJECT_DIR` (=cwd),
+- `src/imarina_load_researchers/cli.py` — command registration only
+- `src/imarina_load_researchers/core/defines.py` — shared constants: `PROJECT_DIR` (=cwd),
   `INPUT_DIR`/`OUTPUT_DIR`, filename prefix/suffix/datetime format used to
   round-trip the "latest file" between stages, `MADRID_TZ` (see Dates
   below), and every CLI option's `DEFAULT_*` value. This is the single
   source of truth for `PROJECT_DIR` — don't recompute a project root
   elsewhere (e.g. by walking up from `__file__`); import it from here.
-- `src/imarina/core/sharepoint.py` — all Graph API calls (download, upload,
+- `src/imarina_load_researchers/core/sharepoint.py` — all Graph API calls (download, upload,
   MS List lookup)
-- `src/imarina/core/ftp.py` — the `publish` FTP push
-- `src/imarina/core/shared_options.py` — every Typer `Option`/`Argument`
+- `src/imarina_load_researchers/core/ftp.py` — the `publish` FTP push
+- `src/imarina_load_researchers/core/shared_options.py` — every Typer `Option`/`Argument`
   annotation used by any command — metadata (help text, flags) only, no
   default values. Controller functions in `commands/*/cli.py` import the
   `*Opt` type from here and the matching `DEFAULT_*` constant from
   `core/defines.py` (`param: SomeOpt = DEFAULT_SOME`) rather than calling
   `typer.Option(...)` inline in the signature — see "Adding a new CLI
   option" below.
-- `src/imarina/core/secret.py`, `secret_name.py`, `vault.py` — see Secrets
+- `src/imarina_load_researchers/core/secret.py`, `secret_name.py`, `vault.py` — see Secrets
   below.
 - `Jenkinsfile` — the authoritative description of the automated portion of
   the pipeline (download → build → upload → notify); publish is manual.

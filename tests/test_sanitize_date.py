@@ -1,4 +1,4 @@
-# imarina-load - Automated imarina data loads
+# imarina-load-researchers - Automated iMarina data loads
 # Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ import datetime
 import pandas as pd
 import pytest
 
-from imarina.core.date_utile import sanitize_date
-from imarina.core.defines import MADRID_TZ, PERMANENT_CONTRACT_DATE
+from imarina_load_researchers.core.date_utile import sanitize_date
+from imarina_load_researchers.core.defines import MADRID_TZ, PERMANENT_CONTRACT_DATE
 
 
 def test_sanitize_date_naive_datetime_gets_madrid_timezone():

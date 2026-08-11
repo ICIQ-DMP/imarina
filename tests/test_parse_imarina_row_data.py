@@ -1,4 +1,4 @@
-# imarina-load - Automated imarina data loads
+# imarina-load-researchers - Automated iMarina data loads
 # Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,11 @@ import datetime
 
 from conftest import build_imarina_row
 
-from imarina.core.defines import MADRID_TZ
-from imarina.core.imarina_mapper import ImarinaField, parse_imarina_row_data
+from imarina_load_researchers.core.defines import MADRID_TZ
+from imarina_load_researchers.core.imarina_mapper import (
+    ImarinaField,
+    parse_imarina_row_data,
+)
 
 
 def test_parse_imarina_row_data_maps_and_normalizes_basic_fields():

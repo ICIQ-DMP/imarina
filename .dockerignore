@@ -16,4 +16,4 @@ services/onedrive/conf
 services/onedrive/logs
 !services/onedrive/conf/config
 !services/onedrive/conf/sync_list
-src/imarina.egg-info
+src/imarina_load_researchers.egg-info

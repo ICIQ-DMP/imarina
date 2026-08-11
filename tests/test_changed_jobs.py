@@ -1,4 +1,4 @@
-# imarina-load - Automated imarina data loads
+# imarina-load-researchers - Automated iMarina data loads
 # Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 
 from conftest import build_researcher
 
-from imarina.core.researcher import Researcher
+from imarina_load_researchers.core.researcher import Researcher
 
 
 def _researcher(job_description: str) -> Researcher:

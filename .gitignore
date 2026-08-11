@@ -221,5 +221,5 @@ uploads
 !uploads/.gitignore
 sensibles
 !sensibles/.gitignore
-!src/imarina/commands/build
+!src/imarina_load_researchers/commands/build
 .idea

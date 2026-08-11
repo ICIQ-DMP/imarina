@@ -3,9 +3,9 @@ requires = ["setuptools>=64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "imarina"
+name = "imarina-load-researchers"
 dynamic = ["version"]
-description = "imarina automated excel build"
+description = "imarina-load-researchers automated excel build"
 readme = "README.md"
 requires-python = ">=3.14"
 authors = [{name="AleixMT"}, {name="MarioPiqué"}]
@@ -26,7 +26,7 @@ dependencies = [
 
 
 [project.scripts]
-imarina = "imarina.__main__:main"
+imarina-load-researchers = "imarina_load_researchers.__main__:main"
 
 [project.optional-dependencies]
 dev = [

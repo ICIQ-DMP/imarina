@@ -1,4 +1,4 @@
-# imarina-load - Automated imarina data loads
+# imarina-load-researchers - Automated iMarina data loads
 # Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from imarina.core.sharepoint import get_site_id
+from imarina_load_researchers.core.sharepoint import get_site_id
 
 
 class DummyTokenManager:
@@ -26,7 +26,7 @@ class DummyTokenManager:
         return "fake_token_123"
 
 
-@patch("imarina.core.sharepoint.requests.get")
+@patch("imarina_load_researchers.core.sharepoint.requests.get")
 def test_get_site_id_success(mock_get):
     mock_response = MagicMock()
     mock_response.json.return_value = {"id": "SITE12345"}
@@ -48,7 +48,7 @@ def test_get_site_id_success(mock_get):
     assert result == "SITE12345"
 
 
-@patch("imarina.core.sharepoint.requests.get")
+@patch("imarina_load_researchers.core.sharepoint.requests.get")
 def test_get_site_id_http_error(mock_get):
     mock_response = MagicMock()
     mock_response.raise_for_status.side_effect = Exception("Bad Request")

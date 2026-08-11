@@ -41,7 +41,7 @@ services:
      - DRIVE_ID
    restart: unless-stopped
    networks:
-     - imarina_net
+     - imarina_load_researchers_net
    healthcheck:
      test: sh -c '[ -s /onedrive/conf/items.sqlite3-wal ]'
      interval: 60s
@@ -75,7 +75,7 @@ secrets:
     file: ./secrets/DRIVE_ID
 
 networks:
-  imarina_net:
+  imarina_load_researchers_net:
 
 
 

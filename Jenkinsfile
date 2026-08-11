@@ -11,7 +11,7 @@ pipeline {
 
     environment {
          PYTHON_PATH = "/usr/bin/python3"
-         IMARINA_CMD = "venv/bin/imarina"
+         IMARINA_CMD = "venv/bin/imarina-load-researchers"
     }
 
     stages {

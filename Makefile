@@ -1,4 +1,4 @@
-# Makefile for imarina
+# Makefile for imarina-load-researchers
 # Usage examples:
 #   make venv
 #   make lint
@@ -26,7 +26,7 @@ VENV_BIN   ?= $(VENV_DIR)/bin
 PYTHON     := $(VENV_BIN)/python
 PIP        := $(VENV_BIN)/pip
 
-PKG_NAME   := imarina
+PKG_NAME   := imarina_load_researchers
 DOCKER_IMAGE := mariopique/imarina-load
 
 DEV_STAMP := $(VENV_DIR)/.dev-installed
@@ -39,8 +39,8 @@ $(VENV_BIN)/python:
 	@$(PYTHON_BIN) -m venv "$(VENV_DIR)"
 	@$(PYTHON_BIN) -m pip install --upgrade pip
 
-# Install runtime dependencies (creates imarina executable)
-$(VENV_BIN)/imarina: $(VENV_BIN)/python pyproject.toml
+# Install runtime dependencies (creates imarina-load-researchers executable)
+$(VENV_BIN)/imarina-load-researchers: $(VENV_BIN)/python pyproject.toml
 	@$(PIP) install -e .
 
 # Install dev dependencies
@@ -69,7 +69,7 @@ $(VENV_BIN)/pyproject-build: $(VENV_BIN)/python
 venv: $(VENV_BIN)/python  ## Create virtualenv
 	@echo "✅ venv ready at $(VENV_DIR)"
 
-install: $(VENV_BIN)/imarina  ## Install package in editable mode
+install: $(VENV_BIN)/imarina-load-researchers  ## Install package in editable mode
 
 hooks: .git/hooks/pre-commit .git/hooks/commit-msg .git/hooks/pre-push  ## Install git hooks
 
@@ -93,7 +93,7 @@ test: dev  ## Run tests
 # Pass arguments to the CLI via CMD, e.g.:
 #   make run CMD="run -f demo.nds --debug"
 CMD ?= --help
-run: install  ## Run the imarina CLI (python -m imarina)
+run: install  ## Run the imarina-load-researchers CLI (python -m imarina_load_researchers)
 	@$(PYTHON) -m $(PKG_NAME) $(CMD)
 
 # ---- docker ---------------------------------------------------------------
