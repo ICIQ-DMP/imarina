@@ -1,5 +1,5 @@
 sync_dir = "/onedrive/data"
-drive_id = "b!KJ1B2DCzSkuCoY3RpzAwFygN2jp0uu1LuLHdfD8wx_3n_8Rkg41LSY25TQTmrzYb"
+drive_id = "__DRIVE_ID__"
 
 log_dir = "/onedrive/logs/"
 
