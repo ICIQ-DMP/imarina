@@ -17,7 +17,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from imarina.core.a3_mapper import A3Field
+from imarina.core.a3_mapper import A3Field, Translator, normalize_country_name
 from imarina.core.excel import Excel
 from imarina.core.log_utils import get_logger
 
@@ -48,11 +48,18 @@ class TranslationDictionaryPaths:
 
 def build_translations(
     paths: TranslationDictionaryPaths,
-) -> dict[A3Field, dict[str, str]]:
-    return {
+) -> Translator:
+    translations = {
         field: dict(build_translator(path, 1))
         for field, path in paths.to_a3_field_map().items()
     }
+    # Normalized once here so a3_mapper's per-row country lookups don't have to
+    # rebuild this from the raw dict on every researcher row.
+    translations[A3Field.COUNTRY] = {
+        normalize_country_name(k): v.strip()
+        for k, v in translations[A3Field.COUNTRY].items()
+    }
+    return translations
 
 
 # function to build the translator

@@ -34,6 +34,11 @@ def get_val(row: pd.Series, field: int) -> Any:
     return val
 
 
+def get_str_val(row: pd.Series, field: int) -> str:
+    val = get_val(row, field)
+    return str(val).strip() if val is not None else ""
+
+
 class Excel:
     def __init__(
         self,

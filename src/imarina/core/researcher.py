@@ -26,6 +26,31 @@ logger = get_logger(__name__)
 VISITOR_CENTER_CODE = 4
 VISITOR_MAX_DURATION_DAYS = 90
 
+# Job-description strings that job-matching/visitor-detection logic below
+# compares against. Centralized here (rather than re-typed at each call
+# site) so a typo can't silently break a comparison - see the StrEnum
+# gotcha in CLAUDE.md for the same failure class.
+JOB_TITLE_POSTDOCTORAL_RESEARCHER = "Postdoctoral researcher"
+JOB_TITLE_ASSOCIATED_RESEARCHER = "Associated researcher"
+JOB_TITLE_GROUP_LEADER = "Group Leader"
+JOB_TITLE_GROUP_LEADER_ICREA = "Group Leader / ICREA Professor"
+
+# Job-description keywords that denote a permanent position - used to rule
+# out "visitor" status in is_visitor().
+PERMANENT_POSITION_KEYWORDS = ("leader", "manager", "principal", "head")
+
+INSTITUTIONAL_DEFAULTS = {
+    "adscription_type": "Research",
+    "entity_country": "Spain",
+    "entity_community": "Cataluña",
+    "entity_province": "Tarragona",
+    "entity_city": "Tarragona",
+    "entity_postal_code": "43007",
+    "entity_address": "Av. Països Catalans, 16",
+    "entity_web": "https://iciq.org/",
+    "contact_phone": "34977920200",
+}
+
 
 @dataclass(kw_only=True)
 class Researcher:
@@ -85,17 +110,7 @@ class Researcher:
     def _institutional_defaults() -> dict[str, str]:
         """ICIQ's fixed institutional/contact info, used to fill in any of
         these fields a caller didn't supply its own value for."""
-        return {
-            "adscription_type": "Research",
-            "entity_country": "Spain",
-            "entity_community": "Cataluña",
-            "entity_province": "Tarragona",
-            "entity_city": "Tarragona",
-            "entity_postal_code": "43007",
-            "entity_address": "Av. Països Catalans, 16",
-            "entity_web": "https://iciq.org/",
-            "contact_phone": "34977920200",
-        }
+        return INSTITUTIONAL_DEFAULTS
 
     def __str__(self) -> str:
         return (
@@ -156,22 +171,11 @@ class Researcher:
         return bool(self.email and other.email and self.email == other.email)
 
     def has_changed_jobs(self, researcher: Researcher) -> bool:
-        if (
-            self.job_description == "Postdoctoral researcher"
-            and researcher.job_description == "Associated researcher"
-        ) or (
-            self.job_description == "Associated researcher"
-            and researcher.job_description == "Postdoctoral researcher"
-        ):
-            return False
-
-        if (
-            self.job_description == "Group Leader / ICREA Professor"
-            and researcher.job_description == "Group Leader"
-        ) or (
-            self.job_description == "Group Leader"
-            and researcher.job_description == "Group Leader / ICREA Professor"
-        ):
+        equivalent_job_titles = (
+            {JOB_TITLE_POSTDOCTORAL_RESEARCHER, JOB_TITLE_ASSOCIATED_RESEARCHER},
+            {JOB_TITLE_GROUP_LEADER_ICREA, JOB_TITLE_GROUP_LEADER},
+        )
+        if {self.job_description, researcher.job_description} in equivalent_job_titles:
             return False
 
         return bool(self.job_description != researcher.job_description)
@@ -179,17 +183,10 @@ class Researcher:
     def is_visitor(self) -> bool:
         # Center code 4 tends to be a visitor
         if self.code_center == VISITOR_CENTER_CODE:
-
             job = str(self.job_description).lower()
-            permanent_keywords = [
-                "leader",
-                "manager",
-                "principal",
-                "head",
-            ]  # these positions are usually not visitors since they are permanent positions
 
             # If the job_description contains one of those keywords, then it's NOT a visitor
-            return not any(key in job for key in permanent_keywords)
+            return not any(key in job for key in PERMANENT_POSITION_KEYWORDS)
 
         if self.ini_date and self.end_date:
             duration = (self.end_date - self.ini_date).days

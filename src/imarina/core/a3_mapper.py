@@ -22,7 +22,11 @@ from typing import Any
 from imarina.core.date_utile import sanitize_date
 from imarina.core.excel import get_val
 from imarina.core.log_utils import get_logger
-from imarina.core.researcher import Researcher, normalize_name
+from imarina.core.researcher import (
+    JOB_TITLE_GROUP_LEADER_ICREA,
+    Researcher,
+    normalize_name,
+)
 
 logger = get_logger(__name__)
 
@@ -80,38 +84,41 @@ def transform_orcid(orcid: str) -> str:
     return ret
 
 
-def parse_a3_row_data(row: Any, translator: Any) -> Any:
+def normalize_country_name(name: str) -> str:
+    if not isinstance(name, str):
+        return ""
+    name = (
+        name.replace("\xa0", " ")
+        .replace("\u200b", " ")
+        .replace("(", "")
+        .replace(")", "")
+        .strip()
+    )
+    name = re.sub(r"\d+", "", name)  # remove numbers
+    name = "".join(
+        c
+        for c in unicodedata.normalize("NFD", name)  # remove accents
+        if unicodedata.category(c) != "Mn"
+    )
+    return name.lower().strip()
 
-    # function normalize country_name
-    def normalize_country_name(name: str) -> str:
-        if not isinstance(name, str):
-            return ""
-        name = (
-            name.replace("\xa0", " ")
-            .replace("\u200b", " ")
-            .replace("(", "")
-            .replace(")", "")
-            .strip()
-        )
-        name = re.sub(r"\d+", "", name)  # remove numbers
-        name = "".join(
-            c
-            for c in unicodedata.normalize("NFD", name)  # remove accents
-            if unicodedata.category(c) != "Mn"
-        )
-        return name.lower().strip()
 
-    # exceptions translate country alias
-    manual_country_aliases = {
-        "iran republica islamica de": "iran",
-        "alemania, republica federal": "alemania",
-        "alemania republica federal": "alemania",
-        "mejico": "mexico",
-    }
-    translator_countries = {
-        normalize_country_name(k): v.strip()
-        for k, v in translator[A3Field.COUNTRY].items()
-    }
+# exceptions translate country alias
+MANUAL_COUNTRY_ALIASES = {
+    "iran republica islamica de": "iran",
+    "alemania, republica federal": "alemania",
+    "alemania republica federal": "alemania",
+    "mejico": "mexico",
+}
+
+
+Translator = dict[A3Field, dict[str, str]]
+
+
+def parse_a3_row_data(row: Any, translator: Translator) -> Any:
+    # translator[A3Field.COUNTRY] is pre-normalized by build_translations(), so it can
+    # be used directly here without rebuilding it on every row.
+    translator_countries = translator[A3Field.COUNTRY]
 
     born_country_raw = str(
         row.values[A3Field.BORN_COUNTRY.value]
@@ -120,7 +127,7 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
         born_country_raw
     )  # born country normalize and find in translator_countries
 
-    born_country_clean = manual_country_aliases.get(
+    born_country_clean = MANUAL_COUNTRY_ALIASES.get(
         born_country_clean, born_country_clean
     )
 
@@ -131,7 +138,7 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
     country_raw = str(row.values[A3Field.COUNTRY.value]).strip()
     country_clean = normalize_country_name(country_raw)  #  country normalized
 
-    country_clean = manual_country_aliases.get(country_clean, country_clean)
+    country_clean = MANUAL_COUNTRY_ALIASES.get(country_clean, country_clean)
 
     country = translator_countries.get(
         country_clean, country_clean.capitalize()
@@ -190,7 +197,7 @@ def parse_a3_row_data(row: Any, translator: Any) -> Any:
 
     # Special case for ICREA group leaders, which needs also info from group unit field
     if row.values[A3Field.UNIT_GROUP.value] == "ICREA":
-        job_description_val = "Group Leader / ICREA Professor"
+        job_description_val = JOB_TITLE_GROUP_LEADER_ICREA
 
     try:
         sex_val = translator[A3Field.SEX][row.values[A3Field.SEX.value]]

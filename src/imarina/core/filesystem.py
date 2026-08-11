@@ -15,8 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-
-# from typing import cast
 from pathlib import Path
 
 from imarina.core.exceptions import (

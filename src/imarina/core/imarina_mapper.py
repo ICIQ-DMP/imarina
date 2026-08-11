@@ -20,7 +20,7 @@ from typing import Any
 import pandas as pd
 
 from imarina.core.date_utile import sanitize_date, unparse_date
-from imarina.core.excel import Excel, get_val
+from imarina.core.excel import Excel, get_str_val, get_val
 from imarina.core.log_utils import get_logger
 from imarina.core.researcher import Researcher, normalize_name
 
@@ -28,24 +28,24 @@ logger = get_logger(__name__)
 
 
 class ImarinaField(Enum):
-    NAME = 1  # Submit
-    SURNAME = 2  # Submit
-    SECOND_SURNAME = 3  # Submit
-    SIGNATURE = 4  # No submit. Why?
-    SIGNATURE_CUSTOM = 5  # No submit. Why?
-    DNI = 6  # Submit
-    BIRTH_DATE = 7  # Submit
-    SEX = 8  # Submit
-    COUNTRY = 9  # Submit
+    NAME = 1
+    SURNAME = 2
+    SECOND_SURNAME = 3
+    SIGNATURE = 4
+    SIGNATURE_CUSTOM = 5
+    DNI = 6
+    BIRTH_DATE = 7
+    SEX = 8
+    COUNTRY = 9
     # BORN_COUNTRY = -1
-    EMAIL = 12  # Submit
-    PERSONAL_WEB = 13  # Submit
-    ADSCRIPTION_TYPE = 15  # Submit PARSE
-    JOB_DESCRIPTION = 16  # Submit
-    DEDICATION = 17  # NEW PARSE
-    INI_DATE = 18  # Submit
-    END_DATE = 19  # Submit
-    UNIT_GROUP = 20  # Submit  PARSE
+    EMAIL = 12
+    PERSONAL_WEB = 13
+    ADSCRIPTION_TYPE = 15
+    JOB_DESCRIPTION = 16
+    DEDICATION = 17
+    INI_DATE = 18
+    END_DATE = 19
+    UNIT_GROUP = 20
 
     ENTITY_TYPE = 22
     ENTITY_COUNTRY = 23
@@ -94,8 +94,6 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
     empty_output_row.dataframe.iat[0, ImarinaField.UNIT_GROUP.value] = data.unit_group
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_TYPE.value] = data.entity_type
 
-    empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_WEB.value] = data.entity_web
-
     empty_output_row.dataframe.iat[0, ImarinaField.ENTITY_COUNTRY.value] = (
         data.entity_country
     )
@@ -125,38 +123,15 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
 # parse the data from imarina
 def parse_imarina_row_data(row: pd.Series) -> Researcher:
 
-    entity_type_val = get_val(row, ImarinaField.ENTITY_TYPE.value)
-    entity_type_val = str(entity_type_val).strip() if pd.notna(entity_type_val) else ""
-
-    entity_web_val = get_val(row, ImarinaField.ENTITY_WEB.value)
-    entity_web_val = str(entity_web_val).strip() if pd.notna(entity_web_val) else ""
-
-    entity_country_val = get_val(row, ImarinaField.ENTITY_COUNTRY.value)
-    entity_country_val = str(entity_country_val).strip() if entity_country_val else ""
-
-    entity_community_val = get_val(row, ImarinaField.ENTITY_COMMUNITY.value)
-    entity_community_val = (
-        str(entity_community_val).strip() if entity_community_val else ""
-    )
-
-    entity_province_val = get_val(row, ImarinaField.ENTITY_PROVINCE.value)
-    entity_province_val = (
-        str(entity_province_val).strip() if entity_province_val else ""
-    )
-
-    entity_city_val = get_val(row, ImarinaField.ENTITY_CITY.value)
-    entity_city_val = str(entity_city_val).strip() if entity_city_val else ""
-
-    entity_postal_code_val = get_val(row, ImarinaField.ENTITY_POSTAL_CODE.value)
-    entity_postal_code_val = (
-        str(entity_postal_code_val).strip() if entity_postal_code_val else ""
-    )
-
-    entity_address_val = get_val(row, ImarinaField.ENTITY_ADDRESS.value)
-    entity_address_val = str(entity_address_val).strip() if entity_address_val else ""
-
-    contact_phone_val = get_val(row, ImarinaField.CONTACT_PHONE.value)
-    contact_phone_val = str(contact_phone_val).strip() if contact_phone_val else ""
+    entity_type_val = get_str_val(row, ImarinaField.ENTITY_TYPE.value)
+    entity_web_val = get_str_val(row, ImarinaField.ENTITY_WEB.value)
+    entity_country_val = get_str_val(row, ImarinaField.ENTITY_COUNTRY.value)
+    entity_community_val = get_str_val(row, ImarinaField.ENTITY_COMMUNITY.value)
+    entity_province_val = get_str_val(row, ImarinaField.ENTITY_PROVINCE.value)
+    entity_city_val = get_str_val(row, ImarinaField.ENTITY_CITY.value)
+    entity_postal_code_val = get_str_val(row, ImarinaField.ENTITY_POSTAL_CODE.value)
+    entity_address_val = get_str_val(row, ImarinaField.ENTITY_ADDRESS.value)
+    contact_phone_val = get_str_val(row, ImarinaField.CONTACT_PHONE.value)
 
     scopus_id_val = get_val(row, ImarinaField.SCOPUS_ID.value)
     if scopus_id_val is not None:

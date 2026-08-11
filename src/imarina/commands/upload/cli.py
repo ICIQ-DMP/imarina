@@ -26,7 +26,8 @@ from imarina.core.file_select import select_file_to_upload
 from imarina.core.log_utils import get_logger
 from imarina.core.secret import SecretName, read_secret
 from imarina.core.shared_options import TargetFolderOpt, UploadFilePathOpt
-from imarina.core.sharepoint import upload_file_sharepoint
+from imarina.core.sharepoint import upload_file
+from imarina.core.token_manager import get_token_manager
 
 logger = get_logger(__name__)
 
@@ -46,9 +47,10 @@ def upload_controller(
 
     try:
 
-        upload_file_sharepoint(
-            file_path=file_path,
-            target_folder=target_folder,
+        upload_file(
+            token_manager=get_token_manager(),
+            local_file_path=file_path,
+            remote_path=target_folder,
             drive_id=read_secret(SecretName.DRIVE_ID),
         )
         logger.info(f"Successfully uploaded {file_path.name}")

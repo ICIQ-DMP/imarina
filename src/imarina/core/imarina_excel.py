@@ -97,7 +97,6 @@ def _match_last_upload_against_a3(
                 )
                 logger.debug("Adding new row from iMarina with the same data.")
 
-                # there was no change in maintaining the current queue
                 # If it has not changed, add current iMarina row to output as is.
                 # (end date not present) it is a contract that could be still ongoing continue
                 researchers_output.append(researcher_imarina)

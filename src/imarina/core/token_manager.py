@@ -21,6 +21,7 @@ import requests
 
 from imarina.core.exceptions import (
     MissingCredentialsError,
+    SecretUnavailableError,
     TokenManagerUnavailableError,
     TokenNotSetError,
     TokenRequestError,
@@ -77,13 +78,14 @@ class TokenManager:
         self.expires_at = time.time() + token_data.get("expires_in", 3600)
 
 
-def _create_token_manager() -> TokenManager | None:
+def _create_token_manager() -> TokenManager:
     # read the secrets and create a unique instance of TokenManager.
-    tenant_id = read_secret(SecretName.TENANT_ID)
-    client_id = read_secret(SecretName.CLIENT_ID)
-    client_secret = read_secret(SecretName.CLIENT_SECRET)
-    if not tenant_id or not client_id or not client_secret:
-        raise MissingCredentialsError
+    try:
+        tenant_id = read_secret(SecretName.TENANT_ID)
+        client_id = read_secret(SecretName.CLIENT_ID)
+        client_secret = read_secret(SecretName.CLIENT_SECRET)
+    except SecretUnavailableError as e:
+        raise MissingCredentialsError from e
     return TokenManager(
         tenant_id=tenant_id, client_id=client_id, client_secret=client_secret
     )

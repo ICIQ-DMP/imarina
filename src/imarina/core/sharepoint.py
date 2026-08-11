@@ -64,66 +64,38 @@ def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any
 
 
 def upload_file(
-    token_manager: TokenManager, drive_id: str, remote_path: str, local_file_path: str
+    token_manager: TokenManager, drive_id: str, remote_path: Path, local_file_path: Path
 ) -> None:
     logger.info(f"Uploading from local path {local_file_path} to {remote_path}")
-    url = (
-        f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content"
-        f"?@microsoft.graph.conflictBehavior=replace"
-    )  # replace if the file have exist
+    url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?%40microsoft.graph.conflictBehavior=replace"
     headers = {
         "Authorization": f"Bearer {token_manager.get_token()}",
         "Content-Type": "application/octet-stream",
     }
-
-    with open(local_file_path, "rb") as f:
-
-        response = requests.put(url, headers=headers, data=f, timeout=300)
-        response.raise_for_status()
-    logger.info("Upload done")
-
-
-def upload_file_sharepoint(file_path: Path, target_folder: Path, drive_id: str) -> Any:
-    """
-    Uploads a file to a SharePoint site
-
-    Args:
-        file_path:
-        target_folder:
-        drive_id:
-
-    Returns:
-
-    """
-
-    token_manager = get_token_manager()
-
-    filename = file_path.name
-    remote_path = f"{target_folder}/{filename}"
-
-    url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?%40microsoft.graph.conflictBehavior=replace"
-    headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
     try:
-        with open(file_path, "rb") as f:
+        with open(local_file_path, "rb") as f:
+
             response = requests.put(url, headers=headers, data=f, timeout=300)
 
         if response.status_code in (200, 201):
-            logger.info(f"File '{filename}' uploaded successfully to {target_folder}.")
+            logger.info(
+                f"File '{local_file_path.name}' uploaded successfully to {remote_path}."
+            )
         else:
-
             response.raise_for_status()
-
     except requests.exceptions.HTTPError:
         if response.status_code == HTTPStatus.NOT_FOUND:
             logger.exception(
-                f"Destination folder does not exist ({target_folder}) in SharePoint."
+                f"Destination folder does not exist ({remote_path}) in SharePoint."
             )
         else:
-            logger.exception(f"HTTP error uploading '{filename}'")
+            logger.exception(f"HTTP error uploading '{local_file_path.name}'")
         raise
     except Exception:
-        logger.exception(f"Unexpected error uploading '{filename}'")
+        logger.exception(f"Unexpected error uploading '{local_file_path.name}'")
         raise
+
+    logger.info("Upload done")
 
 
 def download_files_in_folder_from_sharepoint(
