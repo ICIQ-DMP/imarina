@@ -17,6 +17,7 @@
 import typer
 
 from imarina.core.defines import DEFAULT_LOG_PATH
+from imarina.core.exceptions import SecretUnavailableError
 from imarina.core.log_utils import (
     configure_logging_from_settings,
     get_logger,
@@ -30,6 +31,23 @@ from imarina.core.shared_options import (
     VeryQuietOpt,
     VeryVerboseOpt,
 )
+
+
+def _available_secrets_for_redaction() -> list[str]:
+    """Best-effort collection of configured secrets, for log redaction only.
+
+    A secret that isn't configured on this machine can't leak into logs, so
+    it's simply omitted from the redaction list rather than treated as fatal
+    — most commands (e.g. `build`) don't touch most secrets at all.
+    """
+    logger = get_logger(__name__)
+    secrets = []
+    for key in SecretName:
+        try:
+            secrets.append(read_secret(key))
+        except SecretUnavailableError:
+            logger.debug(f"Secret '{key}' unavailable; skipping it for log redaction.")
+    return secrets
 
 
 def cli_global_callback(  # noqa: PLR0913, PLR0917
@@ -58,7 +76,7 @@ def cli_global_callback(  # noqa: PLR0913, PLR0917
     configure_logging_from_settings(
         level=cli_log_level,
         log_file=log_file,
-        secrets=[read_secret(key) for key in SecretName],
+        secrets=_available_secrets_for_redaction(),
     )
     logger = get_logger(__name__)
 
