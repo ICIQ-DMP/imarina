@@ -49,13 +49,7 @@ DEFAULT_LOG_PATH = PROJECT_DIR / "logs" / f"{NOW}.log"
 
 SHAREPOINT_INPUT_FOLDER = "_Projects/imarina-load-researchers/input"
 
-# Single source of truth for the input files `build` needs and `download` must
-# provide, under these exact names, in the same flat directory (default:
-# PROJECT_DIR / "input"). Keyed by role so callers can refer to files by
-# meaning rather than repeating literal filenames.
-REQUIRED_INPUT_FILES = {
-    "a3": "A3.xlsx",
-    "imarina": "iMarina.xlsx",
+TRANSLATION_FILES = {
     "countries": "Pais nacimiento _ [A3] to País de Nacimiento [iMarina].xlsx",
     "jobs": "Puesto de trabajo [A3] to Categoría Investigadora Docente [iMarina].xlsx",
     "personal_web": "Puesto de trabajo [A3] to Web personal [iMarina].xlsx",
@@ -65,6 +59,14 @@ REQUIRED_INPUT_FILES = {
     "sex": "Sexo [A3] to Sexo [iMarina].xlsx",
 }
 
+# Single source of truth for the input files `build` needs and `download` must
+# provide, under these exact names, in the same flat directory (default:
+# PROJECT_DIR / "input"). Keyed by role so callers can refer to files by
+# meaning rather than repeating literal filenames.
+REQUIRED_INPUT_FILES = {"a3": "A3.xlsx", "imarina": "iMarina.xlsx"}
+REQUIRED_INPUT_FILES.update(TRANSLATION_FILES)
+
+
 # --- CLI option defaults ---
 # Kept alongside the constants they're derived from (INPUT_DIR, NOW,
 # REQUIRED_INPUT_FILES above) rather than in core/shared_options.py, which
@@ -73,7 +75,6 @@ REQUIRED_INPUT_FILES = {
 # CLAUDE.md).
 
 # --- build ---
-
 DEFAULT_COUNTRIES_DICT = INPUT_DIR / REQUIRED_INPUT_FILES["countries"]
 DEFAULT_JOBS_DICT = INPUT_DIR / REQUIRED_INPUT_FILES["jobs"]
 DEFAULT_IMARINA_INPUT = INPUT_DIR / REQUIRED_INPUT_FILES["imarina"]
