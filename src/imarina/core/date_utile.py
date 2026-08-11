@@ -33,7 +33,7 @@ def sanitize_date(date_dirty: Any) -> datetime.datetime:
         if date_dirty.tzinfo is None:
             return date_dirty.replace(tzinfo=MADRID_TZ)
         return date_dirty
-    elif type(date_dirty) is pd.isna(date_dirty):
+    elif date_dirty is pd.NaT:
         return PERMANENT_CONTRACT_DATE
     elif isinstance(date_dirty, str):
         return datetime.datetime.strptime(date_dirty.strip("'"), "%d/%m/%Y").replace(
