@@ -64,8 +64,13 @@ def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any
 
 
 def upload_file(
-    token_manager: TokenManager, drive_id: str, remote_path: Path, local_file_path: Path
+    token_manager: TokenManager,
+    drive_id: str,
+    target_folder: Path,
+    local_file_path: Path,
 ) -> None:
+
+    remote_path = target_folder / local_file_path.name
     logger.info(f"Uploading from local path {local_file_path} to {remote_path}")
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?%40microsoft.graph.conflictBehavior=replace"
     headers = {

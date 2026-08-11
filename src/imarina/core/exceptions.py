@@ -90,14 +90,6 @@ class MissingCredentialsError(ValueError):
         )
 
 
-class TokenManagerUnavailableError(RuntimeError):
-    def __init__(self) -> None:
-        super().__init__(
-            "No TokenManager available (running under GITHUB_ACTIONS with no "
-            "credentials configured)."
-        )
-
-
 class VaultCredentialMissingError(KeyError):
     def __init__(self, name: str) -> None:
         super().__init__(

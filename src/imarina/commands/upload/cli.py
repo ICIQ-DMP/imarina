@@ -50,7 +50,7 @@ def upload_controller(
         upload_file(
             token_manager=get_token_manager(),
             local_file_path=file_path,
-            remote_path=target_folder,
+            target_folder=target_folder,
             drive_id=read_secret(SecretName.DRIVE_ID),
         )
         logger.info(f"Successfully uploaded {file_path.name}")

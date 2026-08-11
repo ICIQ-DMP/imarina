@@ -26,17 +26,14 @@ logger = get_logger(__name__)
 
 
 def sanitize_date(date_dirty: Any) -> datetime.datetime:
-    if (
-        type(date_dirty) is pd._libs.tslibs.timestamps.Timestamp
-        or type(date_dirty) is datetime.datetime
-    ):
+    if isinstance(date_dirty, pd.Timestamp) or type(date_dirty) is datetime.datetime:
         # Excel stores no timezone; these values are Madrid wall-clock times,
         # same as the string-parsed branch below and PERMANENT_CONTRACT_DATE
         # (core/defines.py), which callers compare/subtract this against.
         if date_dirty.tzinfo is None:
             return date_dirty.replace(tzinfo=MADRID_TZ)
         return date_dirty
-    elif type(date_dirty) is pd._libs.tslibs.nattype.NaTType:
+    elif type(date_dirty) is pd.isna(date_dirty):
         return PERMANENT_CONTRACT_DATE
     elif isinstance(date_dirty, str):
         return datetime.datetime.strptime(date_dirty.strip("'"), "%d/%m/%Y").replace(

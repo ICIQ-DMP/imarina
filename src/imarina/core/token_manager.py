@@ -22,7 +22,6 @@ import requests
 from imarina.core.exceptions import (
     MissingCredentialsError,
     SecretUnavailableError,
-    TokenManagerUnavailableError,
     TokenNotSetError,
     TokenRequestError,
 )
@@ -94,6 +93,4 @@ def _create_token_manager() -> TokenManager:
 @functools.cache
 def get_token_manager() -> TokenManager:
     manager = _create_token_manager()
-    if manager is None:
-        raise TokenManagerUnavailableError
     return manager
