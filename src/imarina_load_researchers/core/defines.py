@@ -56,13 +56,13 @@ SHAREPOINT_INPUT_FOLDER = "_Projects/imarina-load-researchers/input"
 REQUIRED_INPUT_FILES = {
     "a3": "A3.xlsx",
     "imarina": "iMarina.xlsx",
-    "countries": "countries.xlsx",
-    "jobs": "Job_Descriptions.xlsx",
-    "personal_web": "Personal_web.xlsx",
-    "unit_group": "unit_group.xlsx",
-    "unit_type": "unit_type.xlsx",
-    "job_description_entity": "job_description_entity.xlsx",
-    "sex": "sex.xlsx",
+    "countries": "Pais nacimiento _ to País de Nacimiento.xlsx",
+    "jobs": "Puesto de trabajo to Categoría Investigadora Docente.xlsx",
+    "personal_web": "Puesto de trabajo to Web personal.xlsx",
+    "unit_group": "Grupo Unidad to Entidad (Nivel 1).xlsx",
+    "unit_type": "Entidad (Nivel 1) to Tipo de Entidad.xlsx",
+    "job_description_entity": "Job description to Entidad (Nivel 1).xlsx",
+    "sex": "Sexo to Sexo.xlsx",
 }
 
 # --- CLI option defaults ---
