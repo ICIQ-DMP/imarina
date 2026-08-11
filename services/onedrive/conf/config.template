@@ -13,3 +13,6 @@ bypass_data_preservation = "true"
 
 #resync = "true"
 resync_auth = "true"
+
+monitor_interval = "10"
+

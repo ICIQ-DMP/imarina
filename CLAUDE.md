@@ -62,9 +62,14 @@ not create any documented substructure; it's flat.
 
 ### `build` — the clear one
 
-`commands/build/cli.py`. Reads 8 fixed-filename `.xlsx` inputs from
-`./input` by default (all individually overridable as CLI options — see
-`build_controller`), writes one output file to
+`commands/build/cli.py`. Reads the 9 fixed-filename `.xlsx` inputs listed in
+`REQUIRED_INPUT_FILES` (`core/defines.py`) from `./input` by default. Each
+file's path can be overridden individually via its own CLI option (e.g.
+`--countries-dict`), or all of them at once via `--input-dir <dir>` (files
+are then looked up under `<dir>` using the same standard names from
+`REQUIRED_INPUT_FILES`); a per-file option always takes precedence over
+`--input-dir` for that one file — see `build_controller`'s
+`_resolve_input_path` helper. Writes one output file to
 `./output/iMarina_upload_<timestamp>.xlsx` (`DATETIME_FORMAT` /
 `FILENAME_PREFIX`/`FILENAME_SUFFIX` in `core/defines.py` define the naming
 scheme other commands later parse back out). None of the 8 input files are

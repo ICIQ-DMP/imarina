@@ -29,8 +29,12 @@ NOW_DATA = datetime.datetime.now(MADRID_TZ)
 NOW = NOW_DATA.strftime(DATETIME_FORMAT)
 
 PROJECT_DIR = pathlib.Path.cwd()
-INPUT_DIR = PROJECT_DIR / "input"
-OUTPUT_DIR = PROJECT_DIR / "output"
+
+INPUT_FOLDER_NAME = "input"
+OUTPUT_FOLDER_NAME = "output"
+
+INPUT_DIR = PROJECT_DIR / INPUT_FOLDER_NAME
+OUTPUT_DIR = PROJECT_DIR / OUTPUT_FOLDER_NAME
 date_str = "31/12/2099"
 DATE_FORMAT = "%d/%m/%Y"
 PERMANENT_CONTRACT_DATE = datetime.datetime.strptime(date_str, "%d/%m/%Y").replace(
@@ -40,14 +44,15 @@ ICIQ_WEBPAGE = "https://iciq.org/"
 
 FILENAME_PREFIX = "iMarina_upload_"
 FILENAME_SUFFIX = ".xlsx"
-FTP_EXCEL_FILE_DATE_FORMAT = "%y%m%d"
-FTP_UPLOAD_DATE = datetime.datetime.now(MADRID_TZ).strftime(FTP_EXCEL_FILE_DATE_FORMAT)
-FTP_FILENAME = f"icl_ag_personal_12539_{FTP_UPLOAD_DATE}.xlsx"
+FTP_FILENAME = "icl_ag_personal_12539.xlsx"
+
 FTP_UPLOAD_PATH = f"carga_icolet/{FTP_FILENAME}"
 
 DEFAULT_LOG_PATH = PROJECT_DIR / "logs" / f"{NOW}.log"
 
-SHAREPOINT_INPUT_FOLDER = "_Projects/imarina-load-researchers/input"
+SHAREPOINT_BASE_FOLDER = pathlib.Path("_Projects/imarina-load-researchers")
+
+SHAREPOINT_INPUT_FOLDER = SHAREPOINT_BASE_FOLDER / INPUT_FOLDER_NAME
 
 TRANSLATION_FILES = {
     "countries": "Pais nacimiento _ [A3] to País de Nacimiento [iMarina].xlsx",
@@ -55,7 +60,7 @@ TRANSLATION_FILES = {
     "personal_web": "Puesto de trabajo [A3] to Web personal [iMarina].xlsx",
     "unit_group": "Grupo Unidad [A3] to Entidad (Nivel 1) [iMarina].xlsx",
     "unit_type": "Entidad (Nivel 1) [iMarina] to Tipo de Entidad [iMarina].xlsx",
-    "job_description_entity": "Job description [A3] to Entidad (Nivel 1) [iMarina].xlsx",
+    "job_description_entity": "Puesto de trabajo [A3] to Entidad (Nivel 1) [iMarina].xlsx",
     "sex": "Sexo [A3] to Sexo [iMarina].xlsx",
 }
 
@@ -75,11 +80,13 @@ REQUIRED_INPUT_FILES.update(TRANSLATION_FILES)
 # CLAUDE.md).
 
 # --- build ---
+OUTPUT_FILENAME = NOW + "-" + FTP_FILENAME
+
 DEFAULT_COUNTRIES_DICT = INPUT_DIR / REQUIRED_INPUT_FILES["countries"]
 DEFAULT_JOBS_DICT = INPUT_DIR / REQUIRED_INPUT_FILES["jobs"]
 DEFAULT_IMARINA_INPUT = INPUT_DIR / REQUIRED_INPUT_FILES["imarina"]
 DEFAULT_A3_INPUT = INPUT_DIR / REQUIRED_INPUT_FILES["a3"]
-DEFAULT_OUTPUT_PATH = OUTPUT_DIR / f"iMarina_upload_{NOW}.xlsx"
+DEFAULT_OUTPUT_PATH = OUTPUT_DIR / OUTPUT_FILENAME
 DEFAULT_PERSONAL_WEB_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["personal_web"]
 DEFAULT_UNIT_GROUP_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["unit_group"]
 DEFAULT_ENTITY_TYPE_PATH = INPUT_DIR / REQUIRED_INPUT_FILES["unit_type"]
@@ -96,7 +103,7 @@ DEFAULT_DRY_RUN = True
 # --- upload ---
 
 DEFAULT_UPLOAD_FILE_PATH = OUTPUT_DIR / FTP_FILENAME
-DEFAULT_TARGET_FOLDER = pathlib.Path("_Projects/imarina-load-researchers/output")
+DEFAULT_TARGET_FOLDER = SHAREPOINT_BASE_FOLDER / OUTPUT_FOLDER_NAME
 
 # --- notify ---
 

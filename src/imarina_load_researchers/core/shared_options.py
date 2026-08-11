@@ -90,22 +90,47 @@ OperationIdOpt = Annotated[
 
 # --- build ---
 
+# Each of these takes precedence over InputDirOpt for its own file, if given
+# — see InputDirOpt's help text and build_controller for the resolution order.
+_OVERRIDES_INPUT_DIR = "Overrides --input-dir for this file, if given."
+
 CountriesDictOpt = Annotated[
-    Path, typer.Option(help="Path of the countries dictionary file(.xlsx)")
+    Path | None,
+    typer.Option(
+        help=f"Path of the countries dictionary file(.xlsx). {_OVERRIDES_INPUT_DIR}"
+    ),
 ]
 JobsDictOpt = Annotated[
-    Path, typer.Option(help="Path of the jobs dictionary file(.xlsx)")
+    Path | None,
+    typer.Option(
+        help=f"Path of the jobs dictionary file(.xlsx). {_OVERRIDES_INPUT_DIR}"
+    ),
 ]
 ImarinaInputOpt = Annotated[
-    Path, typer.Option(help="Path of the iMarina input file(.xlsx)")
+    Path | None,
+    typer.Option(help=f"Path of the iMarina input file(.xlsx). {_OVERRIDES_INPUT_DIR}"),
 ]
-A3InputOpt = Annotated[Path, typer.Option(help="Path to A3 input file(.xlsx)")]
+A3InputOpt = Annotated[
+    Path | None,
+    typer.Option(help=f"Path to A3 input file(.xlsx). {_OVERRIDES_INPUT_DIR}"),
+]
 OutputPathOpt = Annotated[Path, typer.Option()]
-PersonalWebPathOpt = Annotated[Path, typer.Option()]
-UnitGroupPathOpt = Annotated[Path, typer.Option()]
-EntityTypePathOpt = Annotated[Path, typer.Option()]
-JobDescriptionEntityPathOpt = Annotated[Path, typer.Option()]
-SexPathOpt = Annotated[Path, typer.Option()]
+PersonalWebPathOpt = Annotated[Path | None, typer.Option(help=_OVERRIDES_INPUT_DIR)]
+UnitGroupPathOpt = Annotated[Path | None, typer.Option(help=_OVERRIDES_INPUT_DIR)]
+EntityTypePathOpt = Annotated[Path | None, typer.Option(help=_OVERRIDES_INPUT_DIR)]
+JobDescriptionEntityPathOpt = Annotated[
+    Path | None, typer.Option(help=_OVERRIDES_INPUT_DIR)
+]
+SexPathOpt = Annotated[Path | None, typer.Option(help=_OVERRIDES_INPUT_DIR)]
+InputDirOpt = Annotated[
+    Path | None,
+    typer.Option(
+        help="Directory containing all `build` input files, each named as in "
+        "REQUIRED_INPUT_FILES (core/defines.py). Any explicit per-file path "
+        "option (--countries-dict, --a3-input, ...) takes precedence over "
+        "this for that one file; unset, each file falls back to ./input."
+    ),
+]
 
 # --- publish ---
 
@@ -149,6 +174,7 @@ __all__ = [
     "DryRunOpt",
     "EntityTypePathOpt",
     "ImarinaInputOpt",
+    "InputDirOpt",
     "JobDescriptionEntityPathOpt",
     "JobsDictOpt",
     "LogFileOpt",
