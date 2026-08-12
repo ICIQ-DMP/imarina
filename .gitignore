@@ -210,9 +210,9 @@ __marimo__/
 # My own gitignore rules
 *.xlsx
 data
-input
+runtime/input
 logs
-output
+runtime/output
 secrets
 services/onedrive/conf/*
 !services/onedrive/conf/.gitignore

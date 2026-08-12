@@ -2,8 +2,8 @@ venv/
 uploads/
 logs/
 secrets/
-output/
-input/
+runtime/output/
+runtime/input/
 images/
 data/
 LICENSE

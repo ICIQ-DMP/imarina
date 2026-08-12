@@ -97,7 +97,7 @@ run: install  ## Run the imarina-load-researchers CLI (python -m imarina_load_re
 	@$(PYTHON) -m $(PKG_NAME) $(CMD)
 
 run-build: install
-	@$(PYTHON) -m $(PKG_NAME) build --input-dir "services/onedrive/data/_Projects/imarina-load-researchers/input" --a3-input "input/A3.xlsx" --imarina-input "input/iMarina.xlsx"
+	@$(PYTHON) -m $(PKG_NAME) build --input-dir "services/onedrive/data/_Projects/imarina-load-researchers/runtime/input" --a3-input "services/onedrive/data/_Projects/imarina-load-researchers/runtime/a3/2026-07-17_12-00-00__listado_personal_A3.xlsx" --imarina-input "services/onedrive/data/_Projects/imarina-load-researchers/runtime/uploads/2026-07-27_12-00-00__icl_ag_personal_12539.xlsx
 
 
 # ---- docker ---------------------------------------------------------------

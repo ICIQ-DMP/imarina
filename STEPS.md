@@ -36,6 +36,6 @@ The full workflow, using the integrated services is going to be described in the
 The first thing is to ask for the bulk of the A3 database to HHRR. They will provide a file with that data.
 
 The file must be uploaded to Sharepoint. Any location within the channel of Institutional Strengthening, under the 
-Digitalization Sharepoint will work. 
+Digitalization Sharepoint will work; but to keep an order we will be saving it into 
 
 

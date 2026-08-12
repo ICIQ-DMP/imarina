@@ -20,7 +20,7 @@ import typer
 from imarina_load_researchers.core.defines import (
     DEFAULT_TARGET_FOLDER,
     DEFAULT_UPLOAD_FILE_PATH,
-    OUTPUT_DIR,
+    SHAREPOINT_LOCAL_OUTPUT_DIR,
 )
 from imarina_load_researchers.core.file_select import select_file_to_upload
 from imarina_load_researchers.core.log_utils import get_logger
@@ -43,7 +43,7 @@ def upload_controller(
     logger.info("Uploading the latest Excel file to SharePoint...")
 
     if file_path is None:
-        file_path = select_file_to_upload(OUTPUT_DIR)
+        file_path = select_file_to_upload(SHAREPOINT_LOCAL_OUTPUT_DIR)
 
     logger.info(f"Local file detected: {file_path.name}")
     logger.info(f"Destination SharePoint: {target_folder}")

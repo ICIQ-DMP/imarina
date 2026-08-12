@@ -20,7 +20,7 @@ from imarina_load_researchers.core.defines import (
     DEFAULT_DRY_RUN,
     DEFAULT_PUBLISH_FILE_PATH,
     FTP_UPLOAD_PATH,
-    OUTPUT_DIR,
+    SHAREPOINT_LOCAL_OUTPUT_DIR,
 )
 from imarina_load_researchers.core.file_select import select_file_to_upload
 from imarina_load_researchers.core.ftp import FtpCredentials, upload_file_ftp
@@ -44,7 +44,7 @@ def publish_controller(
     """
 
     if file_path is None:
-        file_path = select_file_to_upload(OUTPUT_DIR)
+        file_path = select_file_to_upload(SHAREPOINT_LOCAL_OUTPUT_DIR)
 
     credentials = FtpCredentials(
         host=read_secret(SecretName.FTP_HOST),

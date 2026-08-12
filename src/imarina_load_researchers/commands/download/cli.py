@@ -21,9 +21,9 @@ import requests
 import typer
 
 from imarina_load_researchers.core.defines import (
-    INPUT_DIR,
     REQUIRED_INPUT_FILES,
     SHAREPOINT_INPUT_FOLDER,
+    SHAREPOINT_LOCAL_INPUT_DIR,
 )
 from imarina_load_researchers.core.log_utils import get_logger
 from imarina_load_researchers.core.secret import SecretName, read_secret
@@ -40,7 +40,7 @@ logger = get_logger(__name__)
 def download_controller(
     ctx: typer.Context,
     id_element: OperationIdOpt,
-    input_dir: DirectoryOpt = INPUT_DIR,
+    input_dir: DirectoryOpt = SHAREPOINT_LOCAL_INPUT_DIR,
 ) -> None:
 
     logger.info(f"Starting download of input files from SharePoint into: {input_dir}")
