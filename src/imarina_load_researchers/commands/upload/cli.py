@@ -18,8 +18,8 @@
 import typer
 
 from imarina_load_researchers.core.defines import (
-    DEFAULT_TARGET_FOLDER,
-    DEFAULT_UPLOAD_FILE_PATH,
+    DEFAULT_PUBLISHED_FILE_PATH,
+    DEFAULT_TARGET_DIR,
     SHAREPOINT_LOCAL_OUTPUT_DIR,
 )
 from imarina_load_researchers.core.file_select import select_file_to_upload
@@ -37,8 +37,8 @@ logger = get_logger(__name__)
 
 def upload_controller(
     ctx: typer.Context,
-    file_path: UploadFilePathOpt = DEFAULT_UPLOAD_FILE_PATH,
-    target_folder: TargetFolderOpt = DEFAULT_TARGET_FOLDER,
+    file_path: UploadFilePathOpt = DEFAULT_PUBLISHED_FILE_PATH,
+    target_folder: TargetFolderOpt = DEFAULT_TARGET_DIR,
 ) -> None:
     logger.info("Uploading the latest Excel file to SharePoint...")
 

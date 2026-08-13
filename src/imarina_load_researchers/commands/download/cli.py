@@ -22,7 +22,7 @@ import typer
 
 from imarina_load_researchers.core.defines import (
     REQUIRED_INPUT_FILES,
-    SHAREPOINT_INPUT_FOLDER,
+    SHAREPOINT_INPUT_DIR,
     SHAREPOINT_LOCAL_INPUT_DIR,
 )
 from imarina_load_researchers.core.log_utils import get_logger
@@ -47,7 +47,7 @@ def download_controller(
 
     try:
         download_files_in_folder_from_sharepoint(
-            read_secret(SecretName.DRIVE_ID), input_dir, Path(SHAREPOINT_INPUT_FOLDER)
+            read_secret(SecretName.DRIVE_ID), input_dir, Path(SHAREPOINT_INPUT_DIR)
         )
 
         logger.info(
