@@ -27,10 +27,66 @@ ICIQ personnel; and the last researcher upload to iMarina. Both inputs are provi
 The output is the next researcher upload to iMarina. This represents one of the particularity of this workflow, as the 
 output of one execution will be the input of the next execution. 
 
+Knowing which is the last of a group of files will always be deduced from the name of the file, as it will contain the 
+datetime at the beginning of the file name, unless otherwise stated. 
+
 The application is integrated with Microsoft Forms, Microsoft List, Microsoft Approvals, Microsoft Sharepoint and 
 Microsoft OneDrive.
 
 The full workflow, using the integrated services is going to be described in the next section:
+
+
+### GDPR implications
+This workflow moves personal data of ICIQ personnel (the A3 database dump, and the iMarina upload derived from it) 
+between systems with no human review of individual records along the way, so its design has to satisfy GDPR's purpose 
+limitation, data minimization and storage limitation principles, not just describe who is allowed to click the button.
+
+**Purpose limitation.** The sole purpose of this workflow is to keep the researcher list in iMarina in sync with 
+ICIQ's HR records, so ICIQ can report which research staff are currently active. The A3 dump and the resulting 
+iMarina upload must not be used, forwarded or retained for any other purpose by anyone who has access to the 
+`runtime/*` SharePoint folders.
+
+**Data minimization / access restriction.** Triggering the workflow is restricted to a small, named set of people 
+with a legitimate need to do so:
+- Dr. Sonia Sayalero, responsible for Institutional Strengthening operations at ICIQ and the Severo Ochoa 
+  administrator.
+- Aleix Mariné-Tena, the data steward of ICIQ who designed, implemented and tests this workflow.
+- Eventually, an apprentice, in case this project is assigned to them.
+
+The A3 dumps themselves are provided manually, at most once a month, by Human Resources of ICIQ — specifically Mara 
+Cruz, the head of Human Resources — who is the only authorized source of the raw HR extract entering the pipeline.
+
+Restricting *who may trigger the workflow* only has GDPR value if it is backed by matching SharePoint item-level 
+permissions on the `_Projects/imarina-load-researchers/runtime/*` folders and on the Microsoft List and Microsoft 
+Form themselves: restricting the form's submit button is meaningless if the underlying files remain readable by a 
+broader SharePoint audience than the people named above.
+
+**Storage limitation.** Because the "use the last file" fallback (see above) depends on every previous A3 dump and 
+iMarina upload remaining in `runtime/a3` and `runtime/published` indefinitely, this design currently has no 
+retention or purge policy for historical personal-data files, which conflicts with the storage limitation principle. 
+A retention period should be defined, along with a decision on whether older dumps can be deleted without breaking 
+the "pick the latest" mechanism.
+
+
+### Microsoft List field names
+- iMarina Excel published link: Link to the Excel file that has been published. Filled by the `publish` command if the 
+FTP publishing is successful. 
+- iMarina Excel output link: Link to the Excel file that has been generated from the input. It will be the same as the 
+published file. Filled by the `upload` 
+command with the Excel generated with the `build` command. 
+- iMarina Excel input link: Link to the iMarina Excel file that has been used as input. Filled by the form or the 
+`download` 
+command with the latest iMarina published file. 
+- A3 Excel input link: Link to the A3 Excel file that has been used as input. Filled by the form or the `download` 
+command with the latest A3 dump. 
+- Workflow State: State of the workflow. Updated by the Power Automates workflows and with the different commands 
+of the process. Possible values: "New", "Preparing", "Building", "Uploading", "Requested review", "Not published",
+"Publishing", "Published" and "Error".
+- ID: Unique identifier for this request. Filled by answering the form automatically. 
+- Created By: Field of type person that contains who requested this iMarina researcher load. Filled by answering the 
+form automatically. 
+
+
 
 ### Preparation
 The first thing is to ask for the bulk of the A3 database to HHRR. They will provide a file with that data.
@@ -39,8 +95,11 @@ The file must be uploaded to Sharepoint. Any location within the channel of Inst
 Digitalization Sharepoint will work; but to keep an order we will be saving it into 
 `_Projects/imarina-load-researchers/runtime/a3`. The name can be anything but to keep an order we will be using:
 `{DATETIME}__listado_personal_A3.xlsx`. `DATETIME` will be in the format `YYYY-MM-DD_HH-mm-ss`. For example: 
-`2025-03-12_12-00-00`. The date will be the data in which the a3 dump take was performed. If the hour is not specified, 
-we will be using 12 AM (`12-00-00`). Providing this file is optional. If it is not provided, it will be used the last 
+`2025-03-12_12-00-00`. This date will be the date in which the a3 dump was performed. If the hour is not specified, 
+we will be using 12 AM (`12-00-00`), but it is not relevant for the algorithm because if an hour is not provided it 
+means that has been obtained manually. We do not need that much precision, as we will not be getting more than one A3
+per month.
+Providing this file is optional. If it is not provided, it will be used the last 
 A3 database dump. 
 
 The second thing should be getting the file with the last upload into iMarina. This is optional. If no file is provided 
@@ -56,11 +115,20 @@ If you are providing the A3 database dump you must generate and copy a direct li
 iMarina file you must generate and copy a direct link to it. 
 
 
+### Validating the upload of input files
+When uploading files into `_Projects/imarina-load-researchers/runtime/imarina`,  
+`_Projects/imarina-load-researchers/runtime/input` and 
+`_Projects/imarina-load-researchers/runtime/a3` a Microsoft Power Automate is triggered to validate the names of the 
+files there. It specifically checks that the names conform to the specification of names that appear in the "Preparation" and 
+"Build"
+section of this document.
+
 ### Answering the request form
 To start the workflow you must answer the form and provide optionally the link to the A3 database dump and the iMarina
 file upload. 
 
 When you end up clicking the submit button on the form, the answers are recorded into a Microsoft List with a unique ID.
+The "Workflow State" field of the new item defaults to "New" on creation.
 The modification or creation of this element in the Microsoft List triggers the execution of a Power Automate workflow.
 This Power Automate Workflow sends a request into a Jenkins server, providing the ID of the request to the service. 
 
@@ -73,22 +141,40 @@ The first part of the workflow is the preparation of the files used in the gener
 As previously explained, we need an A3 database dump and a previous iMarina researcher load. We will also need the 
 files that are needed for the translation. 
 
+At the start of this step, the field "Workflow State" of the request is updated to "Preparing".
+
 The files needed for the translations will be assumed to be at 
 `_Projects/imarina-load-researchers/runtime/input`. All files in this location will be downloaded into `input/` folder.
 
 The A3 database dump will be downloaded from the link of the Microsoft List if it is specified into `input/A3.xlsx`. If 
 there is no link, the last upload from the A3 database will be selected from the corresponding Sharepoint folder 
-`_Projects/imarina-load-researchers/runtime/a3` and put into `input/A3.xlsx`.
+`_Projects/imarina-load-researchers/runtime/a3` and put into `input/A3.xlsx`. If this happens, a link will be generated 
+to that file and used to update the field "A3 Excel input link" of the request with the supplied ID. Unlike the iMarina 
+case, the file does not need to be copied: `_Projects/imarina-load-researchers/runtime/a3` is already both where the A3 
+dump is manually uploaded (see "Preparation") and where this fallback selects the last dump from, so the file is already 
+in the folder that is the source of truth.
 
 The iMarina load file will be downloaded from the link of the Microsoft List if it is specified into 
 `input/iMarina.xlsx`. If there is no link, the last upload to iMarina will be selected from the corresponding 
-Sharepoint folder `_Projects/imarina-load-researchers/runtime/published` and put into `input/iMarina.xlsx`.
+Sharepoint folder `_Projects/imarina-load-researchers/runtime/published` and put into `input/iMarina.xlsx`. If this 
+happens, this file will be copied into `_Projects/imarina-load-researchers/runtime/imarina`, a link generated into the 
+file and used to update the field "iMarina Excel input link" of the request with the supplied ID. The file is copied 
+and not linked, because the source of truth that the commands use are the files present in the folders. If we link a 
+file in `_Projects/imarina-load-researchers/runtime/published` as the iMarina input file, we can not use a 
+mechanism such as OneDrive for Linux. Moreover, to get the latest published file we would need to loop through the list
+and check the last item with a filled "iMarina Excel published link". 
+
 
 ###### Build
 This is the core step of the workflow because it is the one that builds the output Excel.
 
 The build step of the workflow will take `input/A3.xlsx`, `input/iMarina.xlsx` and the translation files will be assumed
 to be at `input/`. This will be specified via arguments to the program. 
+
+Like `download`, `upload`, `notify` and `publish`, `build` accepts an ID argument. Unlike those commands, this ID is 
+used for nothing other than updating the "Workflow State" field: it plays no part in resolving input/output files, 
+which are still governed entirely by the arguments described below and by `input/`/`output/` conventions. At the 
+start of this step, if an ID is supplied, the field "Workflow State" of the request is updated to "Building".
 
 It must be known (for developers) that the 
 defaults of these options are:
@@ -112,27 +198,61 @@ we are developing the application.
 The algorithm will build the output Excel file and put it into `output/` with the name 
 `{DATETIME}__icl_ag_personal_12539.xlsx`. 
 
+
 ###### Upload
+At the start of this step, the field "Workflow State" of the request is updated to "Uploading".
+
 This step:
 - Takes the latest file at `output/` with the name 
 `{DATETIME}__icl_ag_personal_12539.xlsx` and uploads it into Sharepoint 
-`_Projects/imarina-load-researchers/runtime/output` or the specified file via argument.  
-- If an ID is supplied it generates the link to the uploaded file and updates the request 
-of the list with the link to the output file. 
+`_Projects/imarina-load-researchers/runtime/output` or the specified file via argument.
+- If an ID is supplied it generates the link to the uploaded file and updates the field "iMarina Excel output link".
 - Updating the file link in the Microsoft List triggers the execution of a Power Automate workflow that notifies the 
 requester of the 
 success via triggering an 
-approval request using Microsoft Approvals. The approval sends the link to the output file, informs of the success and
+approval request using Microsoft Approvals. Once this approval request has been sent, the field "Workflow State" is 
+updated to "Requested review". The approval sends the link to the output file, informs of the success and
 asks if the requester wants to publish that into iMarina servers. If the user says yes, an HTTP request is made against
 a Jenkins server that executes the last `publish` step.
 
+The approval will sit there indefinitely until it is accepted or rejected. Microsoft Approvals may define a timeout for
+requests though. If the requester rejects the approval, the field "Workflow State" is updated to "Not published" and 
+the workflow ends. If the requester accepts, the `publish` step described below is triggered.
+
+
+
+###### Notify 
+Notify is executed after upload or if an error happens in any other previous steps. It receives an ID where notify will 
+read the information to compose and email the requester. If the ID is not supplied, individual arguments can be 
+supplied to provide the information needed
+to compose the email:
+- Email of the email destinatary (requester).
+- A3 Excel input link
+- iMarina Excel input link
+- result of the operation (success or not).
+- iMarina Excel output link. Only needed if the result is success.
+
+If notify is called with a failure status and an ID, it also updates the field "Workflow State" to "Error". This is 
+the single place this is done, rather than in each of `download`, `build` and `upload`, since notify is already the 
+common failure handler called from every step's error path.
+
 
 ###### Publish
-Publish step downloads the output of the supplied id and uploads it to the iMarina FTP server. Finishing the workflow. 
+Publish step downloads the output of the supplied id and uploads it to the iMarina FTP server. Finishing the workflow.
 
-Publish can receive an ID which will trigger the download of the corresponding output file from the list row of
+At the start of this step, if an ID is supplied, the field "Workflow State" of the request is updated to "Publishing".
+
+Publish receives ID which will trigger the download of the corresponding output file from the list row of
 that ID for its upload. Instead, publish can receive a valid output file, which will also be uploaded to the iMarina 
-FTP server. 
+FTP server. Since publishing without keeping a record can cause problems, a warning will be shown in this case. Since 
+there is no ID in this case, there is no request whose "Workflow State" can be updated either.
+
+If the file is successfully published, the file will be uploaded to 
+`_Projects/imarina-load-researchers/runtime/published` and a link will be generated to that file, updating the field 
+"iMarina Excel published link" of the corresponding request with the supplied ID. If an ID was supplied, the field 
+"Workflow State" is also updated to "Published".
+
+This step is only triggered after a human review, which acts as sanity check. 
 
 
 
