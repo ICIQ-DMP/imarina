@@ -26,10 +26,20 @@ from imarina_load_researchers.core.file_select import select_file_to_upload
 from imarina_load_researchers.core.log_utils import get_logger
 from imarina_load_researchers.core.secret import SecretName, read_secret
 from imarina_load_researchers.core.shared_options import (
+    IdOpt,
     TargetFolderOpt,
     UploadFilePathOpt,
 )
-from imarina_load_researchers.core.sharepoint import upload_file
+from imarina_load_researchers.core.sharepoint import (
+    create_sharing_link,
+    update_list_item_fields,
+    upload_file,
+)
+from imarina_load_researchers.core.sharepoint_fields import (
+    FIELD_IMARINA_EXCEL_OUTPUT_LINK,
+    FIELD_WORKFLOW_STATE,
+    WorkflowState,
+)
 from imarina_load_researchers.core.token_manager import get_token_manager
 
 logger = get_logger(__name__)
@@ -39,6 +49,7 @@ def upload_controller(
     ctx: typer.Context,
     file_path: UploadFilePathOpt = DEFAULT_PUBLISHED_FILE_PATH,
     target_folder: TargetFolderOpt = DEFAULT_TARGET_DIR,
+    id_element: IdOpt = None,
 ) -> None:
     logger.info("Uploading the latest Excel file to SharePoint...")
 
@@ -48,13 +59,25 @@ def upload_controller(
     logger.info(f"Local file detected: {file_path.name}")
     logger.info(f"Destination SharePoint: {target_folder}")
 
+    if id_element is not None:
+        try:
+            update_list_item_fields(
+                str(id_element), {FIELD_WORKFLOW_STATE: WorkflowState.UPLOADING}
+            )
+        except Exception:
+            # Best-effort bookkeeping: must not block the actual upload below.
+            logger.exception("Error updating Workflow State to Uploading")
+
+    token_manager = get_token_manager()
+    drive_id = read_secret(SecretName.DRIVE_ID)
+
     try:
 
-        upload_file(
-            token_manager=get_token_manager(),
+        item_id = upload_file(
+            token_manager=token_manager,
             local_file_path=file_path,
             target_folder=target_folder,
-            drive_id=read_secret(SecretName.DRIVE_ID),
+            drive_id=drive_id,
         )
         logger.info(f"Successfully uploaded {file_path.name}")
 
@@ -62,3 +85,20 @@ def upload_controller(
     except Exception as e:
         logger.exception("Error uploading to SharePoint")
         raise typer.Exit(code=1) from e
+
+    if id_element is not None:
+        try:
+            link = create_sharing_link(token_manager, drive_id, item_id)
+            update_list_item_fields(
+                str(id_element),
+                {
+                    FIELD_IMARINA_EXCEL_OUTPUT_LINK: link,
+                    FIELD_WORKFLOW_STATE: WorkflowState.REQUESTED_REVIEW,
+                },
+            )
+        except Exception:
+            # Best-effort: the upload itself already succeeded above, a
+            # metadata-write failure here must not turn that into exit(1).
+            logger.exception(
+                "Error writing back iMarina Excel output link / Workflow State"
+            )

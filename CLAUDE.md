@@ -24,17 +24,25 @@ production — it's the only place the end-to-end flow is written down:
 
 ```
 rm -rf input
-imarina-load-researchers download <OperationID>            # positional int arg, not --id; populates ./input
-imarina-load-researchers build                              # reads ./input, writes ./output
-imarina-load-researchers upload                             # autodetects latest file in ./output, pushes to SharePoint for review
+imarina-load-researchers download <OperationID>                       # positional int arg, not --id; populates ./input
+imarina-load-researchers build --id <OperationID>                     # reads ./input, writes ./output
+imarina-load-researchers upload --id <OperationID>                    # autodetects latest file in ./output, pushes to SharePoint for review
 imarina-load-researchers notify --id <OperationID> --status success   # or --status error from a catch block
 ```
+
+`download`, `build` and `upload` are each individually wrapped in a
+try/catch in the Jenkinsfile, calling `notify --id <OperationID> --status
+error` from their own catch block — not just `upload`, as an earlier version
+of this pipeline did. `--id` on `build`/`upload` (both optional, unlike
+`download`'s required positional one — see each command's own section below)
+is what lets each stage keep the MS List request's Workflow State field in
+sync as the pipeline progresses.
 
 `publish` (FTP → iMarina server) is **deliberately not** part of the automated
 pipeline — it's a manual, human-triggered step run after someone reviews the
 SharePoint copy that `upload` produced.
 
-### `download` — two independent mechanisms feeding one folder
+### `download` — two independent mechanisms feeding one folder, plus a fallback
 
 `commands/download/cli.py`. Target folder defaults to `./input` (`-d/--directory`
 override via `DirectoryOpt`, `core/shared_options.py`). Two unrelated things
@@ -55,10 +63,37 @@ happen, both writing flat into that same folder:
    downloads those two specific files as `A3.xlsx` and `iMarina.xlsx`,
    overwriting anything step 1 already placed under those names.
 
+If either link is missing (per STEPS.md, both are optional on the request
+form), `download` falls back to selecting the latest matching file from a
+dedicated SharePoint folder rather than just skipping the file — this is
+implemented by `_fallback_a3`/`_fallback_imarina` in `commands/download/cli.py`,
+built on `select_latest_remote_file()` (`core/sharepoint.py`, the remote
+counterpart of `select_file_to_upload()` — "latest" always means by the
+filename-encoded datetime, no mtime fallback, unlike the local selector). The
+two fallbacks are **not symmetric**, by design (STEPS.md):
+- **A3**: falls back to the latest dump in `runtime/a3`, downloads it to
+  `A3.xlsx`, generates a sharing link straight to that file, and writes it
+  back to the "A3 Excel input link" field. No copy needed — `runtime/a3` is
+  already both where dumps are manually uploaded and where this fallback
+  reads from.
+- **iMarina**: falls back to the latest file in `runtime/published`,
+  downloads it to `iMarina.xlsx`, then **re-uploads that same local file**
+  into `runtime/imarina` (via the existing `upload_file()`, not a Graph
+  server-side copy — see `core/sharepoint_fields.py`'s docstring for why),
+  generates a sharing link to *that* copy, and writes it back to the
+  "iMarina Excel input link" field. The re-upload exists so the field always
+  points at a file living in the folder used as an input, not the
+  published-archive folder.
+
+Both write-backs are best-effort (broad `except` + `logger.exception`, same
+as everything else in this file) — a metadata-write failure must not turn an
+otherwise-successful download into a hard failure.
+
 Net effect / contract: **`download`'s job is to leave exactly the 8 files
 `build` expects, under their exact expected filenames, in `./input`** — by
-whatever combination of bulk-sync and targeted-link-download is needed. It does
-not create any documented substructure; it's flat.
+whatever combination of bulk-sync, targeted-link-download and fallback
+selection is needed. It does not create any documented substructure; it's
+flat.
 
 ### `build` — the clear one
 
@@ -76,6 +111,12 @@ scheme other commands later parse back out). None of the 8 input files are
 committed to git (`input/.gitignore` excludes everything but itself) — they
 must be supplied fresh by `download` (or manually) on every run.
 
+`build` also takes an optional `--id`, unlike `download`'s positional,
+required one. It's used for nothing except updating the request's Workflow
+State field to "Building" (best-effort) — it plays no part in resolving
+input/output files. `build` didn't have any ID parameter before STEPS.md
+introduced per-step Workflow State tracking.
+
 ### `upload` — review copy, to SharePoint
 
 `commands/upload/cli.py`. If no `--file-path` given, scans `./output/*.xlsx`
@@ -84,15 +125,37 @@ Pushes it to a SharePoint review folder
 (`.../imarina-load-researchers/output`) via `upload_file_sharepoint`. This is
 the file a human reviews before deciding to `publish`.
 
+Optional `--id`: if given, `upload` writes the request's Workflow State to
+"Uploading" before the push, then after a successful upload generates a
+sharing link for the uploaded item and writes it to the "iMarina Excel
+output link" field together with Workflow State "Requested review" — this is
+what's supposed to be the trigger for the Microsoft Approval that asks the
+requester whether to `publish` (STEPS.md; the actual Power Automate wiring
+that watches this field is outside this repo). Both writes are best-effort —
+a metadata-write failure must not turn a successful upload into exit(1).
+
 ### `publish` — the real, human-gated production push
 
-`commands/publish/cli.py`. If no `--file-path` given, `select_file_to_upload()`
-first tries to find the newest file by **parsing the timestamp out of the
-filename** (`iMarina_upload_<DATETIME_FORMAT>.xlsx`), falling back to mtime
-only if none parse. Defaults to `./output` (`OUTPUT_DIR`). Uploads over FTP
-to the iMarina server (`core/ftp.py`). `--dry-run` defaults to `True` — you
-must explicitly pass `--dry-run false` to actually push. This is intentionally
-never called by CI; it's the manual "go" step.
+`commands/publish/cli.py`. If no `--file-path` given: with no `--id` either,
+`select_file_to_upload()` first tries to find the newest file by **parsing
+the timestamp out of the filename** (`iMarina_upload_<DATETIME_FORMAT>.xlsx`),
+falling back to mtime only if none parse, from `./output` (`OUTPUT_DIR`); with
+`--id`, the file is instead sourced from that request's "iMarina Excel output
+link" field (downloaded via `download_shared_link_content()`) — see
+`_resolve_file_path()`. Uploads over FTP to the iMarina server (`core/ftp.py`).
+`--dry-run` defaults to `True` — you must explicitly pass `--dry-run false` to
+actually push. This is intentionally never called by CI; it's the manual "go"
+step.
+
+On a successful (non-dry-run) publish, `_archive_published_file()` uploads
+the published file to `runtime/published` **unconditionally**, regardless of
+`--id` — this is what the next `download`'s iMarina fallback reads "the
+latest published file" from (STEPS.md), so it must happen even for a
+no-`--id` publish. Only the MS List write-back (the "iMarina Excel published
+link" field + Workflow State "Published") is gated on `--id` being given.
+Publishing an explicit `--file-path` with no `--id` still works but logs a
+warning — STEPS.md flags this as a way to publish with no record of it kept
+anywhere.
 
 ### `notify` — build-result email to the requester
 
@@ -111,6 +174,10 @@ script (`python3 src/imarina_load_researchers/core/mail.py --id ... --status ...
 invoked like any other subcommand (`imarina-load-researchers notify --id ... --status ...`),
 so it goes through `cli_global_callback` for logging setup like the rest of
 the app instead of needing its own `configure_logging_from_settings()` call.
+On `--status error`, `notify` also writes the request's Workflow State field
+to "Error" (best-effort) — since it's already the common failure handler
+called from every step's catch block, this is the single place that write
+happens, rather than duplicating it in `download`/`build`/`upload` themselves.
 
 ## Key files for this pipeline
 
@@ -121,8 +188,24 @@ the app instead of needing its own `configure_logging_from_settings()` call.
   below), and every CLI option's `DEFAULT_*` value. This is the single
   source of truth for `PROJECT_DIR` — don't recompute a project root
   elsewhere (e.g. by walking up from `__file__`); import it from here.
-- `src/imarina_load_researchers/core/sharepoint.py` — all Graph API calls (download, upload,
-  MS List lookup)
+- `src/imarina_load_researchers/core/sharepoint.py` — all Graph API calls: file
+  download/upload, MS List *read* (`get_parameters_list`,
+  `get_list_item_link_field`) and *write* (`update_list_item_fields`),
+  sharing-link creation (`create_sharing_link`), and remote "pick the latest
+  file" (`select_latest_remote_file`, backing `download`'s fallbacks).
+- `src/imarina_load_researchers/core/sharepoint_fields.py` — the MS List schema:
+  `WorkflowState(StrEnum)` (the 9 values from STEPS.md's state machine) and
+  the field-name constants every read/write in `sharepoint.py` goes through.
+  **Only two of the five field-name constants are confirmed against
+  production** (`FIELD_A3_EXCEL_INPUT_LINK`/`FIELD_IMARINA_EXCEL_INPUT_LINK`
+  — unchanged from before STEPS.md renamed those columns' display names,
+  since SharePoint doesn't change a column's internal Graph name on a
+  display-name rename). The other three
+  (`FIELD_IMARINA_EXCEL_OUTPUT_LINK`/`FIELD_IMARINA_EXCEL_PUBLISHED_LINK`/
+  `FIELD_WORKFLOW_STATE`) are a best-guess `_x0020_`-space-encoding of
+  STEPS.md's display names for columns that didn't exist before STEPS.md —
+  the module's own docstring has the full explanation and what to do once
+  those columns exist for real.
 - `src/imarina_load_researchers/core/ftp.py` — the `publish` FTP push
 - `src/imarina_load_researchers/core/shared_options.py` — every Typer `Option`/`Argument`
   annotation used by any command — metadata (help text, flags) only, no
@@ -130,11 +213,16 @@ the app instead of needing its own `configure_logging_from_settings()` call.
   `*Opt` type from here and the matching `DEFAULT_*` constant from
   `core/defines.py` (`param: SomeOpt = DEFAULT_SOME`) rather than calling
   `typer.Option(...)` inline in the signature — see "Adding a new CLI
-  option" below.
+  option" below. `IdOpt` (optional `int`) is the one exception shared across
+  multiple commands (`build`/`upload`/`publish`) rather than defined
+  per-command, since all three need the exact same "MS List item ID,
+  optional" shape.
 - `src/imarina_load_researchers/core/secret.py`, `secret_name.py`, `vault.py` — see Secrets
   below.
 - `Jenkinsfile` — the authoritative description of the automated portion of
-  the pipeline (download → build → upload → notify); publish is manual.
+  the pipeline. `download`, `build` and `upload` are each wrapped in their
+  own try/catch calling `notify --status error` on failure (not just
+  `upload`, as before); publish is manual.
 - `compose.yml` — local/dev container wiring; mounts `input`, `output`,
   `logs` as volumes
 
@@ -242,15 +330,28 @@ expects. If this pipeline is revisited, consider making the contract explicit
 Jenkins-stage-to-stage explicit path handoff) rather than relying on cwd-based
 convention.
 
+Related, newer risk: every Workflow State / MS List field write introduced
+for STEPS.md (`update_list_item_fields` calls throughout `download`, `build`,
+`upload`, `notify`, `publish`) is deliberately best-effort — wrapped in a
+broad `except` that logs and continues, so a metadata-write failure never
+turns an otherwise-successful pipeline step into a hard failure. The
+trade-off is that these writes can silently fail with no visible symptom
+beyond a log line: the MS List's Workflow State can drift out of sync with
+what actually happened, and nothing downstream checks for that. If the three
+unverified field-name guesses in `core/sharepoint_fields.py` turn out to be
+wrong, every write to those fields will fail exactly this way — silently,
+from the pipeline's point of view.
+
 ## Linting/type-checking notes
 
-- `pyproject.toml`'s `[tool.ruff]` has no explicit `select`/`ignore`, but
-  `ruff check` here still enforces a broad rule set (bugbear, flake8-blind-
-  except, flake8-datetimez, flake8-simplify, tryceratops, pep8-naming,
-  pylint, flake8-bandit, pyupgrade, RUF, ...) — not just the bare
-  E4/E7/E9/F ruff defaults you'd expect from an empty config. Don't assume
-  a rule category is off just because it isn't listed in `pyproject.toml`;
-  run `ruff check --show-settings <file>` to see what's actually enabled.
+- `pyproject.toml`'s `[tool.ruff.lint]` has an explicit
+  `select = ["E", "F", "B", "I", "UP", "SIM", "S", "TRY", "DTZ", "PL", "N", "RUF"]`
+  — bugbear, isort, pyupgrade, flake8-simplify, flake8-bandit, tryceratops,
+  flake8-datetimez, pylint, pep8-naming, and Ruff's own rules, not just the
+  bare E4/E7/E9/F defaults. `"tests/*"` is exempted from `S101` (bare
+  `assert`) via `[tool.ruff.lint.per-file-ignores]`. Run
+  `ruff check --show-settings <file>` if you need to check exactly what's
+  enabled for a given file.
 - `[tool.black] target-version = ["py314"]` is pinned explicitly rather than
   left to Black's auto-detection. With `requires-python = ">=3.14"`
   (unbounded) and no pinned target, Black infers the target version from

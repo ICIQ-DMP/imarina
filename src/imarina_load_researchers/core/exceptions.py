@@ -24,6 +24,14 @@ class NoExcelFilesFoundError(FileNotFoundError):
         super().__init__("No Excel files found")
 
 
+class OutputLinkMissingError(ValueError):
+    def __init__(self, operation_id: str) -> None:
+        super().__init__(
+            f"MS List item {operation_id} has no 'iMarina Excel output link' "
+            "set to publish from."
+        )
+
+
 class EnvVarMissingError(KeyError):
     def __init__(self, var_name: str) -> None:
         super().__init__(f"The environment variable '{var_name}' does not exist.")

@@ -35,6 +35,11 @@ from imarina_load_researchers.core.sharepoint import (
     get_list_id,
     get_site_id,
     get_token_manager,
+    update_list_item_fields,
+)
+from imarina_load_researchers.core.sharepoint_fields import (
+    FIELD_WORKFLOW_STATE,
+    WorkflowState,
 )
 
 logger = get_logger(__name__)
@@ -47,6 +52,11 @@ def notify_controller(
 ) -> None:
     """
     Sends the creator of the MS List item an email reporting whether the iMarina build pipeline succeeded or failed.
+
+    On a failure status, also updates the request's Workflow State field to
+    "Error" (STEPS.md) -- notify is the common failure handler called from
+    every step's error path, so this is the single place that write happens,
+    rather than duplicating it in download/build/upload.
     """
 
     site_id = get_site_id(
@@ -75,6 +85,13 @@ def notify_controller(
     else:
         subject = f"iMarina - Workflow ID {id_element} failed"
         body = build_error_body(name, str(id_element))
+        try:
+            update_list_item_fields(
+                str(id_element), {FIELD_WORKFLOW_STATE: WorkflowState.ERROR}
+            )
+        except Exception:
+            # Best-effort bookkeeping: must not block the error email below.
+            logger.exception("Error updating Workflow State to Error")
 
     smtp_user = read_secret(SecretName.SMTP_USERNAME)
     send_email(

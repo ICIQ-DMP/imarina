@@ -204,7 +204,9 @@ Equivalently, you can invoke it as a module:
 ```
 
 The automated pipeline is `download` → `build` → `upload` (see the [Jenkinsfile](Jenkinsfile) for the exact
-invocation used in CI); `publish` is a separate, manually-triggered step. For example, to run the build step alone:
+invocation used in CI); `publish` is a separate, manually-triggered step. `build`, `upload` and `publish` all
+accept an optional `--id <OperationID>` so they can keep the originating request's status in sync as the
+pipeline progresses; it's not required for a standalone/local run. For example, to run the build step alone:
 ```shell
 ./venv/bin/imarina-load-researchers build
 ```

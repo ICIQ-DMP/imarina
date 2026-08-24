@@ -29,6 +29,33 @@ from imarina_load_researchers.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
+def parse_datetime_from_filename(name: str) -> datetime.datetime | None:
+    """Parse the `{DATETIME}__<FTP_FILENAME>`-encoded datetime out of a
+    filename, or return None if it doesn't match that shape.
+
+    Shared between `select_file_to_upload` (local files) and
+    `select_latest_remote_file` (`core/sharepoint.py`, remote SharePoint
+    folder listings) -- both need the exact same "pick the latest by
+    filename-encoded datetime" rule (STEPS.md).
+    """
+    if not name.startswith(FILENAME_PREFIX) or not name.endswith(FILENAME_SUFFIX):
+        logger.debug(
+            f"File does not start with {FILENAME_PREFIX} or end with {FILENAME_SUFFIX}"
+        )
+        return None
+
+    datetime_part = name[len(FILENAME_PREFIX) : -len(FILENAME_SUFFIX)]
+
+    try:
+        # Filenames are stamped using NOW (core/defines.py), which is Madrid time.
+        return datetime.datetime.strptime(datetime_part, DATETIME_FORMAT).replace(
+            tzinfo=MADRID_TZ
+        )
+    except ValueError:
+        logger.debug(f"Could not parse datetime: {datetime_part}, from file: {name}")
+        return None
+
+
 def select_file_to_upload(upload_dir: Path) -> Path:
     """
     Selects the file to upload from upload_dir.
@@ -51,25 +78,8 @@ def select_file_to_upload(upload_dir: Path) -> Path:
 
     dated_files: list[tuple[datetime.datetime, Path]] = []
     for file in excel_files:
-        name = file.name
-
-        if not name.startswith(FILENAME_PREFIX) or not name.endswith(FILENAME_SUFFIX):
-            logger.debug(
-                f"File does not start with {FILENAME_PREFIX} or end with {FILENAME_SUFFIX}"
-            )
-            continue
-
-        datetime_part = name[len(FILENAME_PREFIX) : -len(FILENAME_SUFFIX)]
-
-        try:
-            # Filenames are stamped using NOW (core/defines.py), which is Madrid time.
-            parsed_dt = datetime.datetime.strptime(
-                datetime_part, DATETIME_FORMAT
-            ).replace(tzinfo=MADRID_TZ)
-        except ValueError:
-            logger.debug(
-                f"Could not parse datetime: {datetime_part}, from file: {file.name}"
-            )
+        parsed_dt = parse_datetime_from_filename(file.name)
+        if parsed_dt is None:
             continue
 
         dated_files.append((parsed_dt, file))

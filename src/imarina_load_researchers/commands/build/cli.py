@@ -37,6 +37,7 @@ from imarina_load_researchers.core.shared_options import (
     A3InputOpt,
     CountriesDictOpt,
     EntityTypePathOpt,
+    IdOpt,
     ImarinaInputOpt,
     InputDirOpt,
     JobDescriptionEntityPathOpt,
@@ -45,6 +46,11 @@ from imarina_load_researchers.core.shared_options import (
     PersonalWebPathOpt,
     SexPathOpt,
     UnitGroupPathOpt,
+)
+from imarina_load_researchers.core.sharepoint import update_list_item_fields
+from imarina_load_researchers.core.sharepoint_fields import (
+    FIELD_WORKFLOW_STATE,
+    WorkflowState,
 )
 from imarina_load_researchers.core.translations import TranslationDictionaryPaths
 
@@ -80,6 +86,7 @@ def build_controller(  # noqa: PLR0913, PLR0917
         job_description_entity_path: JobDescriptionEntityPathOpt = None,
         sex_path: SexPathOpt = None,
         input_dir: InputDirOpt = None,
+        id_element: IdOpt = None,
 ) -> None:
     """Build the next iMarina upload from the 9 REQUIRED_INPUT_FILES roles.
 
@@ -87,7 +94,20 @@ def build_controller(  # noqa: PLR0913, PLR0917
     (e.g. --countries-dict) wins if given; otherwise, if --input-dir is
     given, the file is looked up there under its standard name
     (REQUIRED_INPUT_FILES); otherwise it falls back to ./input, as before.
+
+    `id_element`, if given, is used for nothing other than updating the
+    request's Workflow State field to "Building" (STEPS.md) — it plays no
+    part in resolving input/output files.
     """
+    if id_element is not None:
+        try:
+            update_list_item_fields(
+                str(id_element), {FIELD_WORKFLOW_STATE: WorkflowState.BUILDING}
+            )
+        except Exception:
+            # Best-effort bookkeeping: must not block the actual build below.
+            logger.exception("Error updating Workflow State to Building")
+
     build_upload_excel(
         output_path,
         _resolve_input_path(imarina_input, "imarina", input_dir, DEFAULT_IMARINA_INPUT),

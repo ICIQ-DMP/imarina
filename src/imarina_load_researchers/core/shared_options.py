@@ -154,6 +154,21 @@ TargetFolderOpt = Annotated[
     Path, typer.Option(help="Folder to the destination Sharepoint")
 ]
 
+# --- shared: build/upload/publish ---
+
+# Optional, unlike OperationIdOpt/NotifyIdOpt: `build`, `upload` and `publish`
+# can all run detached from any MS List request (e.g. local/dev use), in
+# which case no MS List item is touched at all.
+IdOpt = Annotated[
+    int | None,
+    typer.Option(
+        "--id",
+        help="MS List item ID for this request. Used to update its Workflow "
+        "State field and, depending on the command, related link fields; if "
+        "omitted, no MS List item is touched.",
+    ),
+]
+
 # --- notify ---
 
 NotifyIdOpt = Annotated[int, typer.Option("--id", help="MS List item ID")]
@@ -173,6 +188,7 @@ __all__ = [
     "DirectoryOpt",
     "DryRunOpt",
     "EntityTypePathOpt",
+    "IdOpt",
     "ImarinaInputOpt",
     "InputDirOpt",
     "JobDescriptionEntityPathOpt",

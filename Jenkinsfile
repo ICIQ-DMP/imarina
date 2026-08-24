@@ -25,15 +25,39 @@ pipeline {
     }
         stage('iMarina Download') {
           steps {
-              sh """
-                  \$IMARINA_CMD download ${params.ID}
-              """
+              script {
+                  try {
+                      sh """
+                          \$IMARINA_CMD download ${params.ID}
+                      """
+                  }
+                  catch (Exception e) {
+                      echo "Sending error email"
+                      sh """
+                          \$IMARINA_CMD notify --id ${params.ID} --status error
+                      """
+                      error "Download has failed: ${e.message}"
+                  }
+              }
         }
     }
        stage('iMarina Build') {
        steps {
-          echo "Build process for iMarina"
-          sh "$IMARINA_CMD build"
+          script {
+              try {
+                  echo "Build process for iMarina"
+                  sh """
+                      \$IMARINA_CMD build --id ${params.ID}
+                  """
+              }
+              catch (Exception e) {
+                  echo "Sending error email"
+                  sh """
+                      \$IMARINA_CMD notify --id ${params.ID} --status error
+                  """
+                  error "Build has failed: ${e.message}"
+              }
+          }
         }
     }
        stage('iMarina upload') {
@@ -41,13 +65,19 @@ pipeline {
           script {
               try {
                   echo "Upload process"
-                  sh '${IMARINA_CMD} upload'
+                  sh """
+                      \$IMARINA_CMD upload --id ${params.ID}
+                  """
                   echo "Sending success email"
-                  sh '${IMARINA_CMD} notify --id ${params.ID} --status success'
+                  sh """
+                      \$IMARINA_CMD notify --id ${params.ID} --status success
+                  """
               }
               catch (Exception e) {
                   echo "Sending error email"
-                  sh '${IMARINA_CMD} notify --id ${params.ID} --status error'
+                  sh """
+                      \$IMARINA_CMD notify --id ${params.ID} --status error
+                  """
                   error "Upload has failed: ${e.message}"
               }
           }
