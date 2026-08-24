@@ -27,9 +27,12 @@ logger = get_logger(__name__)
 
 
 class WorkflowStatus(StrEnum):
-    """Outcome of the iMarina build pipeline, reported by the `notify` command."""
+    """Outcome reported by the `notify` command, from either the main
+    download/build/upload pipeline or the separate, approval-gated publish
+    pipeline (Jenkinsfile.publish)."""
 
     SUCCESS = "success"
+    PUBLISHED = "published"
     ERROR = "error"
 
 
@@ -94,6 +97,17 @@ def build_success_body(name: str, item_id: str, sharepoint_path: str) -> str:
         f"We inform you that the iMarina workflow with ID {item_id} has completed successfully.\n\n"
         f"The generated file is available on SharePoint at the following path:\n"
         f"{sharepoint_path}\n\n"
+        f"For any questions, contact the Digitalization team.\n\n"
+        f"Regards,\n\n"
+        f"(This message was auto-generated.)"
+    )
+
+
+def build_published_body(name: str, item_id: str) -> str:
+    return (
+        f"Hello {name},\n\n"
+        f"We inform you that the iMarina workflow with ID {item_id} has been "
+        f"approved and published to the iMarina server.\n\n"
         f"For any questions, contact the Digitalization team.\n\n"
         f"Regards,\n\n"
         f"(This message was auto-generated.)"

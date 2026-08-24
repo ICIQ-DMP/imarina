@@ -177,7 +177,46 @@ the app instead of needing its own `configure_logging_from_settings()` call.
 On `--status error`, `notify` also writes the request's Workflow State field
 to "Error" (best-effort) — since it's already the common failure handler
 called from every step's catch block, this is the single place that write
-happens, rather than duplicating it in `download`/`build`/`upload` themselves.
+happens, rather than duplicating it in `download`/`build`/`upload`/`publish`
+themselves. `--status` has a third value, `published` (`WorkflowStatus.PUBLISHED`,
+`core/mail.py`), used only by `Jenkinsfile.publish` (see "Publish pipeline"
+below) — it exists because reusing `success`'s email body
+(`build_success_body`, worded "the generated file is available on SharePoint
+... for review") would tell a requester whose file has *already been
+published* to go review it, which is wrong. `build_published_body` says the
+file was published instead.
+
+## Publish pipeline
+
+The human-gated FTP push described in STEPS.md's "Upload"/"Publish" sections
+— `upload` writes an output link + Workflow State "Requested review" →
+Power Automate starts a Microsoft Approval → on approval, an HTTP call
+triggers `publish` — is split across three things, only two of which are in
+this repo:
+
+- **`Jenkinsfile.publish`** (repo root, alongside the main `Jenkinsfile`) —
+  a second, separate Jenkins pipeline: install deps, run
+  `publish --id <ID> --dry-run false`, then `notify --status published` on
+  success or `notify --status error` (from a catch block) on failure. It is
+  **not** triggered by the same job as the main pipeline and has no
+  `ID`-defaulting/autodetection behavior of its own — it's a thin wrapper
+  that assumes an `ID` was supplied by whatever triggered it.
+- **A second Jenkins job**, configured (not code — this is Jenkins UI/job
+  configuration, so it can't live in this repo without adopting Jenkins
+  Configuration as Code, which hasn't been done) to run `Jenkinsfile.publish`
+  as its Script Path, with **"Trigger builds remotely"** enabled and an
+  authentication token set. That gives a URL of the shape
+  `https://<jenkins-host>/job/<job-name>/buildWithParameters?token=<TOKEN>&ID=<id>`.
+- **The Power Automate approval flow** (documented, not yet exported, in
+  `power-automate/README.md`) calls that URL from its "on approval" branch,
+  passing the MS List item's `ID`. The token must be stored as a secured
+  value in the flow's connection, never inline/committed — this touches
+  personnel data, same reasoning as STEPS.md's GDPR section.
+
+A duplicate trigger (retry, double-click) is mostly harmless: `publish`
+archives to `runtime/published` and sets Workflow State to "Published" on
+every successful run regardless of how many times it's called for the same
+`ID`.
 
 ## Key files for this pipeline
 
@@ -223,6 +262,13 @@ happens, rather than duplicating it in `download`/`build`/`upload` themselves.
   the pipeline. `download`, `build` and `upload` are each wrapped in their
   own try/catch calling `notify --status error` on failure (not just
   `upload`, as before); publish is manual.
+- `Jenkinsfile.publish` — the separate, approval-triggered publish pipeline.
+  See "Publish pipeline" below.
+- `power-automate/README.md` — how the Power Automate flows this workflow
+  depends on are exported/version-controlled (Power Platform CLI
+  unpack/pack/import), plus a plain-language spec of each flow's
+  trigger/action. No flow has actually been exported into this repo yet —
+  see that file's "Current status".
 - `compose.yml` — local/dev container wiring; mounts `input`, `output`,
   `logs` as volumes
 

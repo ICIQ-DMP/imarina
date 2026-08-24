@@ -222,15 +222,21 @@ the workflow ends. If the requester accepts, the `publish` step described below 
 
 
 ###### Notify 
-Notify is executed after upload or if an error happens in any other previous steps. It receives an ID where notify will 
+Notify is executed after upload or publish, or if an error happens in any other previous step of either the request
+pipeline (download/build/upload) or the publish pipeline. It receives an ID where notify will 
 read the information to compose and email the requester. If the ID is not supplied, individual arguments can be 
 supplied to provide the information needed
 to compose the email:
 - Email of the email destinatary (requester).
 - A3 Excel input link
 - iMarina Excel input link
-- result of the operation (success or not).
+- result of the operation (success, published, or error).
 - iMarina Excel output link. Only needed if the result is success.
+
+The wording of the email differs by result: "success" tells the requester their file is ready for review at a
+SharePoint link (the outcome of `upload`); "published" tells them their file has been published to iMarina (the
+outcome of `publish`) — these are two different, non-interchangeable messages, since a requester whose file was
+already published should not be told to go review it.
 
 If notify is called with a failure status and an ID, it also updates the field "Workflow State" to "Error". This is 
 the single place this is done, rather than in each of `download`, `build` and `upload`, since notify is already the 
@@ -253,6 +259,11 @@ If the file is successfully published, the file will be uploaded to
 "Workflow State" is also updated to "Published".
 
 This step is only triggered after a human review, which acts as sanity check. 
+
+This step is triggered by its own, separate Jenkins job — not the one running download/build/upload — started by the
+HTTP request described in the "Upload" section above. After it finishes, notify is called with the supplied ID:
+"published" on success, "error" on failure, so the requester who approved the publish learns whether it actually
+went through.
 
 
 

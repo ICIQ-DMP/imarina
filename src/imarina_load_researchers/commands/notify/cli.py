@@ -20,6 +20,7 @@ from imarina_load_researchers.core.mail import (
     EmailContent,
     WorkflowStatus,
     build_error_body,
+    build_published_body,
     build_success_body,
     get_access_token,
     get_creator_email,
@@ -51,12 +52,16 @@ def notify_controller(
     sharepoint_path: NotifySharepointPathOpt = DEFAULT_NOTIFY_SHAREPOINT_PATH,
 ) -> None:
     """
-    Sends the creator of the MS List item an email reporting whether the iMarina build pipeline succeeded or failed.
+    Sends the creator of the MS List item an email reporting the outcome of
+    a run: "success" (upload finished, awaiting review) from the main
+    download/build/upload pipeline, or "published"/"error" from either that
+    pipeline or the separate, approval-gated publish pipeline
+    (Jenkinsfile.publish).
 
     On a failure status, also updates the request's Workflow State field to
     "Error" (STEPS.md) -- notify is the common failure handler called from
     every step's error path, so this is the single place that write happens,
-    rather than duplicating it in download/build/upload.
+    rather than duplicating it in download/build/upload/publish.
     """
 
     site_id = get_site_id(
@@ -82,6 +87,9 @@ def notify_controller(
     if status == WorkflowStatus.SUCCESS:
         subject = f"iMarina - Workflow ID {id_element} completed successfully"
         body = build_success_body(name, str(id_element), str(sharepoint_path))
+    elif status == WorkflowStatus.PUBLISHED:
+        subject = f"iMarina - Workflow ID {id_element} published to iMarina"
+        body = build_published_body(name, str(id_element))
     else:
         subject = f"iMarina - Workflow ID {id_element} failed"
         body = build_error_body(name, str(id_element))
