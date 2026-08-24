@@ -21,10 +21,10 @@ as CRIS, so we can know which research projects are active within ICIQ using iMa
 serves the goal of updating the researchers that are currently working at ICIQ. Since research projects are usually 
 associated to researchers, this is a crucial part of keeping the data of a CRIS updated. 
 
-In general therms the core process of the application needs 2 inputs to get the result: A bulk of the A3 database in 
+In general terms the core process of the application needs 2 inputs to get the result: A bulk of the A3 database in 
 ICIQ, which contains the data of all
 ICIQ personnel; and the last researcher upload to iMarina. Both inputs are provided as a Microsoft Excel spreadsheet.
-The output is the next researcher upload to iMarina. This represents one of the particularity of this workflow, as the 
+The output is the next researcher upload to iMarina. This represents one of the particularities of this workflow, as the 
 output of one execution will be the input of the next execution. 
 
 Knowing which is the last of a group of files will always be deduced from the name of the file, as it will contain the 
@@ -79,7 +79,7 @@ command with the Excel generated with the `build` command.
 command with the latest iMarina published file. 
 - A3 Excel input link: Link to the A3 Excel file that has been used as input. Filled by the form or the `download` 
 command with the latest A3 dump. 
-- Workflow State: State of the workflow. Updated by the Power Automates workflows and with the different commands 
+- Workflow State: State of the workflow. Updated by the Power Automate workflows and with the different commands 
 of the process. Possible values: "New", "Preparing", "Building", "Uploading", "Requested review", "Not published",
 "Publishing", "Published" and "Error".
 - ID: Unique identifier for this request. Filled by answering the form automatically. 
@@ -121,7 +121,7 @@ When uploading files into `_Projects/imarina-load-researchers/runtime/imarina`,
 `_Projects/imarina-load-researchers/runtime/a3` a Microsoft Power Automate is triggered to validate the names of the 
 files there. It specifically checks that the names conform to the specification of names that appear in the "Preparation" and 
 "Build"
-section of this document.
+sections of this document.
 
 ### Answering the request form
 To start the workflow you must answer the form and provide optionally the link to the A3 database dump and the iMarina
@@ -200,7 +200,7 @@ The algorithm will build the output Excel file and put it into `output/` with th
 
 
 ###### Upload
-At the start of this step, the field "Workflow State" of the request is updated to "Uploading".
+At the start of this step, if an ID is supplied, the field "Workflow State" of the request is updated to "Uploading".
 
 This step:
 - Takes the latest file at `output/` with the name 
