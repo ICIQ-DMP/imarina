@@ -116,16 +116,23 @@ The algorithm will build the output Excel file and put it into `output/` with th
 This step:
 - Takes the latest file at `output/` with the name 
 `{DATETIME}__icl_ag_personal_12539.xlsx` and uploads it into Sharepoint 
-`_Projects/imarina-load-researchers/runtime/output`. 
-- It generates the link to that file and updates the request 
+`_Projects/imarina-load-researchers/runtime/output` or the specified file via argument.  
+- If an ID is supplied it generates the link to the uploaded file and updates the request 
 of the list with the link to the output file. 
-- Triggers the execution of a Power Automate workflow that notifies the requester of the success via triggering an 
+- Updating the file link in the Microsoft List triggers the execution of a Power Automate workflow that notifies the 
+requester of the 
+success via triggering an 
 approval request using Microsoft Approvals. The approval sends the link to the output file, informs of the success and
 asks if the requester wants to publish that into iMarina servers. If the user says yes, an HTTP request is made against
 a Jenkins server that executes the last `publish` step.
 
+
 ###### Publish
 Publish step downloads the output of the supplied id and uploads it to the iMarina FTP server. Finishing the workflow. 
+
+Publish can receive an ID which will trigger the download of the corresponding output file from the list row of
+that ID for its upload. Instead, publish can receive a valid output file, which will also be uploaded to the iMarina 
+FTP server. 
 
 
 

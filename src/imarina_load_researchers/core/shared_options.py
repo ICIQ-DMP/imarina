@@ -135,7 +135,7 @@ InputDirOpt = Annotated[
 # --- publish ---
 
 PublishFilePathOpt = Annotated[
-    Path,
+    Path | None,
     typer.Option(help="Path to the iMarina Excel file to upload to the SFTP server"),
 ]
 DryRunOpt = Annotated[
@@ -145,7 +145,7 @@ DryRunOpt = Annotated[
 # --- upload ---
 
 UploadFilePathOpt = Annotated[
-    Path,
+    Path | None,
     typer.Option(
         help="Excel file path (.xlsx). If left empty, it will look for the last one in 'output'."
     ),

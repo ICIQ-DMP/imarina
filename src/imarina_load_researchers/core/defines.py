@@ -54,16 +54,20 @@ SHAREPOINT_LOCAL_BASE_DIR = PROJECT_DIR / "services/onedrive/data"
 
 SHAREPOINT_LOCAL_INPUT_DIR = SHAREPOINT_LOCAL_BASE_DIR / SHAREPOINT_REMOTE_INPUT_DIR
 SHAREPOINT_LOCAL_OUTPUT_DIR = SHAREPOINT_LOCAL_BASE_DIR / SHAREPOINT_REMOTE_OUTPUT_DIR
-SHAREPOINT_LOCAL_A4_DIR = SHAREPOINT_LOCAL_BASE_DIR / SHAREPOINT_REMOTE_A3_DIR
+SHAREPOINT_LOCAL_A3_DIR = SHAREPOINT_LOCAL_BASE_DIR / SHAREPOINT_REMOTE_A3_DIR
 SHAREPOINT_LOCAL_PUBLISHED_DIR = (
     SHAREPOINT_LOCAL_BASE_DIR / SHAREPOINT_REMOTE_PUBLISHED_DIR
 )
 
 ICIQ_WEBPAGE = "https://iciq.org/"
 
-FILENAME_PREFIX = "iMarina_upload_"
-FILENAME_SUFFIX = ".xlsx"
 FTP_FILENAME = "icl_ag_personal_12539.xlsx"
+
+# `build` names its output "<DATETIME>__<FTP_FILENAME>" (see OUTPUT_FILENAME
+# below) - these must stay in sync with that so select_file_to_upload() can
+# actually parse the datetime back out of real output filenames.
+FILENAME_PREFIX = ""
+FILENAME_SUFFIX = f"__{FTP_FILENAME}"
 
 FTP_UPLOAD_PATH = f"carga_icolet/{FTP_FILENAME}"
 
@@ -121,12 +125,16 @@ DEFAULT_SEX_PATH = SHAREPOINT_LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["sex"]
 
 # --- publish ---
 
-DEFAULT_PUBLISH_FILE_PATH = SHAREPOINT_LOCAL_OUTPUT_DIR / FTP_FILENAME
+# None => publish_controller falls back to select_file_to_upload(), which
+# autodetects the latest build output in SHAREPOINT_LOCAL_OUTPUT_DIR.
+DEFAULT_PUBLISH_FILE_PATH = None
 DEFAULT_DRY_RUN = True
 
 # --- upload ---
 
-DEFAULT_PUBLISHED_FILE_PATH = SHAREPOINT_LOCAL_OUTPUT_DIR / FTP_FILENAME
+# None => upload_controller falls back to select_file_to_upload(), which
+# autodetects the latest build output in SHAREPOINT_LOCAL_OUTPUT_DIR.
+DEFAULT_PUBLISHED_FILE_PATH = None
 DEFAULT_TARGET_DIR = SHAREPOINT_REMOTE_BASE_DIR / OUTPUT_DIR_NAME
 
 # --- notify ---
