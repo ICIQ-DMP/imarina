@@ -19,48 +19,48 @@ pipeline {
         label 'agent jenkins'
     }
     options {
-         disableConcurrentBuilds() // one execution only
+        disableConcurrentBuilds() // one execution only
     }
     parameters {
-         string(name: 'ID', defaultValue: '' , description: 'ID operation in iMarina, whose approved output should be published to the iMarina FTP server')
+        string(name: 'ID', defaultValue: '', description: 'ID operation in iMarina, whose approved output should be published to the iMarina FTP server')
     }
 
     environment {
-         PYTHON_PATH = "/usr/bin/python3"
-         IMARINA_CMD = "venv/bin/imarina-load-researchers"
+        PYTHON_PATH = "/usr/bin/python3"
+        IMARINA_CMD = "venv/bin/imarina-load-researchers"
     }
 
     stages {
         stage('Prepare Python environment and dependencies') {
-        steps {
-           echo "Creating virtual environment and update dependencies..."
-           sh"""
-                make install
-           """
+            steps {
+                echo "Creating virtual environment and update dependencies..."
+                sh """
+                    make install
+                """
+            }
         }
-    }
-       stage('iMarina Publish') {
-         steps {
-          script {
-              try {
-                  echo "Publish process"
-                  sh """
-                      \$IMARINA_CMD publish --id ${params.ID} --dry-run false
-                  """
-                  echo "Sending published email"
-                  sh """
-                      \$IMARINA_CMD notify --id ${params.ID} --status published
-                  """
-              }
-              catch (Exception e) {
-                  echo "Sending error email"
-                  sh """
-                      \$IMARINA_CMD notify --id ${params.ID} --status error
-                  """
-                  error "Publish has failed: ${e.message}"
-              }
-          }
-       }
-    }
+        stage('iMarina Publish') {
+            steps {
+                script {
+                    try {
+                        echo "Publish process"
+                        sh """
+                            \$IMARINA_CMD publish --id ${params.ID} --dry-run false
+                        """
+                        echo "Sending published email"
+                        sh """
+                            \$IMARINA_CMD notify --id ${params.ID} --status published
+                        """
+                    }
+                    catch (Exception e) {
+                        echo "Sending error email"
+                        sh """
+                            \$IMARINA_CMD notify --id ${params.ID} --status error
+                        """
+                        error "Publish has failed: ${e.message}"
+                    }
+                }
+            }
+        }
     }
 }
