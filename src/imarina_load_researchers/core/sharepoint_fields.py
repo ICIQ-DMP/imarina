@@ -17,29 +17,40 @@
 """Microsoft List schema for the request-tracking list backing this workflow
 (field names and the "Workflow State" state machine), per STEPS.md.
 
-All five internal Graph API field names below are now confirmed against
-production via a Graph GET (`.../lists/{list}/columns`). None of them follow
-the naive "replace each space with `_x0020_`" encoding of the current
-*display* name:
+All five internal Graph API field names below are confirmed against
+production via a Graph GET (`.../lists/{list}/columns`).
 
-- `FIELD_A3_EXCEL_INPUT_LINK` / `FIELD_IMARINA_EXCEL_INPUT_LINK` are
-  unchanged from before STEPS.md renamed the columns' display names —
-  SharePoint does not change a column's internal name when its display name
-  is edited, only when the column is recreated from scratch.
 - `FIELD_WORKFLOW_STATE`'s internal name (`Estat_x0028_Workflow_x0029_`) is
   the `_x0020_`/`_x0028_`/`_x0029_` encoding of an earlier Catalan display
   name, "Estat (Workflow)" — not of the current English display name
-  "Workflow State".
-- `FIELD_IMARINA_EXCEL_OUTPUT_LINK` / `FIELD_IMARINA_EXCEL_PUBLISHED_LINK`
-  carry no space encoding at all (`iMarinaExceloutputlink`,
-  `iMarinaExceluploadlink`) — both columns were created with the internal
-  name derived from an earlier, space-free working title, then had only
-  their display name edited afterwards (the published-link column's display
-  name is "iMarina Excel published link", but its internal name still says
-  "upload", not "published").
+  "Workflow State". It's a Choice column; the allowed values are exactly
+  `WorkflowState`'s members.
+- `FIELD_A3_EXCEL_INPUT_LINK` / `FIELD_IMARINA_EXCEL_INPUT_LINK` /
+  `FIELD_IMARINA_EXCEL_OUTPUT_LINK` / `FIELD_IMARINA_EXCEL_PUBLISHED_LINK`
+  were originally "Hyperlink or Picture" columns. That column type cannot be
+  written through Graph's `.../items/{id}/fields` PATCH at all — every
+  format tried (plain string, the `{"Url", "Description"}` object Graph's
+  own GET returns for a populated hyperlink field, v1.0 vs beta) comes back
+  `400 invalidRequest`, and the SharePoint REST API (`_api/web/lists/...`)
+  isn't a usable workaround either: it rejects this app's Azure AD
+  client-credentials tokens outright ("Unsupported app only token") since it
+  only accepts delegated tokens or legacy ACS "add-in-only" tokens from a
+  separate SharePoint-registered principal, which this app doesn't have.
+  Graph also refuses to convert an existing Hyperlink-or-Picture column to
+  Text in place (`400 "Provided data is not compatible with target field
+  type"` on `PATCH columns/{id}` with a `text` facet) — matching
+  SharePoint's own "Edit column" UI, which doesn't offer that conversion
+  either. So as of 2026-08-25 these 4 columns were deleted and recreated as
+  plain single-line-of-text columns (same displayName/description,
+  `text: {}` facet), which is why their internal names carry a trailing `0`
+  — Graph auto-suffixes a new column's name when a just-deleted column of
+  the same name is still in the site's recycle bin. Plain-string PATCH
+  writes work against a Text column the same way they already did against
+  `FIELD_WORKFLOW_STATE` (a Choice column) — the Hyperlink/Picture type was
+  the whole problem, not the field name or the value's format.
 
-If any of these columns is ever recreated from scratch, its internal name
-will change again — re-confirm with the same Graph GET
+If any of these columns is ever recreated from scratch again, its internal
+name will change again — re-confirm with the same Graph GET
 (`.../lists/{list}/columns` or `.../items/{id}?$expand=fields`) and fix the
 constant here; nothing else in the codebase needs to change.
 """
@@ -47,10 +58,10 @@ constant here; nothing else in the codebase needs to change.
 from enum import StrEnum
 
 # Confirmed against production (Graph GET on `.../lists/{list}/columns`).
-FIELD_A3_EXCEL_INPUT_LINK = "A3_x0020_Excel_x0020_Link"
-FIELD_IMARINA_EXCEL_INPUT_LINK = "iMarina_x0020_Excel_x0020_Link"
-FIELD_IMARINA_EXCEL_OUTPUT_LINK = "iMarinaExceloutputlink"
-FIELD_IMARINA_EXCEL_PUBLISHED_LINK = "iMarinaExceluploadlink"
+FIELD_A3_EXCEL_INPUT_LINK = "A3ExcelInputLink0"
+FIELD_IMARINA_EXCEL_INPUT_LINK = "iMarinaExcelInputLink0"
+FIELD_IMARINA_EXCEL_OUTPUT_LINK = "iMarinaExcelOutputLink0"
+FIELD_IMARINA_EXCEL_PUBLISHED_LINK = "iMarinaExcelPublishedLink0"
 FIELD_WORKFLOW_STATE = "Estat_x0028_Workflow_x0029_"
 
 

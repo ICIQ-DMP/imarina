@@ -235,16 +235,21 @@ every successful run regardless of how many times it's called for the same
 - `src/imarina_load_researchers/core/sharepoint_fields.py` — the MS List schema:
   `WorkflowState(StrEnum)` (the 9 values from STEPS.md's state machine) and
   the field-name constants every read/write in `sharepoint.py` goes through.
-  **Only two of the five field-name constants are confirmed against
-  production** (`FIELD_A3_EXCEL_INPUT_LINK`/`FIELD_IMARINA_EXCEL_INPUT_LINK`
-  — unchanged from before STEPS.md renamed those columns' display names,
-  since SharePoint doesn't change a column's internal Graph name on a
-  display-name rename). The other three
-  (`FIELD_IMARINA_EXCEL_OUTPUT_LINK`/`FIELD_IMARINA_EXCEL_PUBLISHED_LINK`/
-  `FIELD_WORKFLOW_STATE`) are a best-guess `_x0020_`-space-encoding of
-  STEPS.md's display names for columns that didn't exist before STEPS.md —
-  the module's own docstring has the full explanation and what to do once
-  those columns exist for real.
+  All five are confirmed against production. As of 2026-08-25 the four link
+  fields (`FIELD_A3_EXCEL_INPUT_LINK`/`FIELD_IMARINA_EXCEL_INPUT_LINK`/
+  `FIELD_IMARINA_EXCEL_OUTPUT_LINK`/`FIELD_IMARINA_EXCEL_PUBLISHED_LINK`) are
+  plain single-line-of-text SharePoint columns, **not** Hyperlink/Picture
+  columns — they were originally created as Hyperlink/Picture, which Graph's
+  `.../items/{id}/fields` PATCH cannot write under any value format (always
+  `400 invalidRequest`), and which Graph also refuses to convert to Text in
+  place, so the columns were deleted and recreated as Text (same
+  displayName/description) to unblock writes. That's also why their internal
+  names carry a trailing `0` (`A3ExcelInputLink0`, etc.) — Graph auto-suffixes
+  a new column's name when a same-named column is still in the site's recycle
+  bin. `FIELD_WORKFLOW_STATE` is unrelated to that — it's always been a
+  Choice column and was never affected. The module's own docstring has the
+  full investigation and what to do if any of these columns is ever recreated
+  again.
 - `src/imarina_load_researchers/core/ftp.py` — the `publish` FTP push
 - `src/imarina_load_researchers/core/shared_options.py` — every Typer `Option`/`Argument`
   annotation used by any command — metadata (help text, flags) only, no
@@ -383,10 +388,15 @@ broad `except` that logs and continues, so a metadata-write failure never
 turns an otherwise-successful pipeline step into a hard failure. The
 trade-off is that these writes can silently fail with no visible symptom
 beyond a log line: the MS List's Workflow State can drift out of sync with
-what actually happened, and nothing downstream checks for that. If the three
-unverified field-name guesses in `core/sharepoint_fields.py` turn out to be
-wrong, every write to those fields will fail exactly this way — silently,
-from the pipeline's point of view.
+what actually happened, and nothing downstream checks for that. This isn't
+hypothetical — it's exactly how `upload`'s output-link write-back stayed
+broken in production for a while: the four link columns in
+`core/sharepoint_fields.py` were originally SharePoint Hyperlink/Picture
+columns, which Graph's field-PATCH endpoint silently 400s on regardless of
+field name or value format, and every caller's best-effort `except` swallowed
+that into a log line with no other symptom (see that module's docstring for
+the fix — they're plain Text columns now). If any MS List column backing
+these fields is ever changed again, watch for the same silent-failure shape.
 
 ## Linting/type-checking notes
 

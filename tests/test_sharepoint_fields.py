@@ -165,7 +165,7 @@ def test_get_list_item_link_field_success(
 
     item_response = MagicMock()
     item_response.json.return_value = {
-        "fields": {"SomeField": {"Url": "https://sharepoint.example/output.xlsx"}}
+        "fields": {"SomeField": "https://sharepoint.example/output.xlsx"}
     }
     item_response.raise_for_status.return_value = None
 

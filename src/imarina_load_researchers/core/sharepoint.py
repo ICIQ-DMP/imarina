@@ -219,18 +219,16 @@ def _get_list_item_fields(operation_id: str) -> dict[str, Any]:
 def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
     fields = _get_list_item_fields(operation_id)
 
-    a3_field = fields.get(FIELD_A3_EXCEL_INPUT_LINK, {})
-    imarina_field = fields.get(FIELD_IMARINA_EXCEL_INPUT_LINK, {})
-
-    return a3_field.get("Url"), imarina_field.get("Url")
+    return fields.get(FIELD_A3_EXCEL_INPUT_LINK), fields.get(
+        FIELD_IMARINA_EXCEL_INPUT_LINK
+    )
 
 
 def get_list_item_link_field(operation_id: str, field_name: str) -> str | None:
-    """Read a single Hyperlink-type field's URL off an MS List item, or None
-    if that field isn't set. Used by `publish` to source its file from the
+    """Read a single Text-type link field off an MS List item, or None if
+    that field isn't set. Used by `publish` to source its file from the
     request's output-link field when given an ID (STEPS.md)."""
-    field = _get_list_item_fields(operation_id).get(field_name, {})
-    return cast(str | None, field.get("Url"))
+    return cast(str | None, _get_list_item_fields(operation_id).get(field_name))
 
 
 def update_list_item_fields(operation_id: str, fields: dict[str, str]) -> None:
