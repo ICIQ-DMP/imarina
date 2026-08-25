@@ -211,6 +211,11 @@ pipeline progresses; it's not required for a standalone/local run. For example, 
 ./venv/bin/imarina-load-researchers build
 ```
 
+###### Example of a full execution
+```shell
+REQUEST=66
+./venv/bin/imarina-load-researchers download $REQUEST && ./venv/bin/imarina-load-researchers build --id $REQUEST && ./venv/bin/imarina-load-researchers upload --id $REQUEST
+```
 
 #### Run in Docker
 
