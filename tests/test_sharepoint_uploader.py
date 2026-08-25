@@ -1,7 +1,24 @@
-import pytest
-from unittest.mock import patch, MagicMock
+# imarina-load-researchers - Automated iMarina data loads
+# Copyright (C) 2026  Aleix Mariné Tena (AleixMT) and Sonia Sayalero
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from imarina.core.sharepoint import get_site_id
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from imarina_load_researchers.core.sharepoint import get_site_id
 
 
 class DummyTokenManager:
@@ -9,7 +26,7 @@ class DummyTokenManager:
         return "fake_token_123"
 
 
-@patch("imarina.core.sharepoint.requests.get")
+@patch("imarina_load_researchers.core.sharepoint.requests.get")
 def test_get_site_id_success(mock_get):
     mock_response = MagicMock()
     mock_response.json.return_value = {"id": "SITE12345"}
@@ -31,7 +48,7 @@ def test_get_site_id_success(mock_get):
     assert result == "SITE12345"
 
 
-@patch("imarina.core.sharepoint.requests.get")
+@patch("imarina_load_researchers.core.sharepoint.requests.get")
 def test_get_site_id_http_error(mock_get):
     mock_response = MagicMock()
     mock_response.raise_for_status.side_effect = Exception("Bad Request")
@@ -41,7 +58,3 @@ def test_get_site_id_http_error(mock_get):
 
     with pytest.raises(Exception, match="Bad Request"):
         get_site_id(token_manager, "iciq.sharepoint.com", "my_site")
-
-
-def test_get_site_id():
-    assert True

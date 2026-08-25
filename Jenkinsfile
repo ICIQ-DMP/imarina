@@ -3,101 +3,91 @@ pipeline {
         label 'agent jenkins'
     }
     options {
-         disableConcurrentBuilds() // one execution only
+        disableConcurrentBuilds() // one execution only
     }
     parameters {
-         string(name: 'ID', defaultValue: '' , description: 'ID operation in iMarina')
-         string(name: 'EMAIL', defaultValue: '', description: 'Creator email')
-         string(name: 'NAME', defaultValue: '', description: 'Creator name')
+        string(name: 'ID', defaultValue: '', description: 'ID operation in iMarina')
     }
 
-    // environment variables
     environment {
-         PYTHON_PATH = "/usr/bin/python3"
-         IMARINA_CMD = "venv/bin/python3 -m imarina"
-         OPERATION_ID = "${params.ID}"
-         CREATOR_EMAIL = "${params.EMAIL}"
-         CREATOR_NAME = "${params.NAME}"
-         TENANT_ID = credentials('TENANT_ID')
-         CLIENT_ID = credentials('CLIENT_ID')
-         DRIVE_ID = credentials('DRIVE_ID')
-         CLIENT_SECRET = credentials('CLIENT_SECRET')
-         FTP_PASSWORD = credentials('FTP_PASSWORD')
-         MS_LIST_ID = credentials('MS_LIST_ID')
-         MS_SITE_ID = credentials('MS_SITE_ID')
-         SHAREPOINT_DOMAIN = credentials('SHAREPOINT_DOMAIN')
-         SITE_NAME = credentials('SITE_NAME')
-         LIST_NAME = credentials('LIST_NAME')
-
-         SMTP_USERNAME = credentials('SMTP_USERNAME')
-         SMTP_PASSWORD = credentials('SMTP_PASSWORD')
-         SMTP_HOST = credentials('SMTP_HOST')
-         SMTP_PORT = credentials('SMTP_PORT')
-
+        PYTHON_PATH = "/usr/bin/python3"
+        IMARINA_CMD = "venv/bin/imarina-load-researchers"
     }
 
     stages {
-        // Python venv and dependencies
         stage('Prepare Python environment and dependencies') {
-        steps {
-           echo "Creating virtual environment and update dependencies..."
-           sh"""
-                rm -rf venv
-                $PYTHON_PATH -m venv venv
-                ./venv/bin/pip install --upgrade pip
-                venv/bin/pip install .
-           """
+            steps {
+                echo "Creating virtual environment and update dependencies..."
+                sh """
+                    make install
+                """
+            }
         }
-    }
-
-        // stage imarina download
         stage('iMarina Download') {
-          steps {
-              echo "DEBUG: ID recibido: ${params.ID}"
-              sh '''
-                 pwd
-                 mkdir -p secrets
-                 echo -n "$DRIVE_ID" > secrets/DRIVE_ID
-                 rm -rf input
-
-              '''
-              sh """
-                  \$IMARINA_CMD download --id ${params.ID}
-                  ls -R input
-              """
+            steps {
+                script {
+                    try {
+                        sh """
+                            \$IMARINA_CMD download ${params.ID}
+                        """
+                    }
+                    catch (Exception e) {
+                        echo "Sending error email"
+                        sh """
+                            \$IMARINA_CMD notify --id ${params.ID} --status error
+                        """
+                        error "Download has failed: ${e.message}"
+                    }
+                }
+            }
+        }
+        stage('iMarina Build') {
+            steps {
+                script {
+                    try {
+                        echo "Build process for iMarina"
+                        sh """
+                            \$IMARINA_CMD build --id ${params.ID}
+                        """
+                    }
+                    catch (Exception e) {
+                        echo "Sending error email"
+                        sh """
+                            \$IMARINA_CMD notify --id ${params.ID} --status error
+                        """
+                        error "Build has failed: ${e.message}"
+                    }
+                }
+            }
+        }
+        stage('iMarina upload') {
+            steps {
+                script {
+                    try {
+                        echo "Upload process"
+                        sh """
+                            \$IMARINA_CMD upload --id ${params.ID}
+                        """
+                    }
+                    catch (Exception e) {
+                        echo "Sending error email"
+                        sh """
+                            \$IMARINA_CMD notify --id ${params.ID} --status error
+                        """
+                        error "Upload has failed: ${e.message}"
+                    }
+                }
+            }
+        }
+        stage('iMarina notify') {
+            steps {
+                script {
+                    echo "Sending success email"
+                    sh """
+                        \$IMARINA_CMD notify --id ${params.ID} --status success
+                    """
+                }
+            }
         }
     }
-       // imarina build
-       stage(' iMarina Build ') {
-       steps {
-          echo "Build process for iMarina"
-          sh "$IMARINA_CMD build"
-        }
-    }
-
-    // imarina upload
-       stage('iMarina upload') {
-         steps {
-          script {
-              sh 'env | grep SMTP'
-          try {
-          echo "Upload process"
-          sh '${IMARINA_CMD} upload'
-          echo "Sending success email"
-          sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --status success'
-          }
-          catch (Exception e) {
-          echo "Sending error email"
-          sh 'venv/bin/python3 src/imarina/core/mail.py --id ${OPERATION_ID} --status error'
-          error "Upload ha fallat: ${e.message}"
-          }
-
-        }
-
-        }
-    }
-
-
-    }
-
 }

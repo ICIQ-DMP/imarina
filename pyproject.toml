@@ -1,9 +1,13 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "imarina"
+name = "imarina-load-researchers"
 dynamic = ["version"]
-description = "imarina automated excel build"
+description = "imarina-load-researchers automated excel build"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 authors = [{name="AleixMT"}, {name="MarioPiqué"}]
 license = {text="GPL-3.0-or-later"}
 dependencies = [
@@ -22,15 +26,22 @@ dependencies = [
 
 
 [project.scripts]
-imarina = "imarina.__main__:main"
+imarina-load-researchers = "imarina_load_researchers.__main__:main"
 
 [project.optional-dependencies]
 dev = [
   "black",
   "pytest",
   "mypy",
-  "ruff"
+  "ruff",
+  "pre-commit"
 ]
+
+[tool.setuptools_scm]
+# Tag format matches [tool.semantic_release] below (v1.2.3). No .git directory
+# reaches the Docker build context (Dockerfile only COPYs Makefile/pyproject.toml/
+# src), so a fallback is required there or the build fails outright.
+fallback_version = "0.0.0"
 
 [tool.semantic_release]
 version_source = "tag"
@@ -40,14 +51,21 @@ tag_format = "v{version}"
 [tool.semantic_release.changelog]
 mode = "update"
 
-[tool.semantic_release.commit_parser_options]
-allowed_tags = ["ADDED", "UPDATED", "REMOVED", "FIXED", "RELEASED", "CHANGED"]
-minor_tags = ["ADDED", "UPDATED", "CHANGED"]
-patch_tags = ["FIXED", "REMOVED"]
-major_tags = ["RELEASED"]
-
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "UP", "SIM", "S", "TRY", "DTZ", "PL", "N", "RUF"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.pytest.ini_options]
 addopts = "-q"
@@ -55,5 +73,8 @@ testpaths = ["tests"]
 pythonpath = "src"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.14"
 strict = true
+
+[tool.black]
+target-version = ["py314"]
