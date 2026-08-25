@@ -17,33 +17,41 @@
 """Microsoft List schema for the request-tracking list backing this workflow
 (field names and the "Workflow State" state machine), per STEPS.md.
 
-Internal Graph API field names for `FIELD_A3_EXCEL_INPUT_LINK` and
-`FIELD_IMARINA_EXCEL_INPUT_LINK` are confirmed from production (they're
-unchanged from before STEPS.md renamed the columns' *display* names —
-SharePoint does not change a column's internal name when its display name is
-edited, only when the column is recreated from scratch).
+All five internal Graph API field names below are now confirmed against
+production via a Graph GET (`.../lists/{list}/columns`). None of them follow
+the naive "replace each space with `_x0020_`" encoding of the current
+*display* name:
 
-The other three constants (`FIELD_IMARINA_EXCEL_OUTPUT_LINK`,
-`FIELD_IMARINA_EXCEL_PUBLISHED_LINK`, `FIELD_WORKFLOW_STATE`) are NOT verified
-against the live tenant: those columns didn't exist before STEPS.md, so
-there's no production value to confirm against yet. They're a best-effort
-guess at SharePoint's standard "replace each space with `_x0020_`" internal
-name encoding, applied to STEPS.md's display names. Once those columns exist
-in the real list, confirm the actual internal names with a Graph GET
-(`.../items/{id}?$expand=fields`) and fix these three constants if they're
-wrong — nothing else in the codebase needs to change.
+- `FIELD_A3_EXCEL_INPUT_LINK` / `FIELD_IMARINA_EXCEL_INPUT_LINK` are
+  unchanged from before STEPS.md renamed the columns' display names —
+  SharePoint does not change a column's internal name when its display name
+  is edited, only when the column is recreated from scratch.
+- `FIELD_WORKFLOW_STATE`'s internal name (`Estat_x0028_Workflow_x0029_`) is
+  the `_x0020_`/`_x0028_`/`_x0029_` encoding of an earlier Catalan display
+  name, "Estat (Workflow)" — not of the current English display name
+  "Workflow State".
+- `FIELD_IMARINA_EXCEL_OUTPUT_LINK` / `FIELD_IMARINA_EXCEL_PUBLISHED_LINK`
+  carry no space encoding at all (`iMarinaExceloutputlink`,
+  `iMarinaExceluploadlink`) — both columns were created with the internal
+  name derived from an earlier, space-free working title, then had only
+  their display name edited afterwards (the published-link column's display
+  name is "iMarina Excel published link", but its internal name still says
+  "upload", not "published").
+
+If any of these columns is ever recreated from scratch, its internal name
+will change again — re-confirm with the same Graph GET
+(`.../lists/{list}/columns` or `.../items/{id}?$expand=fields`) and fix the
+constant here; nothing else in the codebase needs to change.
 """
 
 from enum import StrEnum
 
-# Confirmed against production.
+# Confirmed against production (Graph GET on `.../lists/{list}/columns`).
 FIELD_A3_EXCEL_INPUT_LINK = "A3_x0020_Excel_x0020_Link"
 FIELD_IMARINA_EXCEL_INPUT_LINK = "iMarina_x0020_Excel_x0020_Link"
-
-# NOT verified against the live tenant -- see module docstring.
-FIELD_IMARINA_EXCEL_OUTPUT_LINK = "iMarina_x0020_Excel_x0020_output_x0020_link"
-FIELD_IMARINA_EXCEL_PUBLISHED_LINK = "iMarina_x0020_Excel_x0020_published_x0020_link"
-FIELD_WORKFLOW_STATE = "Workflow_x0020_State"
+FIELD_IMARINA_EXCEL_OUTPUT_LINK = "iMarinaExceloutputlink"
+FIELD_IMARINA_EXCEL_PUBLISHED_LINK = "iMarinaExceluploadlink"
+FIELD_WORKFLOW_STATE = "Estat_x0028_Workflow_x0029_"
 
 
 class WorkflowState(StrEnum):
