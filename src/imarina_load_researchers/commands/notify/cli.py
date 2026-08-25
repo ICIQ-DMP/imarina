@@ -56,7 +56,7 @@ def notify_controller(
     a run: "success" (upload finished, awaiting review) from the main
     download/build/upload pipeline, or "published"/"error" from either that
     pipeline or the separate, approval-gated publish pipeline
-    (Jenkinsfile.publish).
+    (publish.Jenkinsfile).
 
     On a failure status, also updates the request's Workflow State field to
     "Error" (STEPS.md) -- notify is the common failure handler called from

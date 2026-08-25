@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 class WorkflowStatus(StrEnum):
     """Outcome reported by the `notify` command, from either the main
     download/build/upload pipeline or the separate, approval-gated publish
-    pipeline (Jenkinsfile.publish)."""
+    pipeline (publish.Jenkinsfile)."""
 
     SUCCESS = "success"
     PUBLISHED = "published"
