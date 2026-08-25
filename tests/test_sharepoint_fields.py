@@ -19,6 +19,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from imarina_load_researchers.core.defines import FILENAME_IMARINA_SUFFIX
 from imarina_load_researchers.core.exceptions import NoExcelFilesFoundError
 from imarina_load_researchers.core.sharepoint import (
     create_sharing_link,
@@ -98,7 +99,9 @@ def test_select_latest_remote_file_picks_newest_by_filename(mock_get):
     }
     mock_get.return_value = mock_response
 
-    result = select_latest_remote_file(DummyTokenManager(), "DRIVE1", Path("some/dir"))
+    result = select_latest_remote_file(
+        DummyTokenManager(), "DRIVE1", Path("some/dir"), FILENAME_IMARINA_SUFFIX
+    )
 
     assert result.id == "NEW"
     assert result.name == "2026-01-01_12-00-00__icl_ag_personal_12539.xlsx"
@@ -112,7 +115,9 @@ def test_select_latest_remote_file_raises_when_empty(mock_get):
     mock_get.return_value = mock_response
 
     with pytest.raises(NoExcelFilesFoundError):
-        select_latest_remote_file(DummyTokenManager(), "DRIVE1", Path("some/dir"))
+        select_latest_remote_file(
+            DummyTokenManager(), "DRIVE1", Path("some/dir"), FILENAME_IMARINA_SUFFIX
+        )
 
 
 # --- update_list_item_fields / get_list_item_link_field ----------------------

@@ -79,11 +79,19 @@ def upload_file(
     drive_id: str,
     target_folder: Path,
     local_file_path: Path,
+    remote_file_name: str | None = None,
 ) -> str:
     """Upload a local file to SharePoint, returning the uploaded item's id
-    (needed by callers that go on to generate a sharing link for it)."""
+    (needed by callers that go on to generate a sharing link for it).
 
-    remote_path = target_folder / local_file_path.name
+    The uploaded item is named `local_file_path.name` unless `remote_file_name`
+    is given — needed when the local filename doesn't match what the remote
+    folder's naming convention expects (e.g. `download`'s iMarina fallback,
+    which reads under the fixed local name `iMarina.xlsx` but re-uploads it
+    under the original datetime-encoded filename so `runtime/imarina` stays
+    consistent with the other remote folders' naming)."""
+
+    remote_path = target_folder / (remote_file_name or local_file_path.name)
     logger.info(f"Uploading from local path {local_file_path} to {remote_path}")
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_path}:/content?%40microsoft.graph.conflictBehavior=replace"
     headers = {

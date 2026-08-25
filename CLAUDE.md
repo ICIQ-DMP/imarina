@@ -15,9 +15,10 @@ Five subcommands, wired in `src/imarina_load_researchers/cli.py`: `download`, `b
 no manifest or explicit handoff. They communicate purely through a **filesystem
 naming convention**: fixed folder names and fixed filenames, all relative to
 `PROJECT_DIR = Path.cwd()` (`core/defines.py`). This is the entire contract
-between stages; if you rename `FILENAME_PREFIX`/`DATETIME_FORMAT`
-(`core/defines.py`) or a default filename in `build`'s options, you silently
-break the handoff to the next stage.
+between stages; if you rename `FILENAME_PREFIX`/`FILENAME_IMARINA_SUFFIX`/
+`FILENAME_A3_SUFFIX`/`DATETIME_FORMAT` (`core/defines.py`) or a default
+filename in `build`'s options, you silently break the handoff to the next
+stage.
 
 The **Jenkinsfile is the authoritative spec** for how these commands compose in
 production — it's the only place the end-to-end flow is written down:
@@ -50,8 +51,8 @@ happen, both writing flat into that same folder:
 
 1. `download_files_in_folder_from_sharepoint()` (`core/sharepoint.py`) lists
    **every** `.xlsx` file in a fixed SharePoint library folder
-   (`SHAREPOINT_INPUT_FOLDER`, `core/defines.py` —
-   `_Projects/imarina-load-researchers/input`) and
+   (`SHAREPOINT_INPUT_DIR`, `core/defines.py` —
+   `_Projects/imarina-load-researchers/runtime/input`) and
    downloads all of them as-is. This is how the 6 static "dictionary" files
    arrive (`countries.xlsx`, `Job_Descriptions.xlsx`, `Personal_web.xlsx`,
    `unit_group.xlsx`, `unit_type.xlsx`, `job_description_entity.xlsx`) — they're
@@ -105,9 +106,12 @@ are then looked up under `<dir>` using the same standard names from
 `REQUIRED_INPUT_FILES`); a per-file option always takes precedence over
 `--input-dir` for that one file — see `build_controller`'s
 `_resolve_input_path` helper. Writes one output file to
-`./output/iMarina_upload_<timestamp>.xlsx` (`DATETIME_FORMAT` /
-`FILENAME_PREFIX`/`FILENAME_SUFFIX` in `core/defines.py` define the naming
-scheme other commands later parse back out). None of the 8 input files are
+`./output/<DATETIME_FORMAT>__icl_ag_personal_12539.xlsx` (`OUTPUT_FILENAME`,
+built from `DATETIME_FORMAT` + `FTP_FILENAME` in `core/defines.py`; the
+`FILENAME_PREFIX`/`FILENAME_IMARINA_SUFFIX`/`FILENAME_A3_SUFFIX` constants
+define the naming scheme other commands later parse back out via
+`parse_datetime_from_filename()` — one suffix per file kind, since A3 dumps
+and iMarina files/build output don't share a filename suffix). None of the 8 input files are
 committed to git (`input/.gitignore` excludes everything but itself) — they
 must be supplied fresh by `download` (or manually) on every run.
 
@@ -138,8 +142,9 @@ a metadata-write failure must not turn a successful upload into exit(1).
 
 `commands/publish/cli.py`. If no `--file-path` given: with no `--id` either,
 `select_file_to_upload()` first tries to find the newest file by **parsing
-the timestamp out of the filename** (`iMarina_upload_<DATETIME_FORMAT>.xlsx`),
-falling back to mtime only if none parse, from `./output` (`OUTPUT_DIR`); with
+the timestamp out of the filename** (`<DATETIME_FORMAT>__icl_ag_personal_12539.xlsx`,
+via `parse_datetime_from_filename()` with `FILENAME_IMARINA_SUFFIX`),
+falling back to mtime only if none parse, from `./output` (`LOCAL_OUTPUT_DIR`); with
 `--id`, the file is instead sourced from that request's "iMarina Excel output
 link" field (downloaded via `download_shared_link_content()`) — see
 `_resolve_file_path()`. Uploads over FTP to the iMarina server (`core/ftp.py`).
@@ -166,7 +171,8 @@ try/catch around `upload`: `--status success` after `upload` succeeds,
 `--status error` from the `catch` block. `--id` is the same Operation ID
 passed to `download`, used to look up the MS List item's creator (so the
 email goes to whoever triggered the run) — required, no default.
-`--sharepoint-path` defaults to `DEFAULT_TARGET_FOLDER` (`core/defines.py`),
+`--sharepoint-path` defaults to `DEFAULT_NOTIFY_SHAREPOINT_PATH`
+(`core/defines.py`, itself just `SHAREPOINT_REMOTE_OUTPUT_DIR`),
 the same SharePoint review folder `upload` pushes to, and is only used to
 word the success email body. Prior to this
 command existing, Jenkins ran `core/mail.py` directly as a standalone
@@ -222,8 +228,9 @@ every successful run regardless of how many times it's called for the same
 
 - `src/imarina_load_researchers/cli.py` — command registration only
 - `src/imarina_load_researchers/core/defines.py` — shared constants: `PROJECT_DIR` (=cwd),
-  `INPUT_DIR`/`OUTPUT_DIR`, filename prefix/suffix/datetime format used to
-  round-trip the "latest file" between stages, `MADRID_TZ` (see Dates
+  `LOCAL_INPUT_DIR`/`LOCAL_OUTPUT_DIR` (and their `SHAREPOINT_REMOTE_*`/
+  `SHAREPOINT_LOCAL_*` counterparts), filename prefix/suffix/datetime format
+  used to round-trip the "latest file" between stages, `MADRID_TZ` (see Dates
   below), and every CLI option's `DEFAULT_*` value. This is the single
   source of truth for `PROJECT_DIR` — don't recompute a project root
   elsewhere (e.g. by walking up from `__file__`); import it from here.
@@ -358,7 +365,7 @@ inconsistent with the rest of the codebase. Instead: in
 (metadata only — no default value inside the `typer.Option()` call, and no
 `DEFAULT_*` constant in this file); if the default isn't a trivial literal,
 add a separate `DEFAULT_SOME = ...` constant in `core/defines.py` instead,
-next to whatever it's derived from (`INPUT_DIR`, `NOW`,
+next to whatever it's derived from (`LOCAL_INPUT_DIR`, `NOW`,
 `REQUIRED_INPUT_FILES`, etc.). Reference both in the controller —
 `SomeOpt` from `shared_options`, `DEFAULT_SOME` from `defines`:
 `param: SomeOpt = DEFAULT_SOME`.

@@ -82,6 +82,12 @@ def _fallback_imarina(
     a file in the folder used as an input, not the published-archive folder
     (STEPS.md — the file is copied, not linked, because the commands' source
     of truth is the files present in the folders).
+
+    The local copy is read/written as the fixed name `iMarina.xlsx` (the
+    contract `build` expects), but re-uploaded under its original
+    datetime-encoded name (`remote_file.name`), so files in runtime/imarina
+    stay named consistently with runtime/a3 and runtime/published rather than
+    every fallback copy landing as a same-named `iMarina.xlsx`.
     """
     remote_file = select_latest_remote_file(
         token_manager,
@@ -92,7 +98,11 @@ def _fallback_imarina(
     destination = input_dir / "iMarina.xlsx"
     download_item_content(token_manager, drive_id, remote_file.id, destination)
     copied_item_id = upload_file(
-        token_manager, drive_id, SHAREPOINT_REMOTE_IMARINA_DIR, destination
+        token_manager,
+        drive_id,
+        SHAREPOINT_REMOTE_IMARINA_DIR,
+        destination,
+        remote_file_name=remote_file.name,
     )
     link = create_sharing_link(token_manager, drive_id, copied_item_id)
     update_list_item_fields(str(id_element), {FIELD_IMARINA_EXCEL_INPUT_LINK: link})
