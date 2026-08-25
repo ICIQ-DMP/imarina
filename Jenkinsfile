@@ -58,19 +58,15 @@ pipeline {
                   error "Build has failed: ${e.message}"
               }
           }
-        }
-    }
+       }
+       }
        stage('iMarina upload') {
          steps {
-          script {
+           script {
               try {
                   echo "Upload process"
                   sh """
                       \$IMARINA_CMD upload --id ${params.ID}
-                  """
-                  echo "Sending success email"
-                  sh """
-                      \$IMARINA_CMD notify --id ${params.ID} --status success
                   """
               }
               catch (Exception e) {
@@ -80,9 +76,19 @@ pipeline {
                   """
                   error "Upload has failed: ${e.message}"
               }
-          }
+           }
+         }
        }
-    }
+       stage('iMarina notify') {
+         steps {
+           script {
+              echo "Sending success email"
+              sh """
+                  \$IMARINA_CMD notify --id ${params.ID} --status success
+              """
+           }
+         }
+       }
 
 
     }
