@@ -123,6 +123,8 @@ files there. It specifically checks that the names conform to the specification 
 "Build"
 sections of this document.
 
+If the file name does not conform to the specification, the person who did the last modification will be notified. 
+
 ### Answering the request form
 To start the workflow you must answer the form and provide optionally the link to the A3 database dump and the iMarina
 file upload. 

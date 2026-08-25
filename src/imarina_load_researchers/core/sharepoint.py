@@ -243,13 +243,13 @@ def update_list_item_fields(operation_id: str, fields: dict[str, str]) -> None:
     token_manager = get_token_manager()
     site_id, list_name = _resolve_site_and_list()
 
-    url = (
-        f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{quote(list_name, safe='')}"
-        f"/items/{operation_id}/fields"
-    )
+    url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_name}/items/{operation_id}/fields"
     response = requests.patch(
         url,
-        headers={"Authorization": f"Bearer {token_manager.get_token()}"},
+        headers={
+            "Authorization": f"Bearer {token_manager.get_token()}",
+            "Content-Type": "application/json",
+        },
         json=fields,
         timeout=60,
     )

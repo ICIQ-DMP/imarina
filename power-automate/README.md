@@ -90,11 +90,7 @@ first real export (see "Current status" below).
 - **Action**: check the uploaded file's name against the naming
   specification in STEPS.md's "Preparation" and "Build" sections (the
   `{DATETIME}__listado_personal_A3.xlsx` / `{DATETIME}__icl_ag_personal_12539.xlsx`
-  patterns, or the fixed translation-dictionary filenames). STEPS.md doesn't
-  yet specify the failure behavior (reject the upload? notify someone?
-  just log?) — that's still an open design question, not just a
-  Power-Automate-plumbing one; resolve it in STEPS.md before implementing
-  this flow for real.
+  patterns, or the fixed translation-dictionary filenames). 
 
 ### 2. Request intake
 
@@ -126,10 +122,3 @@ first real export (see "Current status" below).
     flags this as still undecided — pick a Workflow State to land on
     (probably also "Not published") before implementing this branch.
 
-## Current status
-
-No flow has been exported into this directory yet. The three sections above
-are a specification to build from, written from STEPS.md and the code, not a
-description of an existing export. Whoever has Power Platform admin access
-to the ICIQ tenant should do the first `pac solution unpack` per flow and
-replace this note.

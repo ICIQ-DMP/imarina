@@ -19,9 +19,9 @@ from pathlib import Path
 import typer
 
 from imarina_load_researchers.core.defines import (
+    LOCAL_INPUT_DIR,
     REQUIRED_INPUT_FILES,
     SHAREPOINT_INPUT_DIR,
-    SHAREPOINT_LOCAL_INPUT_DIR,
     SHAREPOINT_REMOTE_A3_DIR,
     SHAREPOINT_REMOTE_IMARINA_DIR,
     SHAREPOINT_REMOTE_PUBLISHED_DIR,
@@ -97,7 +97,7 @@ def _fallback_imarina(
 def download_controller(
     ctx: typer.Context,
     id_element: OperationIdOpt,
-    input_dir: DirectoryOpt = SHAREPOINT_LOCAL_INPUT_DIR,
+    input_dir: DirectoryOpt = LOCAL_INPUT_DIR,
 ) -> None:
 
     logger.info(f"Starting download of input files from SharePoint into: {input_dir}")
