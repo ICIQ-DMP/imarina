@@ -281,7 +281,7 @@ class RemoteFile:
 
 
 def select_latest_remote_file(
-    token_manager: TokenManager, drive_id: str, remote_folder: Path
+    token_manager: TokenManager, drive_id: str, remote_folder: Path, suffix: str
 ) -> RemoteFile:
     """List `remote_folder`'s children and pick the latest .xlsx by the
     filename-encoded datetime (STEPS.md: "the last of a group of files will
@@ -306,7 +306,7 @@ def select_latest_remote_file(
 
     dated_files: list[tuple[datetime.datetime, dict[str, Any]]] = []
     for item in excel_files:
-        parsed_dt = parse_datetime_from_filename(item["name"])
+        parsed_dt = parse_datetime_from_filename(item["name"], suffix)
         if parsed_dt is not None:
             dated_files.append((parsed_dt, item))
 

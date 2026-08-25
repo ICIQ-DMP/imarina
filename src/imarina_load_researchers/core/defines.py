@@ -25,6 +25,7 @@ from zoneinfo import ZoneInfo
 MADRID_TZ = ZoneInfo("Europe/Madrid")
 
 DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"
+DATETIME_FORMAT_LENGTH = len("2026-07-17_12-00-00")
 
 date_str = "31/12/2099"
 DATE_FORMAT = "%d/%m/%Y"
@@ -75,12 +76,12 @@ FTP_FILENAME = "icl_ag_personal_12539.xlsx"
 # below) - these must stay in sync with that so select_file_to_upload() can
 # actually parse the datetime back out of real output filenames.
 FILENAME_PREFIX = ""
-FILENAME_SUFFIX = f"__{FTP_FILENAME}"
+FILENAME_IMARINA_SUFFIX = f"__{FTP_FILENAME}"
+FILENAME_A3_SUFFIX = "__listado_personal_A3.xlsx"
 
 FTP_UPLOAD_PATH = f"carga_icolet/{FTP_FILENAME}"
 
 DEFAULT_LOG_PATH = PROJECT_DIR / "logs" / f"{NOW}.log"
-
 
 SHAREPOINT_INPUT_DIR = SHAREPOINT_REMOTE_BASE_DIR / INPUT_DIR_NAME
 
@@ -137,8 +138,7 @@ DEFAULT_DRY_RUN = True
 # None => upload_controller falls back to select_file_to_upload(), which
 # autodetects the latest build output in SHAREPOINT_LOCAL_OUTPUT_DIR.
 DEFAULT_PUBLISHED_FILE_PATH = None
-DEFAULT_TARGET_DIR = LOCAL_OUTPUT_DIR
 
 # --- notify ---
 
-DEFAULT_NOTIFY_SHAREPOINT_PATH = DEFAULT_TARGET_DIR
+DEFAULT_NOTIFY_SHAREPOINT_PATH = SHAREPOINT_REMOTE_OUTPUT_DIR

@@ -19,8 +19,8 @@ from pathlib import Path
 
 from imarina_load_researchers.core.defines import (
     DATETIME_FORMAT,
-    FILENAME_PREFIX,
-    FILENAME_SUFFIX,
+    DATETIME_FORMAT_LENGTH,
+    FILENAME_IMARINA_SUFFIX,
     MADRID_TZ,
 )
 from imarina_load_researchers.core.exceptions import NoExcelFilesFoundError
@@ -29,7 +29,7 @@ from imarina_load_researchers.core.log_utils import get_logger
 logger = get_logger(__name__)
 
 
-def parse_datetime_from_filename(name: str) -> datetime.datetime | None:
+def parse_datetime_from_filename(name: str, suffix: str) -> datetime.datetime | None:
     """Parse the `{DATETIME}__<FTP_FILENAME>`-encoded datetime out of a
     filename, or return None if it doesn't match that shape.
 
@@ -38,13 +38,11 @@ def parse_datetime_from_filename(name: str) -> datetime.datetime | None:
     folder listings) -- both need the exact same "pick the latest by
     filename-encoded datetime" rule (STEPS.md).
     """
-    if not name.startswith(FILENAME_PREFIX) or not name.endswith(FILENAME_SUFFIX):
-        logger.debug(
-            f"File does not start with {FILENAME_PREFIX} or end with {FILENAME_SUFFIX}"
-        )
+    if not name.endswith(suffix):
+        logger.debug(f"File does not end with {suffix}")
         return None
 
-    datetime_part = name[len(FILENAME_PREFIX) : -len(FILENAME_SUFFIX)]
+    datetime_part = name[0:DATETIME_FORMAT_LENGTH]
 
     try:
         # Filenames are stamped using NOW (core/defines.py), which is Madrid time.
@@ -78,7 +76,7 @@ def select_file_to_upload(upload_dir: Path) -> Path:
 
     dated_files: list[tuple[datetime.datetime, Path]] = []
     for file in excel_files:
-        parsed_dt = parse_datetime_from_filename(file.name)
+        parsed_dt = parse_datetime_from_filename(file.name, FILENAME_IMARINA_SUFFIX)
         if parsed_dt is None:
             continue
 

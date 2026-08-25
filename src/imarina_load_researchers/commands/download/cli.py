@@ -19,6 +19,8 @@ from pathlib import Path
 import typer
 
 from imarina_load_researchers.core.defines import (
+    FILENAME_A3_SUFFIX,
+    FILENAME_IMARINA_SUFFIX,
     LOCAL_INPUT_DIR,
     REQUIRED_INPUT_FILES,
     SHAREPOINT_INPUT_DIR,
@@ -61,7 +63,7 @@ def _fallback_a3(
     this fallback reads the latest one from (STEPS.md).
     """
     remote_file = select_latest_remote_file(
-        token_manager, drive_id, SHAREPOINT_REMOTE_A3_DIR
+        token_manager, drive_id, SHAREPOINT_REMOTE_A3_DIR, FILENAME_A3_SUFFIX
     )
     download_item_content(
         token_manager, drive_id, remote_file.id, input_dir / "A3.xlsx"
@@ -82,7 +84,10 @@ def _fallback_imarina(
     of truth is the files present in the folders).
     """
     remote_file = select_latest_remote_file(
-        token_manager, drive_id, SHAREPOINT_REMOTE_PUBLISHED_DIR
+        token_manager,
+        drive_id,
+        SHAREPOINT_REMOTE_PUBLISHED_DIR,
+        FILENAME_IMARINA_SUFFIX,
     )
     destination = input_dir / "iMarina.xlsx"
     download_item_content(token_manager, drive_id, remote_file.id, destination)
