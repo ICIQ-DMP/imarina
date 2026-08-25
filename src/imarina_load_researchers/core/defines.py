@@ -87,7 +87,7 @@ SHAREPOINT_INPUT_DIR = SHAREPOINT_REMOTE_BASE_DIR / INPUT_DIR_NAME
 TRANSLATION_FILES = {
     "countries": "Pais nacimiento _ [A3] to País de Nacimiento [iMarina].xlsx",
     "jobs": "Puesto de trabajo [A3] to Categoría Investigadora Docente [iMarina].xlsx",
-    "personal_web": "Puesto de trabajo [A3] to Web personal [iMarina].xlsx",
+    "personal_web": "Grupo Unidad [A3] to Web personal [iMarina].xlsx",
     "unit_group": "Grupo Unidad [A3] to Entidad (Nivel 1) [iMarina].xlsx",
     "unit_type": "Entidad (Nivel 1) [iMarina] to Tipo de Entidad [iMarina].xlsx",
     "job_description_entity": "Puesto de trabajo [A3] to Entidad (Nivel 1) [iMarina].xlsx",
@@ -116,7 +116,7 @@ DEFAULT_COUNTRIES_DICT = LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["countries"]
 DEFAULT_JOBS_DICT = LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["jobs"]
 DEFAULT_IMARINA_INPUT = LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["imarina"]
 DEFAULT_A3_INPUT = LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["a3"]
-DEFAULT_OUTPUT_PATH = LOCAL_INPUT_DIR / OUTPUT_FILENAME
+DEFAULT_OUTPUT_PATH = LOCAL_OUTPUT_DIR / OUTPUT_FILENAME
 DEFAULT_PERSONAL_WEB_PATH = LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["personal_web"]
 DEFAULT_UNIT_GROUP_PATH = LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["unit_group"]
 DEFAULT_ENTITY_TYPE_PATH = LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["unit_type"]
