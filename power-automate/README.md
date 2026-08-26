@@ -98,9 +98,14 @@ first real export (see "Current status" below).
 - **Trigger**: an item is created or modified in the MS List backing the
   request form (see `core/sharepoint_fields.py`'s field-name docstring for
   the exact field names this flow reads/writes).
-- **Action**: POST to the main Jenkins job's `buildWithParameters` endpoint
-  (see the main `Jenkinsfile`), passing the list item's `ID` field as the
-  `ID` build parameter. This is what starts `download` → `build` → `upload`.
+- **Action**: before posting to Jenkins, update the item's "Workflow State"
+  field to "Preparing (Power Automate)"
+  (`core/sharepoint_fields.py`'s `WorkflowState.PREPARING_POWER_AUTOMATE`) —
+  this is distinct from the "Preparing" state that `download` itself sets
+  once the Jenkins job actually starts running. Then POST to the main
+  Jenkins job's `buildWithParameters` endpoint (see the main `Jenkinsfile`),
+  passing the list item's `ID` field as the `ID` build parameter. This is
+  what starts `download` → `build` → `upload`.
 
 ### 3. Upload review → approval → publish trigger
 
@@ -109,12 +114,19 @@ first real export (see "Current status" below).
   List item (written by `upload --id ...` on success — see
   `commands/upload/cli.py`).
 - **Action**:
+  - Before starting the approval, update the item's "Workflow State" field
+    to "Requested review"
+    (`core/sharepoint_fields.py`'s `WorkflowState.REQUESTED_REVIEW`) — the
+    load file is already built at this point, and this flow is about to ask
+    the requester for permission to publish it.
   - Start a Microsoft Approval, assigned to the item's `Created By` (the
     requester), with the output link and a success message.
-  - **On approval**: POST to the *second* Jenkins job's
-    `buildWithParameters` endpoint (`Jenkinsfile.publish` — see CLAUDE.md's
-    "Publish pipeline" section for the job configuration and trigger URL),
-    passing the same `ID`.
+  - **On approval**: update the item's "Workflow State" field to "Approved
+    publication" (`core/sharepoint_fields.py`'s
+    `WorkflowState.APPROVED_PUBLICATION`), then POST to the *second* Jenkins
+    job's `buildWithParameters` endpoint (`Jenkinsfile.publish` — see
+    CLAUDE.md's "Publish pipeline" section for the job configuration and
+    trigger URL), passing the same `ID`.
   - **On rejection**: update the item's "Workflow State" field to
     "Not published" (`core/sharepoint_fields.py`'s `WorkflowState.NOT_PUBLISHED`)
     — no Jenkins job runs in this case.

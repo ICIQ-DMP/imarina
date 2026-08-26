@@ -80,8 +80,8 @@ command with the latest iMarina published file.
 - A3 Excel input link: Link to the A3 Excel file that has been used as input. Filled by the form or the `download` 
 command with the latest A3 dump. 
 - Workflow State: State of the workflow. Updated by the Power Automate workflows and with the different commands 
-of the process. Possible values: "New", "Preparing", "Building", "Uploading", "Requested review", "Not published",
-"Publishing", "Published" and "Error".
+of the process. Possible values: "New", "Preparing (Power Automate)", "Preparing", "Building", "Uploading", 
+"Requested review", "Not published", "Approved publication", "Publishing", "Published" and "Error".
 - ID: Unique identifier for this request. Filled by answering the form automatically. 
 - Created By: Field of type person that contains who requested this iMarina researcher load. Filled by answering the 
 form automatically. 
@@ -132,7 +132,9 @@ file upload.
 When you end up clicking the submit button on the form, the answers are recorded into a Microsoft List with a unique ID.
 The "Workflow State" field of the new item defaults to "New" on creation.
 The modification or creation of this element in the Microsoft List triggers the execution of a Power Automate workflow.
-This Power Automate Workflow sends a request into a Jenkins server, providing the ID of the request to the service. 
+Before this Power Automate Workflow sends its request into the Jenkins server, it updates the field "Workflow State" 
+of the request to "Preparing (Power Automate)". It then sends the request into the Jenkins server, providing the ID 
+of the request to the service.
 
 This request into the Jenkins server triggers the execution of a workflow. This part is not exposed to the user.
 
@@ -209,17 +211,18 @@ This step:
 `{DATETIME}__icl_ag_personal_12539.xlsx` and uploads it into Sharepoint 
 `_Projects/imarina-load-researchers/runtime/output` or the specified file via argument.
 - If an ID is supplied it generates the link to the uploaded file and updates the field "iMarina Excel output link".
-- Updating the file link in the Microsoft List triggers the execution of a Power Automate workflow that notifies the 
-requester of the 
-success via triggering an 
-approval request using Microsoft Approvals. Once this approval request has been sent, the field "Workflow State" is 
-updated to "Requested review". The approval sends the link to the output file, informs of the success and
-asks if the requester wants to publish that into iMarina servers. If the user says yes, an HTTP request is made against
-a Jenkins server that executes the last `publish` step.
+- Updating the file link in the Microsoft List triggers the execution of a second Power Automate workflow. At this 
+point the load file has already been built, and this workflow is about to ask the requester for permission to publish 
+it, so just before it starts the approval request it updates the field "Workflow State" to "Requested review". It then 
+triggers an approval request using Microsoft Approvals, notifying the requester of the success. The approval sends the 
+link to the output file, informs of the success and asks if the requester wants to publish that into iMarina servers. 
+If the user says yes, an HTTP request is made against a Jenkins server that executes the last `publish` step.
 
 The approval will sit there indefinitely until it is accepted or rejected. Microsoft Approvals may define a timeout for
 requests though. If the requester rejects the approval, the field "Workflow State" is updated to "Not published" and 
-the workflow ends. If the requester accepts, the `publish` step described below is triggered.
+the workflow ends. If the requester accepts, this same Power Automate workflow immediately updates the field 
+"Workflow State" to "Approved publication" — before making the HTTP request described above — and then the `publish` 
+step described below is triggered.
 
 
 

@@ -132,10 +132,14 @@ the file a human reviews before deciding to `publish`.
 Optional `--id`: if given, `upload` writes the request's Workflow State to
 "Uploading" before the push, then after a successful upload generates a
 sharing link for the uploaded item and writes it to the "iMarina Excel
-output link" field together with Workflow State "Requested review" — this is
-what's supposed to be the trigger for the Microsoft Approval that asks the
+output link" field — this is what's supposed to be the trigger for the
+second Power Automate workflow that starts the Microsoft Approval asking the
 requester whether to `publish` (STEPS.md; the actual Power Automate wiring
-that watches this field is outside this repo). Both writes are best-effort —
+that watches this field is outside this repo). `upload` does not itself set
+Workflow State to "Requested review": that write belongs to the second
+Power Automate workflow, made just before it starts the approval, since at
+that point the load file is already built and the workflow is about to ask
+for permission to publish it. Both `upload` writes above are best-effort —
 a metadata-write failure must not turn a successful upload into exit(1).
 
 ### `publish` — the real, human-gated production push
@@ -195,10 +199,12 @@ file was published instead.
 ## Publish pipeline
 
 The human-gated FTP push described in STEPS.md's "Upload"/"Publish" sections
-— `upload` writes an output link + Workflow State "Requested review" →
-Power Automate starts a Microsoft Approval → on approval, an HTTP call
-triggers `publish` — is split across three things, only two of which are in
-this repo:
+— `upload` writes an output link → the second Power Automate workflow sets
+Workflow State to "Requested review" just before it starts a Microsoft
+Approval asking the requester whether to publish → on approval, that same
+workflow sets Workflow State to "Approved publication" and then makes an
+HTTP call that triggers `publish` — is split across three things, only two
+of which are in this repo:
 
 - **`Jenkinsfile.publish`** (repo root, alongside the main `Jenkinsfile`) —
   a second, separate Jenkins pipeline: install deps, run
@@ -240,7 +246,7 @@ every successful run regardless of how many times it's called for the same
   sharing-link creation (`create_sharing_link`), and remote "pick the latest
   file" (`select_latest_remote_file`, backing `download`'s fallbacks).
 - `src/imarina_load_researchers/core/sharepoint_fields.py` — the MS List schema:
-  `WorkflowState(StrEnum)` (the 9 values from STEPS.md's state machine) and
+  `WorkflowState(StrEnum)` (the 11 values from STEPS.md's state machine) and
   the field-name constants every read/write in `sharepoint.py` goes through.
   All five are confirmed against production. As of 2026-08-25 the four link
   fields (`FIELD_A3_EXCEL_INPUT_LINK`/`FIELD_IMARINA_EXCEL_INPUT_LINK`/

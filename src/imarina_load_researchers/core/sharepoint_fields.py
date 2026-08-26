@@ -75,11 +75,13 @@ class WorkflowState(StrEnum):
     """
 
     NEW = "New"
+    PREPARING_POWER_AUTOMATE = "Preparing (Power Automate)"
     PREPARING = "Preparing"
     BUILDING = "Building"
     UPLOADING = "Uploading"
     REQUESTED_REVIEW = "Requested review"
     NOT_PUBLISHED = "Not published"
+    APPROVED_PUBLICATION = "Approved publication"
     PUBLISHING = "Publishing"
     PUBLISHED = "Published"
     ERROR = "Error"
