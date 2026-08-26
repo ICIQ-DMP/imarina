@@ -77,7 +77,12 @@ def _read_credential(name: str) -> str:
 
 
 class _VaultClient:
+    """A minimal HashiCorp Vault client for this app's KV v2 secrets,
+    handling authentication and per-subpath response caching."""
+
     def __init__(self) -> None:
+        """Sets up the HTTP session, configuring TLS verification from
+        `VAULT_CACERT`/`VAULT_SKIP_VERIFY` if either credential is available."""
         self._token: str | None = None
         self._cache: dict[str, dict[str, Any]] = {}  # subpath -> {field: value}
 
@@ -95,6 +100,15 @@ class _VaultClient:
                 pass  # Use the default CA bundle
 
     def _authenticate(self) -> None:
+        """
+        Obtains a Vault token, preferring a pre-issued `VAULT_TOKEN` and
+        falling back to AppRole login (`VAULT_ROLE_ID` + `VAULT_SECRET_ID`).
+
+        Raises:
+            KeyError: If neither `VAULT_TOKEN` nor the AppRole credentials
+                (including `VAULT_ADDR`) can be resolved.
+            requests.HTTPError: If the AppRole login request fails.
+        """
         # 1. Try a pre-issued Vault token.
         try:
             self._token = _read_credential("VAULT_TOKEN")
@@ -116,6 +130,21 @@ class _VaultClient:
         self._token = resp.json()["auth"]["client_token"]
 
     def _fetch_subpath(self, subpath: str) -> dict[str, Any]:
+        """
+        Reads a KV v2 secret's data at `subpath`, authenticating if needed.
+
+        Results are cached per subpath for the lifetime of this client, so a
+        secret with multiple fields is only ever fetched from Vault once.
+
+        Args:
+            subpath (str): Path under `_VAULT_BASE_PATH` to read.
+
+        Returns:
+            dict[str, Any]: The secret's `{field: value}` data.
+
+        Raises:
+            requests.HTTPError: If the Vault request fails.
+        """
         if subpath in self._cache:
             return self._cache[subpath]
 
@@ -135,6 +164,20 @@ class _VaultClient:
         return data
 
     def read_secret(self, secret_name: SecretName) -> str:
+        """
+        Resolves an app-level `SecretName` to its value in Vault.
+
+        Args:
+            secret_name (SecretName): The secret to resolve.
+
+        Returns:
+            str: The secret's value.
+
+        Raises:
+            KeyError: If `secret_name` has no `_SECRET_MAP` entry, or the
+                mapped field is absent from the Vault secret's data.
+            ValueError: If the field exists but is empty.
+        """
         if secret_name not in _SECRET_MAP:
             raise VaultMappingMissingError(secret_name)
         subpath, field = _SECRET_MAP[secret_name]
@@ -149,6 +192,12 @@ class _VaultClient:
 
 @lru_cache(maxsize=1)
 def _get_client() -> _VaultClient:
+    """
+    Returns the process-wide `_VaultClient` singleton, creating it on first call.
+
+    Returns:
+        _VaultClient: The cached client instance.
+    """
     return _VaultClient()
 
 

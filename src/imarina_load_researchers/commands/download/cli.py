@@ -114,7 +114,29 @@ def download_controller(
     id_element: OperationIdOpt,
     input_dir: DirectoryOpt = LOCAL_INPUT_DIR,
 ) -> None:
+    """
+    Implements the `download` CLI command: populates `input_dir` with every
+    file `build` expects.
 
+    Bulk-syncs the static translation-dictionary files from SharePoint, then
+    downloads the A3 dump and previous iMarina upload from the MS List
+    item's sharing links, falling back to the latest file in the
+    corresponding SharePoint folder (`_fallback_a3`/`_fallback_imarina`) for
+    whichever link is missing. Exits with code 1 if any of
+    `REQUIRED_INPUT_FILES` is still missing afterward.
+
+    Args:
+        ctx (typer.Context): Typer's invocation context (unused directly;
+            required so Typer's `--help` machinery can populate it).
+        id_element (OperationIdOpt): The request's Operation ID; used to
+            look up its input links and to keep its Workflow State field
+            in sync (best-effort).
+        input_dir (DirectoryOpt): Local directory to populate.
+
+    Raises:
+        typer.Exit: With code 1 if any required input file is still missing
+            once every download/fallback attempt has run.
+    """
     logger.info(f"Starting download of input files from SharePoint into: {input_dir}")
 
     try:

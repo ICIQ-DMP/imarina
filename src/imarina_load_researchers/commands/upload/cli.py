@@ -51,6 +51,30 @@ def upload_controller(
     target_folder: TargetFolderOpt = SHAREPOINT_REMOTE_OUTPUT_DIR,
     id_element: IdOpt = None,
 ) -> None:
+    """
+    Implements the `upload` CLI command: pushes the built load file to
+    SharePoint for human review.
+
+    Defaults `file_path` to the most-recently-modified file in `./output` if
+    not given. If `id_element` is supplied, also writes the request's
+    Workflow State to "Uploading" before the push (best-effort), and after a
+    successful upload writes a sharing link to the "iMarina Excel output
+    link" field (best-effort) — the trigger for the second Power Automate
+    workflow that starts the Microsoft Approval requesting permission to
+    publish (see CLAUDE.md's "Publish pipeline" section).
+
+    Args:
+        ctx (typer.Context): Typer's invocation context (unused directly;
+            required so Typer's `--help` machinery can populate it).
+        file_path (UploadFilePathOpt): The file to upload; autodetected from
+            `./output` if not given.
+        target_folder (TargetFolderOpt): SharePoint review folder to upload into.
+        id_element (IdOpt): The request's Operation ID, if any, used to keep
+            its Workflow State and output-link fields in sync.
+
+    Raises:
+        typer.Exit: With code 1 if the upload itself fails.
+    """
     logger.info("Uploading the latest Excel file to SharePoint...")
 
     if file_path is None:

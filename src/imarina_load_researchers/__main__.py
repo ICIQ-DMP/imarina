@@ -18,6 +18,7 @@ from .cli import app
 
 
 def main() -> None:
+    """Entry point for `python -m imarina_load_researchers`; runs the Typer CLI."""
     app()
 
 

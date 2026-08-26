@@ -36,6 +36,19 @@ logger = get_logger(__name__)
 
 
 def normalized_dni(dni: str) -> str:
+    """
+    Normalizes a DNI/NIE/NIF into a comparable canonical form.
+
+    Strips everything but letters and digits, uppercases the result, and
+    drops leading zeros, so equivalent DNIs written with different
+    formatting (dashes, spaces, leading zeros) compare equal.
+
+    Args:
+        dni (str): The raw DNI/NIE/NIF value.
+
+    Returns:
+        str: The normalized value, or `""` if `dni` is falsy.
+    """
     if not dni:
         return ""
     dni = re.sub(r"[^0-9A-Za-z]", "", str(dni)).upper()

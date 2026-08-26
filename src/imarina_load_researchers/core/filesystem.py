@@ -58,6 +58,20 @@ def read_env_var(var_name: str) -> str:
 
 
 def read_file_content(file_path: str | Path) -> str:
+    """
+    Reads a file and returns its content, rejecting an empty result.
+
+    Args:
+        file_path (str | Path): Path to the file.
+
+    Returns:
+        str: The content of the file.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        PermissionError: If the file cannot be read due to permission issues.
+        ValueError: If the file exists but is empty.
+    """
     content = read_file(file_path)
 
     if not content:
@@ -96,6 +110,16 @@ def read_file(file_path: str | Path) -> str:
 
 
 def ensure_gitignore(directory: str | Path) -> None:
+    """
+    Writes a `.gitignore` into `directory` that excludes everything but itself.
+
+    Used for local directories (like `input/`) that hold fresh, per-run
+    files that must never be committed, while still keeping the directory
+    itself tracked in git.
+
+    Args:
+        directory (str | Path): Directory to write the `.gitignore` into.
+    """
     # Ensure existence of .gitignore
     gitignore_path = Path(directory) / ".gitignore"
     gitignore_content = "*\n!.gitignore\n"

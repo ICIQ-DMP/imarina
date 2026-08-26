@@ -67,6 +67,16 @@ def get_list_id(token_manager: TokenManager, site_id: str, list_name: str) -> st
 
 
 def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any:
+    """Return the GUID of a SharePoint site given its domain and site path.
+
+    Args:
+        token_manager: Authenticated token manager.
+        domain: SharePoint tenant domain (e.g. `contoso.sharepoint.com`).
+        site_name: The site's path segment, as used in its URL.
+
+    Returns:
+        The site's Graph API GUID string.
+    """
     url = f"https://graph.microsoft.com/v1.0/sites/{domain}:/sites/{site_name}"  # Obtain the ID of site from SharePoint
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
     response = requests.get(url, headers=headers, timeout=60)
@@ -162,6 +172,24 @@ def download_shared_link_content(
 def download_files_in_folder_from_sharepoint(
     drive_id: str, local_destiny_folder: Path, remote_origin_folder: Path
 ) -> Any:
+    """Downloads every file in a SharePoint folder into a local folder, flat.
+
+    This is `download`'s bulk-sync mechanism for the static translation-
+    dictionary files (`SHAREPOINT_INPUT_DIR`, see CLAUDE.md's `download`
+    section) — it lists and downloads all `.xlsx` files as-is, unconditionally.
+    A per-file download failure is logged and skipped rather than aborting
+    the whole sync.
+
+    Args:
+        drive_id: SharePoint drive identifier the folders live under.
+        local_destiny_folder: Local folder to download files into (created
+            if it doesn't exist).
+        remote_origin_folder: Remote SharePoint folder path to list and
+            download files from.
+
+    Raises:
+        SharePointError: If listing the remote folder's children fails.
+    """
     token_manager = get_token_manager()
 
     local_destiny_folder.mkdir(parents=True, exist_ok=True)
@@ -225,6 +253,16 @@ def _get_list_item_fields(operation_id: str) -> dict[str, Any]:
 
 
 def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
+    """Reads an MS List item's A3/iMarina input sharing links, by Operation ID.
+
+    Args:
+        operation_id: The MS List item's ID (the workflow's Operation ID).
+
+    Returns:
+        A `(a3_link, imarina_link)` tuple; either may be `None` if that
+        field isn't set (both are optional per STEPS.md, and `download`
+        falls back to selecting the latest remote file when they are).
+    """
     fields = _get_list_item_fields(operation_id)
 
     return fields.get(FIELD_A3_EXCEL_INPUT_LINK), fields.get(
@@ -284,6 +322,9 @@ def create_sharing_link(
 
 @dataclass(frozen=True)
 class RemoteFile:
+    """A SharePoint driveItem's id and name, as selected by
+    `select_latest_remote_file`."""
+
     id: str
     name: str
 

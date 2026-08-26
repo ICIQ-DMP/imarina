@@ -49,9 +49,25 @@ class LogLevel(StrEnum):
 
     @classmethod
     def get_default_log_level(cls) -> LogLevel:
+        """
+        Returns the log level used when none is configured.
+
+        Returns:
+            LogLevel: `LogLevel.INFO`.
+        """
         return LogLevel.INFO
 
     def to_logging_level(self) -> int:
+        """
+        Converts this logical `LogLevel` into a stdlib `logging` level number.
+
+        `TRACE` maps to `0` (below `logging.DEBUG`, see `core/log_utils.py`'s
+        custom TRACE level) and `QUIET` maps to `logging.CRITICAL + 10`, so
+        it suppresses even CRITICAL records.
+
+        Returns:
+            int: The equivalent stdlib `logging` level.
+        """
         r = logging.INFO
         if self is LogLevel.TRACE:
             r = 0

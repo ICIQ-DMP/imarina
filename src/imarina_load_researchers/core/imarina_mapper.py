@@ -67,6 +67,15 @@ class ImarinaField(Enum):
 
 
 def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel) -> Any:
+    """
+    Writes a `Researcher`'s fields into row 0 of a single-row `Excel`, using
+    the iMarina column names.
+
+    Args:
+        data (Researcher): The researcher whose fields are written out.
+        empty_output_row (Excel): A one-row `Excel` (built from a copy of the
+            output template) whose row 0 is filled in place.
+    """
     empty_output_row.dataframe.at[0, ImarinaField.DNI.value] = data.dni
     empty_output_row.dataframe.at[0, ImarinaField.EMAIL.value] = data.email
     empty_output_row.dataframe.at[0, ImarinaField.ORCID.value] = data.orcid
@@ -127,7 +136,21 @@ def unparse_researcher_to_imarina_row(data: Researcher, empty_output_row: Excel)
 
 # parse the data from iMarina
 def parse_imarina_row_data(row: pd.Series) -> Researcher:
+    """
+    Converts one row of the previous iMarina load into a `Researcher`.
 
+    Unlike `a3_mapper.parse_a3_row_data`, this reads an already-iMarina-format
+    row, so no dictionary translation is applied - values are read, typed and
+    normalized (dates sanitized, numeric IDs stringified, names normalized)
+    but not translated.
+
+    Args:
+        row (pd.Series): A row from the previous iMarina load's dataframe,
+            indexed by `ImarinaField.value` column names.
+
+    Returns:
+        Researcher: The researcher parsed from this row.
+    """
     entity_type_val = get_str_val(row, ImarinaField.ENTITY_TYPE.value)
     entity_web_val = get_str_val(row, ImarinaField.ENTITY_WEB.value)
     entity_country_val = get_str_val(row, ImarinaField.ENTITY_COUNTRY.value)
@@ -202,6 +225,18 @@ def parse_imarina_row_data(row: pd.Series) -> Researcher:
 
 
 def append_researchers_to_output_data(researchers: list[Any], output_data: Any) -> None:
+    """
+    Appends one output row per researcher onto the output `Excel`, in place.
+
+    Builds a single empty (all-`None`) template row from `output_data`'s own
+    columns, then for each researcher fills a fresh copy of that row via
+    `unparse_researcher_to_imarina_row` and concatenates it onto `output_data`.
+
+    Args:
+        researchers (list[Any]): The `Researcher`s to append, in order.
+        output_data (Any): The output `Excel` (already carrying the iMarina
+            column headers) that rows are appended to, in place.
+    """
     empty_row_output_data = output_data.__copy__()
     empty_row_output_data.empty()
     empty_row_output_data.dataframe.loc[0] = [None] * len(
