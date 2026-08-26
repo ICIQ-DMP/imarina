@@ -91,10 +91,7 @@ def upload_controller(
             link = create_sharing_link(token_manager, drive_id, item_id)
             update_list_item_fields(
                 str(id_element),
-                {
-                    FIELD_IMARINA_EXCEL_OUTPUT_LINK: link,
-                    FIELD_WORKFLOW_STATE: WorkflowState.REQUESTED_REVIEW,
-                },
+                {FIELD_IMARINA_EXCEL_OUTPUT_LINK: link},
             )
         except Exception:
             # Best-effort: the upload itself already succeeded above, a
