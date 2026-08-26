@@ -27,7 +27,7 @@ PYTHON     := $(VENV_BIN)/python
 PIP        := $(VENV_BIN)/pip
 
 PKG_NAME   := imarina_load_researchers
-DOCKER_IMAGE := mariopique/imarina-load
+DOCKER_IMAGE := aleixmt/imarina-load-researchers
 
 DEV_STAMP := $(VENV_DIR)/.dev-installed
 

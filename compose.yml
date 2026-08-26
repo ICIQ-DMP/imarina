@@ -1,10 +1,9 @@
 services:
   app:
-    image: mariopique/imarina-load:latest
+    image: aleixmt/imarina-load-researchers:latest
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: iMarina_docker
     user: "${UID:-1002}:${GID:-1002}"  # Make the container run as the user 1000:1000 or load values from UID/GID
     volumes:
     - ./input:/app/input
@@ -29,7 +28,7 @@ services:
 
   onedrive:
    image: docker.io/driveone/onedrive:edge
-   container_name: onedrive
+   container_name: onedrive_imarina_load_researchers
    userns_mode: keep-id
    entrypoint: ["/entrypoint-wrapper.sh"]
    volumes:

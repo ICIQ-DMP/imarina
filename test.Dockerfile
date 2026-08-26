@@ -1,4 +1,4 @@
-FROM mariopique/imarina-load:latest
+FROM aleixmt/imarina-load-researchers:latest
 
 COPY ./tests /app
 
