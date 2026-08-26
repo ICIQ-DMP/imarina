@@ -60,7 +60,8 @@ def _fallback_a3(
 
     No copy step is needed here (unlike the iMarina fallback below):
     runtime/a3 is already both where A3 dumps are manually uploaded and where
-    this fallback reads the latest one from (STEPS.md).
+    this fallback reads the latest one from (see CLAUDE.md's "Where the raw
+    inputs come from" section).
     """
     remote_file = select_latest_remote_file(
         token_manager, drive_id, SHAREPOINT_REMOTE_A3_DIR, FILENAME_A3_SUFFIX
@@ -80,8 +81,8 @@ def _fallback_imarina(
     runtime/published, and re-upload that same local copy into
     runtime/imarina so the "iMarina Excel input link" field always points at
     a file in the folder used as an input, not the published-archive folder
-    (STEPS.md — the file is copied, not linked, because the commands' source
-    of truth is the files present in the folders).
+    (see CLAUDE.md's `download` section — the file is copied, not linked,
+    because the commands' source of truth is the files present in the folders).
 
     The local copy is read/written as the fixed name `iMarina.xlsx` (the
     contract `build` expects), but re-uploaded under its original

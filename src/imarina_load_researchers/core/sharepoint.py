@@ -260,8 +260,9 @@ def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
 
     Returns:
         A `(a3_link, imarina_link)` tuple; either may be `None` if that
-        field isn't set (both are optional per STEPS.md, and `download`
-        falls back to selecting the latest remote file when they are).
+        field isn't set (both are optional per CLAUDE.md's "Where the raw
+        inputs come from" section, and `download` falls back to selecting
+        the latest remote file when they are).
     """
     fields = _get_list_item_fields(operation_id)
 
@@ -273,7 +274,8 @@ def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
 def get_list_item_link_field(operation_id: str, field_name: str) -> str | None:
     """Read a single Text-type link field off an MS List item, or None if
     that field isn't set. Used by `publish` to source its file from the
-    request's output-link field when given an ID (STEPS.md)."""
+    request's output-link field when given an ID (see CLAUDE.md's `publish`
+    section)."""
     return cast(str | None, _get_list_item_fields(operation_id).get(field_name))
 
 
@@ -305,7 +307,7 @@ def create_sharing_link(
 ) -> str:
     """Create an organization-scoped, view-only sharing link for a SharePoint
     driveItem. Scope is deliberately "organization", not "anonymous" -- these
-    links point at personnel data (STEPS.md's GDPR section)."""
+    links point at personnel data (see CLAUDE.md's "GDPR implications" section)."""
     url = (
         f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{item_id}/createLink"
     )
@@ -333,14 +335,14 @@ def select_latest_remote_file(
     token_manager: TokenManager, drive_id: str, remote_folder: Path, suffix: str
 ) -> RemoteFile:
     """List `remote_folder`'s children and pick the latest .xlsx by the
-    filename-encoded datetime (STEPS.md: "the last of a group of files will
-    always be deduced from the name of the file"). Remote counterpart of
-    `select_file_to_upload` (core/file_select.py), which does the same thing
-    against local files -- unlike that function, there is no modification-time
-    fallback here: STEPS.md's rule for remote folders is filename-datetime
-    only, and a SharePoint item's `lastModifiedDateTime` doesn't carry the
-    same "file was produced at" meaning local mtime does for the local
-    fallback.
+    filename-encoded datetime (CLAUDE.md's "What this does" section: "the
+    'latest' of a group of files is always deduced from the file's name").
+    Remote counterpart of `select_file_to_upload` (core/file_select.py),
+    which does the same thing against local files -- unlike that function,
+    there is no modification-time fallback here: the rule for remote folders
+    is filename-datetime only, and a SharePoint item's
+    `lastModifiedDateTime` doesn't carry the same "file was produced at"
+    meaning local mtime does for the local fallback.
     """
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_folder}:/children"
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}

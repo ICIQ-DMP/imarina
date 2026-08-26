@@ -96,8 +96,8 @@ def build_controller(  # noqa: PLR0913, PLR0917
     (REQUIRED_INPUT_FILES); otherwise it falls back to ./input, as before.
 
     `id_element`, if given, is used for nothing other than updating the
-    request's Workflow State field to "Building" (STEPS.md) — it plays no
-    part in resolving input/output files.
+    request's Workflow State field to "Building" (see CLAUDE.md's "Microsoft
+    List schema" section) — it plays no part in resolving input/output files.
     """
     if id_element is not None:
         try:
