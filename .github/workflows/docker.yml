@@ -60,4 +60,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/imarina-load:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/imarina-load-researchers:latest
