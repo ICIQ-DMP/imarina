@@ -404,6 +404,16 @@ archives to `runtime/published` and sets Workflow State to "Published" on
 every successful run regardless of how many times it's called for the same
 `ID`.
 
+Because `publish --id` sources its file by re-downloading whatever currently
+sits behind the "iMarina Excel output link" (see "`publish`" above), not a
+snapshot taken when `upload` first wrote that field, the reviewer is free to
+open the SharePoint file during the review window and correct errors in
+place before approving — those corrections are what gets published, with no
+separate resubmission step. This is intentional and is the documented
+behavior on the "review" step of
+`docs/docs/how-to/request-an-imarina-load.md`: approving after editing the
+file publishes the edited version; only rejecting discards it.
+
 The Microsoft Approval itself sits waiting indefinitely until the requester
 accepts or rejects it, but Microsoft Approvals can optionally be configured
 with a timeout. What Workflow State a timed-out approval should land on is
