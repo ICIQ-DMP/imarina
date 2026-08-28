@@ -32,6 +32,9 @@ logger = get_logger(__name__)
 
 
 class TokenManager:
+    """Caches and transparently refreshes a Graph API app-only access token
+    for a single Azure AD app registration."""
+
     def __init__(
         self,
         tenant_id: str,
@@ -39,6 +42,13 @@ class TokenManager:
         client_secret: str,
         scope: str = "https://graph.microsoft.com/.default",
     ) -> None:
+        """
+        Args:
+            tenant_id (str): Azure AD tenant ID.
+            client_id (str): App registration's client ID.
+            client_secret (str): App registration's client secret.
+            scope (str): OAuth2 scope to request the token for.
+        """
         self.token_url = (
             f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
         )
@@ -49,6 +59,15 @@ class TokenManager:
         self.expires_at: float = 0
 
     def get_token(self) -> str:
+        """
+        Returns a valid access token, refreshing it first if needed.
+
+        Returns:
+            str: A valid bearer access token.
+
+        Raises:
+            TokenNotSetError: If a refresh completed without setting a token.
+        """
         # return a valid token and if the token has expired or is about to expire , request a new token.
         if (
             self.access_token is None or time.time() >= self.expires_at - 300
@@ -59,6 +78,12 @@ class TokenManager:
         return self.access_token
 
     def _refresh_token(self) -> None:
+        """
+        Requests a fresh access token from Azure AD and stores it.
+
+        Raises:
+            TokenRequestError: If the token request fails.
+        """
         # request a new token for AZURE AD
         token_data = {
             "grant_type": "client_credentials",
@@ -78,6 +103,16 @@ class TokenManager:
 
 
 def _create_token_manager() -> TokenManager:
+    """
+    Builds a `TokenManager` from the app's Azure AD secrets.
+
+    Returns:
+        TokenManager: A new, un-refreshed `TokenManager`.
+
+    Raises:
+        MissingCredentialsError: If TENANT_ID, CLIENT_ID or CLIENT_SECRET
+            can't be resolved via `read_secret`.
+    """
     # read the secrets and create a unique instance of TokenManager.
     try:
         tenant_id = read_secret(SecretName.TENANT_ID)
@@ -92,5 +127,11 @@ def _create_token_manager() -> TokenManager:
 
 @functools.cache
 def get_token_manager() -> TokenManager:
+    """
+    Returns the process-wide `TokenManager` singleton, creating it on first call.
+
+    Returns:
+        TokenManager: The cached `TokenManager` instance.
+    """
     manager = _create_token_manager()
     return manager

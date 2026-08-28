@@ -54,7 +54,7 @@ logger = get_logger(__name__)
 
 
 def _resolve_file_path(file_path: Path | None, id_element: int | None) -> Path:
-    """Resolve publish's input file (STEPS.md):
+    """Resolve publish's input file (see CLAUDE.md's `publish` section):
 
     - No path, no ID: autodetect the latest local build output, as before.
     - No path, with an ID: source the file from that request's "iMarina
@@ -86,7 +86,8 @@ def _resolve_file_path(file_path: Path | None, id_element: int | None) -> Path:
 def _archive_published_file(file_path: Path, id_element: int | None) -> None:
     """After a successful (non-dry-run) publish, archive the file to
     runtime/published unconditionally -- it's what the next `download`'s
-    iMarina fallback reads from (STEPS.md) -- and, if an ID was given, write
+    iMarina fallback reads from (see CLAUDE.md's "Where the raw inputs come
+    from" section) -- and, if an ID was given, write
     back the published link and Workflow State. Every step here is
     best-effort: the publish itself already succeeded by this point.
     """
@@ -132,9 +133,10 @@ def publish_controller(
 
     If `id_element` is given and `file_path` is not, the file to publish is
     instead sourced from that request's "iMarina Excel output link" field
-    (STEPS.md). Publishing an explicit `file_path` with no `id_element` keeps
-    no record of the publish on any MS List request, which STEPS.md flags as
-    something that can cause problems -- a warning is shown in that case.
+    (see CLAUDE.md's `publish` section). Publishing an explicit `file_path`
+    with no `id_element` keeps no record of the publish on any MS List
+    request, which CLAUDE.md flags as something that can cause problems --
+    a warning is shown in that case.
     """
 
     file_path = _resolve_file_path(file_path, id_element)

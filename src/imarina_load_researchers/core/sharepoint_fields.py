@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Microsoft List schema for the request-tracking list backing this workflow
-(field names and the "Workflow State" state machine), per STEPS.md.
+(field names and the "Workflow State" state machine), per CLAUDE.md's
+"Microsoft List schema" section.
 
 All five internal Graph API field names below are confirmed against
 production via a Graph GET (`.../lists/{list}/columns`).
@@ -66,7 +67,8 @@ FIELD_WORKFLOW_STATE = "Estat_x0028_Workflow_x0029_"
 
 
 class WorkflowState(StrEnum):
-    """Values of the "Workflow State" MS List field, per STEPS.md.
+    """Values of the "Workflow State" MS List field, per CLAUDE.md's
+    "Microsoft List schema" section.
 
     Must be StrEnum, not `(str, Enum)`: these values are f-string-interpolated
     into JSON PATCH bodies sent to Graph, and only StrEnum makes
@@ -75,11 +77,13 @@ class WorkflowState(StrEnum):
     """
 
     NEW = "New"
+    PREPARING_POWER_AUTOMATE = "Preparing (Power Automate)"
     PREPARING = "Preparing"
     BUILDING = "Building"
     UPLOADING = "Uploading"
     REQUESTED_REVIEW = "Requested review"
     NOT_PUBLISHED = "Not published"
+    APPROVED_PUBLICATION = "Approved publication"
     PUBLISHING = "Publishing"
     PUBLISHED = "Published"
     ERROR = "Error"

@@ -30,7 +30,18 @@ MESSAGE_FORMAT = "%(asctime)s | %(name)s | %(message)s"
 
 
 class ExtendedLogger(logging.Logger):
+    """A `logging.Logger` with an added `trace()` method, for the custom
+    TRACE level (`TRACE_LEVEL_NUM`, below `DEBUG`)."""
+
     def trace(self: logging.Logger, message: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Logs `message` at the custom TRACE level (below `DEBUG`).
+
+        Args:
+            message (str): The message to log, with `%`-style placeholders.
+            *args (Any): Values for `message`'s `%`-style placeholders.
+            **kwargs (Any): Forwarded to the underlying `Logger._log` call.
+        """
         self._log(TRACE_LEVEL_NUM, message, args, **kwargs)
 
 
@@ -39,11 +50,28 @@ logging.setLoggerClass(ExtendedLogger)
 
 
 class SecretsFilter(logging.Filter):
+    """A `logging.Filter` that redacts known secret values out of log
+    records before they reach a handler."""
+
     def __init__(self, secrets: list[str] | None):
+        """
+        Args:
+            secrets (list[str] | None): Secret values to redact from every
+                log record's message, or `None`/`[]` to redact nothing.
+        """
         super().__init__()
         self.secrets: list[str] = secrets or []
 
     def filter(self, record: logging.LogRecord) -> bool:
+        """
+        Replaces any occurrence of a known secret in `record.msg` with `*****`.
+
+        Args:
+            record (logging.LogRecord): The record to redact, mutated in place.
+
+        Returns:
+            bool: Always `True` - this filter only redacts, it never drops records.
+        """
         if not self.secrets:
             return True
 
@@ -60,6 +88,18 @@ def setup_logging(
     log_file: str | Path | None = None,
     secrets: list[str] | None = None,
 ) -> None:
+    """
+    Configures the root logger with a Rich console handler and, optionally,
+    a file handler - both filtered through `SecretsFilter`.
+
+    Args:
+        level (int | None): stdlib `logging` level to use for every handler;
+            defaults to `logging.INFO` if `None`.
+        log_file (str | Path | None): If given, also log to this file
+            (parent directories are created as needed).
+        secrets (list[str] | None): Secret values to redact from every log
+            record via `SecretsFilter`.
+    """
     # Default level is INFO
     if level is None:
         level = logging.INFO
@@ -99,6 +139,15 @@ def setup_logging(
 
 
 def obfuscate_text(text: str | None) -> str:
+    """
+    Masks a piece of sensitive text (e.g. a secret) for safe logging.
+
+    Args:
+        text (str | None): The value to mask.
+
+    Returns:
+        str: `"*****"` if `text` has a value, `"None"` if `text` is `None`.
+    """
     if text is None:
         return str(text)
     else:
@@ -113,6 +162,20 @@ def get_logger(name: str) -> ExtendedLogger:
 def process_log_flags(
     very_verbose: bool, verbose: bool, quiet: bool, very_quiet: bool
 ) -> tuple[LogLevel | None, bool]:
+    """
+    Resolves the CLI's mutually-exclusive verbosity flags into a `LogLevel`.
+
+    Args:
+        very_verbose (bool): `--very-verbose`/TRACE flag.
+        verbose (bool): `--verbose`/DEBUG flag.
+        quiet (bool): `--quiet`/WARNING flag.
+        very_quiet (bool): `--very-quiet`/QUIET flag.
+
+    Returns:
+        tuple[LogLevel | None, bool]: The resolved `LogLevel` (`None` if no
+            flag was set, so the caller should fall back to its own default),
+            and whether more than one of the four flags was set at once.
+    """
     more_than_one_flag = False
     flag_counter = 0
     for flag in (very_verbose, verbose, quiet, very_quiet):
@@ -138,7 +201,20 @@ def configure_logging_from_settings(
     log_file: Path = DEFAULT_LOG_PATH,
     secrets: list[str] | None = None,
 ) -> None:
+    """
+    Sets up logging from a resolved `LogLevel`, defaulting the level if unset.
 
+    Thin wrapper around `setup_logging` that converts a logical `LogLevel`
+    into the stdlib level it expects; this is the entry point called from
+    `cli_global_callback` for every CLI invocation.
+
+    Args:
+        level (LogLevel | None): The logical log level to use; defaults to
+            `LogLevel.get_default_log_level()` if `None`.
+        log_file (Path): Path to also log to, forwarded to `setup_logging`.
+        secrets (list[str] | None): Secret values to redact from log output,
+            forwarded to `setup_logging`.
+    """
     if level is None:
         level = LogLevel.get_default_log_level()
 

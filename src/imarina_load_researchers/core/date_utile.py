@@ -30,6 +30,25 @@ logger = get_logger(__name__)
 
 
 def sanitize_date(date_dirty: Any) -> datetime.datetime:
+    """
+    Normalizes a raw Excel cell value into a Madrid-tz-aware datetime.
+
+    Handles the value shapes pandas/openpyxl can hand back for a date cell:
+    a `pandas.Timestamp` or `datetime.datetime` (tz-aware or naive), `pd.NaT`,
+    a `dd/mm/yyyy`-formatted string, an empty/`NaN` float cell, or `None`.
+    A missing/empty date is treated as a permanent contract, per
+    `core/defines.PERMANENT_CONTRACT_DATE`.
+
+    Args:
+        date_dirty (Any): The raw cell value to sanitize.
+
+    Returns:
+        datetime.datetime: A timezone-aware datetime pinned to `MADRID_TZ`.
+
+    Raises:
+        ValueError: If `date_dirty` is of a type this function doesn't know
+            how to interpret.
+    """
     if isinstance(date_dirty, pd.Timestamp) or type(date_dirty) is datetime.datetime:
         # Excel stores no timezone; these values are Madrid wall-clock times,
         # same as the string-parsed branch below and PERMANENT_CONTRACT_DATE
@@ -55,6 +74,16 @@ def sanitize_date(date_dirty: Any) -> datetime.datetime:
 
 
 def unparse_date(date: datetime.datetime | None) -> str:
+    """
+    Formats a datetime back into the output spreadsheet's date string format.
+
+    Args:
+        date (datetime.datetime | None): The date to format, or `None`.
+
+    Returns:
+        str: `date` formatted per `core/defines.DATE_FORMAT`, or `""` if
+            `date` is `None`.
+    """
     if date is None:
         return ""
     else:

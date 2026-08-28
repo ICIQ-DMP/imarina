@@ -36,7 +36,7 @@ def parse_datetime_from_filename(name: str, suffix: str) -> datetime.datetime | 
     Shared between `select_file_to_upload` (local files) and
     `select_latest_remote_file` (`core/sharepoint.py`, remote SharePoint
     folder listings) -- both need the exact same "pick the latest by
-    filename-encoded datetime" rule (STEPS.md).
+    filename-encoded datetime" rule (see CLAUDE.md's "What this does" section).
     """
     if not name.endswith(suffix):
         logger.debug(f"File does not end with {suffix}")

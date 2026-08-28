@@ -67,6 +67,16 @@ def get_list_id(token_manager: TokenManager, site_id: str, list_name: str) -> st
 
 
 def get_site_id(token_manager: TokenManager, domain: str, site_name: str) -> Any:
+    """Return the GUID of a SharePoint site given its domain and site path.
+
+    Args:
+        token_manager: Authenticated token manager.
+        domain: SharePoint tenant domain (e.g. `contoso.sharepoint.com`).
+        site_name: The site's path segment, as used in its URL.
+
+    Returns:
+        The site's Graph API GUID string.
+    """
     url = f"https://graph.microsoft.com/v1.0/sites/{domain}:/sites/{site_name}"  # Obtain the ID of site from SharePoint
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
     response = requests.get(url, headers=headers, timeout=60)
@@ -162,6 +172,24 @@ def download_shared_link_content(
 def download_files_in_folder_from_sharepoint(
     drive_id: str, local_destiny_folder: Path, remote_origin_folder: Path
 ) -> Any:
+    """Downloads every file in a SharePoint folder into a local folder, flat.
+
+    This is `download`'s bulk-sync mechanism for the static translation-
+    dictionary files (`SHAREPOINT_INPUT_DIR`, see CLAUDE.md's `download`
+    section) — it lists and downloads all `.xlsx` files as-is, unconditionally.
+    A per-file download failure is logged and skipped rather than aborting
+    the whole sync.
+
+    Args:
+        drive_id: SharePoint drive identifier the folders live under.
+        local_destiny_folder: Local folder to download files into (created
+            if it doesn't exist).
+        remote_origin_folder: Remote SharePoint folder path to list and
+            download files from.
+
+    Raises:
+        SharePointError: If listing the remote folder's children fails.
+    """
     token_manager = get_token_manager()
 
     local_destiny_folder.mkdir(parents=True, exist_ok=True)
@@ -225,6 +253,17 @@ def _get_list_item_fields(operation_id: str) -> dict[str, Any]:
 
 
 def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
+    """Reads an MS List item's A3/iMarina input sharing links, by Operation ID.
+
+    Args:
+        operation_id: The MS List item's ID (the workflow's Operation ID).
+
+    Returns:
+        A `(a3_link, imarina_link)` tuple; either may be `None` if that
+        field isn't set (both are optional per CLAUDE.md's "Where the raw
+        inputs come from" section, and `download` falls back to selecting
+        the latest remote file when they are).
+    """
     fields = _get_list_item_fields(operation_id)
 
     return fields.get(FIELD_A3_EXCEL_INPUT_LINK), fields.get(
@@ -235,7 +274,8 @@ def get_parameters_list(operation_id: str) -> tuple[str | None, str | None]:
 def get_list_item_link_field(operation_id: str, field_name: str) -> str | None:
     """Read a single Text-type link field off an MS List item, or None if
     that field isn't set. Used by `publish` to source its file from the
-    request's output-link field when given an ID (STEPS.md)."""
+    request's output-link field when given an ID (see CLAUDE.md's `publish`
+    section)."""
     return cast(str | None, _get_list_item_fields(operation_id).get(field_name))
 
 
@@ -267,7 +307,7 @@ def create_sharing_link(
 ) -> str:
     """Create an organization-scoped, view-only sharing link for a SharePoint
     driveItem. Scope is deliberately "organization", not "anonymous" -- these
-    links point at personnel data (STEPS.md's GDPR section)."""
+    links point at personnel data (see CLAUDE.md's "GDPR implications" section)."""
     url = (
         f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{item_id}/createLink"
     )
@@ -284,6 +324,9 @@ def create_sharing_link(
 
 @dataclass(frozen=True)
 class RemoteFile:
+    """A SharePoint driveItem's id and name, as selected by
+    `select_latest_remote_file`."""
+
     id: str
     name: str
 
@@ -292,14 +335,14 @@ def select_latest_remote_file(
     token_manager: TokenManager, drive_id: str, remote_folder: Path, suffix: str
 ) -> RemoteFile:
     """List `remote_folder`'s children and pick the latest .xlsx by the
-    filename-encoded datetime (STEPS.md: "the last of a group of files will
-    always be deduced from the name of the file"). Remote counterpart of
-    `select_file_to_upload` (core/file_select.py), which does the same thing
-    against local files -- unlike that function, there is no modification-time
-    fallback here: STEPS.md's rule for remote folders is filename-datetime
-    only, and a SharePoint item's `lastModifiedDateTime` doesn't carry the
-    same "file was produced at" meaning local mtime does for the local
-    fallback.
+    filename-encoded datetime (CLAUDE.md's "What this does" section: "the
+    'latest' of a group of files is always deduced from the file's name").
+    Remote counterpart of `select_file_to_upload` (core/file_select.py),
+    which does the same thing against local files -- unlike that function,
+    there is no modification-time fallback here: the rule for remote folders
+    is filename-datetime only, and a SharePoint item's
+    `lastModifiedDateTime` doesn't carry the same "file was produced at"
+    meaning local mtime does for the local fallback.
     """
     url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{remote_folder}:/children"
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}

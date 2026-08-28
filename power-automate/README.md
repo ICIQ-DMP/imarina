@@ -2,7 +2,7 @@
 
 This project's workflow depends on three Power Automate flows living in the
 ICIQ tenant (Microsoft Forms / Microsoft List / SharePoint / Jenkins glue —
-see STEPS.md). Today they only exist as live flow definitions edited through
+see CLAUDE.md). Today they only exist as live flow definitions edited through
 the browser designer, with no history, no diff, and no record of *why* a
 given change was made. This directory is where their definitions get
 version-controlled instead, using Power Platform's own export/unpack
@@ -74,7 +74,7 @@ pac solution import --path /tmp/Solution.zip
 Re-export afterward (previous section) so the repo reflects any
 environment-side ID/version bump the import produces.
 
-## The three flows (STEPS.md)
+## The three flows (CLAUDE.md)
 
 These are documented here as a plain-language spec of what each flow needs
 to do — not a substitute for the actual exported definition, which will live
@@ -83,42 +83,55 @@ first real export (see "Current status" below).
 
 ### 1. Input file name validation
 
-- **STEPS.md section**: "Validating the upload of input files"
+- **CLAUDE.md section**: "Validating uploaded file names"
 - **Trigger**: a file is created/uploaded in any of
   `_Projects/imarina-load-researchers/runtime/imarina`,
   `.../runtime/input`, or `.../runtime/a3`.
 - **Action**: check the uploaded file's name against the naming
-  specification in STEPS.md's "Preparation" and "Build" sections (the
+  specification in CLAUDE.md's "Where the raw inputs come from" and `build`
+  sections (the
   `{DATETIME}__listado_personal_A3.xlsx` / `{DATETIME}__icl_ag_personal_12539.xlsx`
   patterns, or the fixed translation-dictionary filenames). 
 
 ### 2. Request intake
 
-- **STEPS.md section**: "Answering the request form"
+- **CLAUDE.md section**: "Answering the request form"
 - **Trigger**: an item is created or modified in the MS List backing the
   request form (see `core/sharepoint_fields.py`'s field-name docstring for
   the exact field names this flow reads/writes).
-- **Action**: POST to the main Jenkins job's `buildWithParameters` endpoint
-  (see the main `Jenkinsfile`), passing the list item's `ID` field as the
-  `ID` build parameter. This is what starts `download` → `build` → `upload`.
+- **Action**: before posting to Jenkins, update the item's "Workflow State"
+  field to "Preparing (Power Automate)"
+  (`core/sharepoint_fields.py`'s `WorkflowState.PREPARING_POWER_AUTOMATE`) —
+  this is distinct from the "Preparing" state that `download` itself sets
+  once the Jenkins job actually starts running. Then POST to the main
+  Jenkins job's `buildWithParameters` endpoint (see the main `Jenkinsfile`),
+  passing the list item's `ID` field as the `ID` build parameter. This is
+  what starts `download` → `build` → `upload`.
 
 ### 3. Upload review → approval → publish trigger
 
-- **STEPS.md section**: "Upload" (and "Publish")
+- **CLAUDE.md section**: `upload` (and `publish`, and "Publish pipeline")
 - **Trigger**: the "iMarina Excel output link" field is updated on an MS
   List item (written by `upload --id ...` on success — see
   `commands/upload/cli.py`).
 - **Action**:
+  - Before starting the approval, update the item's "Workflow State" field
+    to "Requested review"
+    (`core/sharepoint_fields.py`'s `WorkflowState.REQUESTED_REVIEW`) — the
+    load file is already built at this point, and this flow is about to ask
+    the requester for permission to publish it.
   - Start a Microsoft Approval, assigned to the item's `Created By` (the
     requester), with the output link and a success message.
-  - **On approval**: POST to the *second* Jenkins job's
-    `buildWithParameters` endpoint (`Jenkinsfile.publish` — see CLAUDE.md's
-    "Publish pipeline" section for the job configuration and trigger URL),
-    passing the same `ID`.
+  - **On approval**: update the item's "Workflow State" field to "Approved
+    publication" (`core/sharepoint_fields.py`'s
+    `WorkflowState.APPROVED_PUBLICATION`), then POST to the *second* Jenkins
+    job's `buildWithParameters` endpoint (`Jenkinsfile.publish` — see
+    CLAUDE.md's "Publish pipeline" section for the job configuration and
+    trigger URL), passing the same `ID`.
   - **On rejection**: update the item's "Workflow State" field to
     "Not published" (`core/sharepoint_fields.py`'s `WorkflowState.NOT_PUBLISHED`)
     — no Jenkins job runs in this case.
-  - **On timeout** (if Microsoft Approvals is configured with one): STEPS.md
+  - **On timeout** (if Microsoft Approvals is configured with one): CLAUDE.md
     flags this as still undecided — pick a Workflow State to land on
     (probably also "Not published") before implementing this branch.
 

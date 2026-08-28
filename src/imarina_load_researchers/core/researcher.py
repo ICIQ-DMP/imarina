@@ -62,6 +62,10 @@ INSTITUTIONAL_DEFAULTS = {
 
 @dataclass(kw_only=True)
 class Researcher:
+    """One researcher's data, in the shape shared by both A3 rows and
+    iMarina rows once parsed - the common representation `build` diffs
+    between the previous iMarina upload and the latest A3 dump."""
+
     dni: str
     email: str
     name: str
@@ -101,6 +105,8 @@ class Researcher:
     contact_phone: str
 
     def __post_init__(self) -> None:
+        """Fills any unset institutional/contact field with ICIQ's fixed
+        default value (`INSTITUTIONAL_DEFAULTS`)."""
         defaults = self._institutional_defaults()
         self.adscription_type = self.adscription_type or defaults["adscription_type"]
         self.entity_country = self.entity_country or defaults["entity_country"]
@@ -121,6 +127,7 @@ class Researcher:
         return INSTITUTIONAL_DEFAULTS
 
     def __str__(self) -> str:
+        """Multi-line, human-readable dump of every field, used for `logger.debug` calls."""
         return (
             f"\nResearcher:\n"
             f"  DNI: {self.dni}\n"
@@ -158,9 +165,31 @@ class Researcher:
         )
 
     def copy(self) -> Researcher:
+        """
+        Returns an independent copy of this researcher.
+
+        Returns:
+            Researcher: A new `Researcher` with the same field values.
+        """
         return replace(self)
 
     def search_data(self, data_input: list[Researcher]) -> list[Researcher]:
+        """
+        Finds this researcher's match(es) in another list of researchers.
+
+        Matches by `is_same_person` (ORCID, then DNI, then email). If more
+        than one match is found, the results are narrowed down to those
+        that also share this researcher's `ini_date`, when that narrows the
+        set to exactly one; otherwise every `is_same_person` match is
+        returned as-is.
+
+        Args:
+            data_input (list[Researcher]): The researchers to search among
+                (typically the A3 or iMarina researcher list).
+
+        Returns:
+            list[Researcher]: The matching researcher(s), or `[]` if none match.
+        """
         matches = [
             researcher for researcher in data_input if self.is_same_person(researcher)
         ]
@@ -172,6 +201,18 @@ class Researcher:
         return []
 
     def is_same_person(self, other: Researcher) -> bool:
+        """
+        Whether `self` and `other` represent the same person.
+
+        Matches on the first of ORCID, DNI or email that both researchers
+        have a (non-empty) value for.
+
+        Args:
+            other (Researcher): The researcher to compare against.
+
+        Returns:
+            bool: `True` if `self` and `other` are the same person.
+        """
         if self.orcid and other.orcid and self.orcid == other.orcid:
             return True
         if self.dni and other.dni and self.dni == other.dni:
@@ -179,6 +220,21 @@ class Researcher:
         return bool(self.email and other.email and self.email == other.email)
 
     def has_changed_jobs(self, researcher: Researcher) -> bool:
+        """
+        Whether `self` (the new A3 position) counts as a job change from
+        `researcher` (the outgoing iMarina position).
+
+        `JOB_TITLE_POSTDOCTORAL_RESEARCHER`/`JOB_TITLE_ASSOCIATED_RESEARCHER`
+        and `JOB_TITLE_GROUP_LEADER`/`JOB_TITLE_GROUP_LEADER_ICREA` are
+        treated as equivalent pairs, not a job change.
+
+        Args:
+            researcher (Researcher): The researcher's previous (iMarina) position.
+
+        Returns:
+            bool: `True` if the job description differs and isn't one of
+                the equivalent-title pairs above.
+        """
         equivalent_job_titles = (
             {JOB_TITLE_POSTDOCTORAL_RESEARCHER, JOB_TITLE_ASSOCIATED_RESEARCHER},
             {JOB_TITLE_GROUP_LEADER_ICREA, JOB_TITLE_GROUP_LEADER},
@@ -226,6 +282,20 @@ class Researcher:
 
 # normalize the researcher's name
 def normalize_name(name: str) -> str:
+    """
+    Normalizes a researcher's (first/sur)name to title case.
+
+    Only converts names that are entirely uppercase or entirely lowercase
+    (as A3/iMarina exports often are); a name with mixed case is assumed to
+    already be correctly cased and is left untouched.
+
+    Args:
+        name (str): The raw name value.
+
+    Returns:
+        str: The title-cased name, stripped of surrounding whitespace, or
+            `""` if `name` isn't a non-blank string.
+    """
     if not isinstance(name, str) or not name.strip():
         return ""
 

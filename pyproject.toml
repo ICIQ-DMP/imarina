@@ -53,6 +53,9 @@ mode = "update"
 
 [tool.ruff]
 line-length = 120
+# docs/ is the imarina-load-researchers-docs git submodule: it owns its own
+# lint config and shouldn't be checked by this project's ruff run.
+extend-exclude = ["docs"]
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "UP", "SIM", "S", "TRY", "DTZ", "PL", "N", "RUF"]

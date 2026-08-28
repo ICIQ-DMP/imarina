@@ -55,8 +55,8 @@ SHAREPOINT_REMOTE_INPUT_DIR = SHAREPOINT_REMOTE_BASE_DIR / INPUT_DIR_NAME
 SHAREPOINT_REMOTE_OUTPUT_DIR = SHAREPOINT_REMOTE_BASE_DIR / OUTPUT_DIR_NAME
 SHAREPOINT_REMOTE_A3_DIR = SHAREPOINT_REMOTE_BASE_DIR / A3_DUMPS_DIR_NAME
 SHAREPOINT_REMOTE_PUBLISHED_DIR = SHAREPOINT_REMOTE_BASE_DIR / PUBLISHED_DIR_NAME
-# Where `download` re-uploads its iMarina fallback selection (see STEPS.md's
-# "Preparation (download)" section for why this is a copy, not just a link).
+# Where `download` re-uploads its iMarina fallback selection (see CLAUDE.md's
+# `download` section for why this is a copy, not just a link).
 SHAREPOINT_REMOTE_IMARINA_DIR = SHAREPOINT_REMOTE_BASE_DIR / IMARINA_DIR_NAME
 
 SHAREPOINT_LOCAL_BASE_DIR = PROJECT_DIR / "services/onedrive/data"

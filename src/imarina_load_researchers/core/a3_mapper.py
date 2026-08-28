@@ -82,6 +82,20 @@ class A3Field(Enum):
 
 
 def transform_orcid(orcid: str) -> str:
+    """
+    Formats a bare 16-digit ORCID into its dashed `xxxx-xxxx-xxxx-xxxx` form.
+
+    A3 stores ORCIDs with no dashes; iMarina expects them dashed. Values that
+    already contain a dash are passed through unchanged (already formatted,
+    or not a plain digit string this function can safely reformat).
+
+    Args:
+        orcid (str): The raw ORCID value from the A3 dump.
+
+    Returns:
+        str: The dashed ORCID, the input unchanged if it already has a dash,
+            or `""` if `orcid` is falsy.
+    """
     if not orcid or orcid == "":
         return ""
     if "-" in orcid:
@@ -97,6 +111,20 @@ def transform_orcid(orcid: str) -> str:
 
 
 def normalize_country_name(name: str) -> str:
+    """
+    Normalizes a country name into a stable lookup key for the translator dict.
+
+    Strips non-breaking/zero-width spaces and parentheses, removes digits and
+    accents, and lowercases the result, so that spelling/formatting
+    variations in the A3 dump and the `countries.xlsx` dictionary still
+    resolve to the same key.
+
+    Args:
+        name (str): The raw country name to normalize.
+
+    Returns:
+        str: The normalized name, or `""` if `name` is not a string.
+    """
     if not isinstance(name, str):
         return ""
     name = (
@@ -128,6 +156,25 @@ Translator = dict[A3Field, dict[str, str]]
 
 
 def parse_a3_row_data(row: Any, translator: Translator) -> Any:
+    """
+    Converts one A3 dump row into a `Researcher`, applying every A3→iMarina
+    translation (country, unit group→entity, job description, sex, ORCID
+    formatting, name normalization, date sanitizing).
+
+    Args:
+        row (Any): A row (`pandas.Series`) from the A3 input dataframe,
+            indexed by `A3Field.value` column names.
+        translator (Translator): The `{A3Field: {raw_value: translated_value}}`
+            dictionaries built by `translations.build_translations()`.
+
+    Returns:
+        Researcher: The researcher built from this A3 row, with every field
+            iMarina needs populated (fields with no A3 source default to `""`).
+
+    Raises:
+        KeyError: If `row`'s unit group, job description or sex value has no
+            entry in the corresponding translator dictionary.
+    """
     # translator[A3Field.COUNTRY] is pre-normalized by build_translations(), so it can
     # be used directly here without rebuilding it on every row.
     translator_countries = translator[A3Field.COUNTRY]

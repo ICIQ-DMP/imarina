@@ -8,6 +8,170 @@ dump (employee data snapshot, A3 format) and the previous iMarina iPublic load
 files) into the next iMarina-format spreadsheet, which is later pushed to the
 iMarina server over FTP (`publish`).
 
+iMarina is ICIQ's CRIS (Current Research Information System) — the software ICIQ
+uses to publish which research projects are active and who's working on them.
+Since research projects are tied to researchers, keeping iMarina's researcher list
+in sync with ICIQ's actual HR records (the A3 database) is a prerequisite for the
+CRIS being accurate at all. This repo is the automation that keeps that sync
+running without anyone manually re-typing personnel data into iMarina.
+
+The whole workflow is a SharePoint-native app: a Microsoft Form to trigger a
+request, a Microsoft List to track it, Power Automate flows to glue the steps
+together, SharePoint/OneDrive to move files around, and Microsoft Approvals to
+gate the final publish on human sign-off. This repo's Python package is the piece
+that does the actual data transformation (`build`) and talks to those Microsoft
+services over Graph API (`download`/`upload`/`publish`/`notify`); it can be run
+uncoupled from SharePoint, but in production it's always driven by that
+integration, since that's what non-technical requesters actually interact with.
+
+Knowing which is the "latest" of a group of files is always deduced from the
+file's name, which encodes a datetime at the start (`DATETIME_FORMAT`,
+`core/defines.py`) — never from filesystem metadata, except where explicitly
+noted otherwise (`select_file_to_upload`'s local mtime fallback — see the
+`upload`/`publish` sections below).
+
+## GDPR implications
+
+This workflow moves personal data of ICIQ personnel (the A3 database dump, and
+the iMarina upload derived from it) between systems with no human review of
+individual records along the way, so its design has to satisfy GDPR's purpose
+limitation, data minimization and storage limitation principles, not just
+describe who is allowed to click the button.
+
+**Purpose limitation.** The sole purpose of this workflow is to keep the
+researcher list in iMarina in sync with ICIQ's HR records, so ICIQ can report
+which research staff are currently active. The A3 dump and the resulting
+iMarina upload must not be used, forwarded or retained for any other purpose by
+anyone who has access to the `runtime/*` SharePoint folders.
+
+**Data minimization / access restriction.** Triggering the workflow is
+restricted to a small, named set of people with a legitimate need to do so:
+- Dr. Sonia Sayalero, responsible for Institutional Strengthening operations at
+  ICIQ and the Severo Ochoa administrator.
+- Aleix Mariné-Tena, the data steward of ICIQ who designed, implemented and
+  tests this workflow.
+- Eventually, an apprentice, in case this project is assigned to them.
+
+The A3 dumps themselves are provided manually, at most once a month, by Human
+Resources of ICIQ — specifically Mara Cruz, the head of Human Resources — who
+is the only authorized source of the raw HR extract entering the pipeline.
+
+Restricting *who may trigger the workflow* only has GDPR value if it is backed
+by matching SharePoint item-level permissions on the
+`_Projects/imarina-load-researchers/runtime/*` folders and on the Microsoft
+List and Microsoft Form themselves: restricting the form's submit button is
+meaningless if the underlying files remain readable by a broader SharePoint
+audience than the people named above.
+
+**Storage limitation.** Because the "use the last file" fallback (see
+`download` below) depends on every previous A3 dump and iMarina upload
+remaining in `runtime/a3` and `runtime/published` indefinitely, this design
+currently has no retention or purge policy for historical personal-data files,
+which conflicts with the storage limitation principle. A retention period
+should be defined, along with a decision on whether older dumps can be deleted
+without breaking the "pick the latest" mechanism.
+
+## Microsoft List schema
+
+The request-tracking Microsoft List backing this workflow has these fields
+(internal Graph API names, and the four-Hyperlink-columns-recreated-as-Text
+gotcha, are in `core/sharepoint_fields.py`'s module docstring):
+
+- **iMarina Excel published link** — link to the Excel file that has been
+  published. Filled by `publish` if the FTP publish succeeds.
+- **iMarina Excel output link** — link to the Excel file generated from the
+  input (the same file that ends up published). Filled by `upload` with the
+  file `build` generated.
+- **iMarina Excel input link** — link to the iMarina Excel file used as input.
+  Filled by the request form, or by `download`'s fallback with the latest
+  published iMarina file.
+- **A3 Excel input link** — link to the A3 Excel file used as input. Filled by
+  the request form, or by `download`'s fallback with the latest A3 dump.
+- **Workflow State** — state of the workflow, updated by both the Power
+  Automate workflows and the CLI commands as the request progresses
+  (`WorkflowState(StrEnum)`, `core/sharepoint_fields.py`). Values, in the
+  order a normal run passes through them:
+  1. `New` — set when the request form is submitted.
+  2. `Preparing (Power Automate)` — set by the first Power Automate workflow
+     (Request intake), just before it POSTs to Jenkins to start
+     `download`/`build`/`upload` (see "Answering the request form" below).
+  3. `Preparing` — set by `download` itself, once the Jenkins job actually
+     starts running.
+  4. `Building` — set by `build`.
+  5. `Uploading` — set by `upload`, before it pushes the file to SharePoint.
+  6. `Requested review` — set by the second Power Automate workflow (Upload
+     review → approval → publish trigger), just before it starts the
+     Microsoft Approval asking the requester for permission to publish (see
+     "Publish pipeline" below).
+  7. `Not published` — set by that same Power Automate workflow if the
+     requester rejects the approval; the workflow ends here.
+  8. `Approved publication` — set by that same Power Automate workflow,
+     immediately on approval, before it POSTs to the second Jenkins job to
+     start `publish`.
+  9. `Publishing` — set by `publish` itself, once its Jenkins job starts running.
+  10. `Published` — set by `publish` on a successful FTP push.
+  11. `Error` — set by `notify --status error`, the common failure handler
+      called from every step's catch block (not duplicated in
+      `download`/`build`/`upload`/`publish` themselves).
+- **ID** — unique identifier for the request (the "Operation ID" passed
+  around the CLI as `--id`, or as `download`'s positional argument). Filled
+  automatically on form submission.
+- **Created By** — a person-type field with whoever submitted the request.
+  Filled automatically on form submission; `notify` reads it (via
+  `get_creator_email`) to know who to email.
+
+Every Workflow State write from a CLI command is best-effort (see "Known
+architectural risk" below) — a write failing here never turns an otherwise-
+successful step into a hard failure, but it also means the list's state can
+silently drift from reality.
+
+## Requesting a load
+
+### Answering the request form
+
+The workflow starts with a human filling in the Microsoft Form, optionally
+supplying links to an A3 database dump and/or a previous iMarina upload (see
+"Where the raw inputs come from" below — both are optional, and `download`
+falls back to the latest matching file if either is omitted). Submitting the
+form creates an item in the Microsoft List with a unique ID and Workflow
+State `New`.
+
+That item's creation/modification triggers the first Power Automate workflow
+("Request intake", `power-automate/README.md`), which sets Workflow State to
+`Preparing (Power Automate)` and then POSTs to the main Jenkins job's
+`buildWithParameters` endpoint, passing the item's ID — this is what actually
+starts `download` → `build` → `upload` (see "CLI commands and the pipeline"
+below). Everything from here on is not exposed to whoever submitted the form.
+
+### Where the raw inputs come from
+
+The A3 database dump is obtained by asking HR for a bulk export; providing a
+link to it on the request form is optional — if omitted, `download` falls
+back to the latest dump already sitting in
+`_Projects/imarina-load-researchers/runtime/a3`. Uploaded dumps are named
+`{DATETIME}__listado_personal_A3.xlsx`, where `DATETIME` is
+`YYYY-MM-DD_HH-mm-ss` (e.g. `2025-03-12_12-00-00`) and represents when the A3
+dump was actually taken — if the hour isn't known (a dump obtained manually,
+without that precision), `12-00-00` is used; this doesn't need to be more
+precise since there's at most one A3 dump a month.
+
+The previous iMarina upload works the same way: optional on the form, and if
+omitted, `download` falls back to the latest file in
+`_Projects/imarina-load-researchers/runtime/published`
+(`2026-05-01_12-00-00__icl_ag_personal_12539.xlsx`-style names, same
+`DATETIME` convention). If a file is supplied instead, it should be uploaded
+under `_Projects/imarina-load-researchers/runtime/imarina`, named the same way
+as a published upload.
+
+### Validating uploaded file names
+
+Whenever a file lands in `runtime/imarina`, `runtime/input` or `runtime/a3`, a
+separate Power Automate flow ("Input file name validation",
+`power-automate/README.md`) checks the uploaded name against the conventions
+above (and `build`'s translation-dictionary filenames, `TRANSLATION_FILES` in
+`core/defines.py`); if it doesn't match, whoever last modified the file is
+notified.
+
 ## CLI commands and the pipeline
 
 Five subcommands, wired in `src/imarina_load_researchers/cli.py`: `download`, `build`, `upload`,
@@ -53,25 +217,26 @@ happen, both writing flat into that same folder:
    **every** `.xlsx` file in a fixed SharePoint library folder
    (`SHAREPOINT_INPUT_DIR`, `core/defines.py` —
    `_Projects/imarina-load-researchers/runtime/input`) and
-   downloads all of them as-is. This is how the 6 static "dictionary" files
-   arrive (`countries.xlsx`, `Job_Descriptions.xlsx`, `Personal_web.xlsx`,
-   `unit_group.xlsx`, `unit_type.xlsx`, `job_description_entity.xlsx`) — they're
-   maintained by hand on SharePoint and just bulk-synced down.
+   downloads all of them as-is. This is how the 7 static "dictionary" files
+   (`TRANSLATION_FILES`, `core/defines.py`) arrive — they're maintained by
+   hand on SharePoint and just bulk-synced down.
 2. `get_parameters_list(operation_id)` looks up an MS List item by
    `id_element` (Operation ID — a required positional int argument, not a
    `--id` flag, passed in from the Jenkins job parameter) and reads two
-   sharing-link fields off it — "A3 Excel Link" and "iMarina Excel Link" — then
-   downloads those two specific files as `A3.xlsx` and `iMarina.xlsx`,
-   overwriting anything step 1 already placed under those names.
+   sharing-link fields off it — "A3 Excel input link" and "iMarina Excel input
+   link" (see "Microsoft List schema" above) — then downloads those two
+   specific files as `A3.xlsx` and `iMarina.xlsx`, overwriting anything step 1
+   already placed under those names.
 
-If either link is missing (per STEPS.md, both are optional on the request
-form), `download` falls back to selecting the latest matching file from a
-dedicated SharePoint folder rather than just skipping the file — this is
-implemented by `_fallback_a3`/`_fallback_imarina` in `commands/download/cli.py`,
-built on `select_latest_remote_file()` (`core/sharepoint.py`, the remote
-counterpart of `select_file_to_upload()` — "latest" always means by the
-filename-encoded datetime, no mtime fallback, unlike the local selector). The
-two fallbacks are **not symmetric**, by design (STEPS.md):
+If either link is missing (both are optional on the request form — see
+"Where the raw inputs come from" above), `download` falls back to selecting
+the latest matching file from a dedicated SharePoint folder rather than just
+skipping the file — this is implemented by `_fallback_a3`/`_fallback_imarina`
+in `commands/download/cli.py`, built on `select_latest_remote_file()`
+(`core/sharepoint.py`, the remote counterpart of `select_file_to_upload()` —
+"latest" always means by the filename-encoded datetime, no mtime fallback,
+unlike the local selector). The two fallbacks are **not symmetric**, by
+design:
 - **A3**: falls back to the latest dump in `runtime/a3`, downloads it to
   `A3.xlsx`, generates a sharing link straight to that file, and writes it
   back to the "A3 Excel input link" field. No copy needed — `runtime/a3` is
@@ -90,7 +255,7 @@ Both write-backs are best-effort (broad `except` + `logger.exception`, same
 as everything else in this file) — a metadata-write failure must not turn an
 otherwise-successful download into a hard failure.
 
-Net effect / contract: **`download`'s job is to leave exactly the 8 files
+Net effect / contract: **`download`'s job is to leave exactly the 9 files
 `build` expects, under their exact expected filenames, in `./input`** — by
 whatever combination of bulk-sync, targeted-link-download and fallback
 selection is needed. It does not create any documented substructure; it's
@@ -99,27 +264,35 @@ flat.
 ### `build` — the clear one
 
 `commands/build/cli.py`. Reads the 9 fixed-filename `.xlsx` inputs listed in
-`REQUIRED_INPUT_FILES` (`core/defines.py`) from `./input` by default. Each
-file's path can be overridden individually via its own CLI option (e.g.
-`--countries-dict`), or all of them at once via `--input-dir <dir>` (files
-are then looked up under `<dir>` using the same standard names from
-`REQUIRED_INPUT_FILES`); a per-file option always takes precedence over
-`--input-dir` for that one file — see `build_controller`'s
+`REQUIRED_INPUT_FILES` (`core/defines.py` — the A3 dump, the previous iMarina
+upload, and the 7 translation dictionaries in `TRANSLATION_FILES`) from
+`./input` by default. Each file's path can be overridden individually via its
+own CLI option (e.g. `--countries-dict`), or all of them at once via
+`--input-dir <dir>` (files are then looked up under `<dir>` using the same
+standard names from `REQUIRED_INPUT_FILES`); a per-file option always takes
+precedence over `--input-dir` for that one file — see `build_controller`'s
 `_resolve_input_path` helper. Writes one output file to
 `./output/<DATETIME_FORMAT>__icl_ag_personal_12539.xlsx` (`OUTPUT_FILENAME`,
 built from `DATETIME_FORMAT` + `FTP_FILENAME` in `core/defines.py`; the
 `FILENAME_PREFIX`/`FILENAME_IMARINA_SUFFIX`/`FILENAME_A3_SUFFIX` constants
 define the naming scheme other commands later parse back out via
 `parse_datetime_from_filename()` — one suffix per file kind, since A3 dumps
-and iMarina files/build output don't share a filename suffix). None of the 8 input files are
+and iMarina files/build output don't share a filename suffix). None of the 9 input files are
 committed to git (`input/.gitignore` excludes everything but itself) — they
 must be supplied fresh by `download` (or manually) on every run.
+
+Each of `build`'s per-file options also has an out-of-the-box default pointing
+at its corresponding SharePoint-synced local folder (`runtime/a3`,
+`runtime/published`, `runtime/input` mirrored locally under
+`services/onedrive/data`, see `SHAREPOINT_LOCAL_*` in `core/defines.py`), which
+lets `build` be run directly against files kept in sync by OneDrive for Linux,
+skipping `download` entirely — useful when developing locally.
 
 `build` also takes an optional `--id`, unlike `download`'s positional,
 required one. It's used for nothing except updating the request's Workflow
 State field to "Building" (best-effort) — it plays no part in resolving
-input/output files. `build` didn't have any ID parameter before STEPS.md
-introduced per-step Workflow State tracking.
+input/output files. `build` didn't have any ID parameter before per-step
+Workflow State tracking (see "Microsoft List schema" above) was introduced.
 
 ### `upload` — review copy, to SharePoint
 
@@ -132,11 +305,16 @@ the file a human reviews before deciding to `publish`.
 Optional `--id`: if given, `upload` writes the request's Workflow State to
 "Uploading" before the push, then after a successful upload generates a
 sharing link for the uploaded item and writes it to the "iMarina Excel
-output link" field together with Workflow State "Requested review" — this is
-what's supposed to be the trigger for the Microsoft Approval that asks the
-requester whether to `publish` (STEPS.md; the actual Power Automate wiring
-that watches this field is outside this repo). Both writes are best-effort —
-a metadata-write failure must not turn a successful upload into exit(1).
+output link" field — this is what's supposed to be the trigger for the
+second Power Automate workflow that starts the Microsoft Approval asking the
+requester whether to `publish` (the actual Power Automate wiring that watches
+this field is outside this repo — see "Publish pipeline" below). `upload`
+does not itself set Workflow State to "Requested review": that write belongs
+to the second Power Automate workflow, made just before it starts the
+approval, since at that point the load file is already built and the
+workflow is about to ask for permission to publish it. Both `upload` writes
+above are best-effort — a metadata-write failure must not turn a successful
+upload into exit(1).
 
 ### `publish` — the real, human-gated production push
 
@@ -155,11 +333,11 @@ step.
 On a successful (non-dry-run) publish, `_archive_published_file()` uploads
 the published file to `runtime/published` **unconditionally**, regardless of
 `--id` — this is what the next `download`'s iMarina fallback reads "the
-latest published file" from (STEPS.md), so it must happen even for a
-no-`--id` publish. Only the MS List write-back (the "iMarina Excel published
-link" field + Workflow State "Published") is gated on `--id` being given.
-Publishing an explicit `--file-path` with no `--id` still works but logs a
-warning — STEPS.md flags this as a way to publish with no record of it kept
+latest published file" from (see "Where the raw inputs come from" above), so
+it must happen even for a no-`--id` publish. Only the MS List write-back (the
+"iMarina Excel published link" field + Workflow State "Published") is gated
+on `--id` being given. Publishing an explicit `--file-path` with no `--id`
+still works but logs a warning — this publishes with no record of it kept
 anywhere.
 
 ### `notify` — build-result email to the requester
@@ -194,11 +372,13 @@ file was published instead.
 
 ## Publish pipeline
 
-The human-gated FTP push described in STEPS.md's "Upload"/"Publish" sections
-— `upload` writes an output link + Workflow State "Requested review" →
-Power Automate starts a Microsoft Approval → on approval, an HTTP call
-triggers `publish` — is split across three things, only two of which are in
-this repo:
+The human-gated FTP push described in "Answering the request form" and the
+`upload`/`publish` sections above — `upload` writes an output link → the
+second Power Automate workflow sets Workflow State to "Requested review" just
+before it starts a Microsoft Approval asking the requester whether to publish
+→ on approval, that same workflow sets Workflow State to "Approved
+publication" and then makes an HTTP call that triggers `publish` — is split
+across three things, only two of which are in this repo:
 
 - **`Jenkinsfile.publish`** (repo root, alongside the main `Jenkinsfile`) —
   a second, separate Jenkins pipeline: install deps, run
@@ -217,12 +397,28 @@ this repo:
   `power-automate/README.md`) calls that URL from its "on approval" branch,
   passing the MS List item's `ID`. The token must be stored as a secured
   value in the flow's connection, never inline/committed — this touches
-  personnel data, same reasoning as STEPS.md's GDPR section.
+  personnel data, same reasoning as the "GDPR implications" section above.
 
 A duplicate trigger (retry, double-click) is mostly harmless: `publish`
 archives to `runtime/published` and sets Workflow State to "Published" on
 every successful run regardless of how many times it's called for the same
 `ID`.
+
+Because `publish --id` sources its file by re-downloading whatever currently
+sits behind the "iMarina Excel output link" (see "`publish`" above), not a
+snapshot taken when `upload` first wrote that field, the reviewer is free to
+open the SharePoint file during the review window and correct errors in
+place before approving — those corrections are what gets published, with no
+separate resubmission step. This is intentional and is the documented
+behavior on the "review" step of
+`docs/docs/how-to/request-an-imarina-load.md`: approving after editing the
+file publishes the edited version; only rejecting discards it.
+
+The Microsoft Approval itself sits waiting indefinitely until the requester
+accepts or rejects it, but Microsoft Approvals can optionally be configured
+with a timeout. What Workflow State a timed-out approval should land on is
+still undecided (probably also "Not published", same as an explicit
+rejection) — see `power-automate/README.md`'s flow #3 "on timeout" bullet.
 
 ## Key files for this pipeline
 
@@ -240,10 +436,10 @@ every successful run regardless of how many times it's called for the same
   sharing-link creation (`create_sharing_link`), and remote "pick the latest
   file" (`select_latest_remote_file`, backing `download`'s fallbacks).
 - `src/imarina_load_researchers/core/sharepoint_fields.py` — the MS List schema:
-  `WorkflowState(StrEnum)` (the 9 values from STEPS.md's state machine) and
-  the field-name constants every read/write in `sharepoint.py` goes through.
-  All five are confirmed against production. As of 2026-08-25 the four link
-  fields (`FIELD_A3_EXCEL_INPUT_LINK`/`FIELD_IMARINA_EXCEL_INPUT_LINK`/
+  `WorkflowState(StrEnum)` (the 11 values from "Microsoft List schema" above)
+  and the field-name constants every read/write in `sharepoint.py` goes
+  through. All five are confirmed against production. As of 2026-08-25 the
+  four link fields (`FIELD_A3_EXCEL_INPUT_LINK`/`FIELD_IMARINA_EXCEL_INPUT_LINK`/
   `FIELD_IMARINA_EXCEL_OUTPUT_LINK`/`FIELD_IMARINA_EXCEL_PUBLISHED_LINK`) are
   plain single-line-of-text SharePoint columns, **not** Hyperlink/Picture
   columns — they were originally created as Hyperlink/Picture, which Graph's
@@ -275,7 +471,7 @@ every successful run regardless of how many times it's called for the same
   own try/catch calling `notify --status error` on failure (not just
   `upload`, as before); publish is manual.
 - `Jenkinsfile.publish` — the separate, approval-triggered publish pipeline.
-  See "Publish pipeline" below.
+  See "Publish pipeline" above.
 - `power-automate/README.md` — how the Power Automate flows this workflow
   depends on are exported/version-controlled (Power Platform CLI
   unpack/pack/import), plus a plain-language spec of each flow's
@@ -389,21 +585,22 @@ Jenkins-stage-to-stage explicit path handoff) rather than relying on cwd-based
 convention.
 
 Related, newer risk: every Workflow State / MS List field write introduced
-for STEPS.md (`update_list_item_fields` calls throughout `download`, `build`,
-`upload`, `notify`, `publish`) is deliberately best-effort — wrapped in a
-broad `except` that logs and continues, so a metadata-write failure never
-turns an otherwise-successful pipeline step into a hard failure. The
-trade-off is that these writes can silently fail with no visible symptom
-beyond a log line: the MS List's Workflow State can drift out of sync with
-what actually happened, and nothing downstream checks for that. This isn't
-hypothetical — it's exactly how `upload`'s output-link write-back stayed
-broken in production for a while: the four link columns in
-`core/sharepoint_fields.py` were originally SharePoint Hyperlink/Picture
-columns, which Graph's field-PATCH endpoint silently 400s on regardless of
-field name or value format, and every caller's best-effort `except` swallowed
-that into a log line with no other symptom (see that module's docstring for
-the fix — they're plain Text columns now). If any MS List column backing
-these fields is ever changed again, watch for the same silent-failure shape.
+for per-step Workflow State tracking (`update_list_item_fields` calls
+throughout `download`, `build`, `upload`, `notify`, `publish`) is
+deliberately best-effort — wrapped in a broad `except` that logs and
+continues, so a metadata-write failure never turns an otherwise-successful
+pipeline step into a hard failure. The trade-off is that these writes can
+silently fail with no visible symptom beyond a log line: the MS List's
+Workflow State can drift out of sync with what actually happened, and
+nothing downstream checks for that. This isn't hypothetical — it's exactly
+how `upload`'s output-link write-back stayed broken in production for a
+while: the four link columns in `core/sharepoint_fields.py` were originally
+SharePoint Hyperlink/Picture columns, which Graph's field-PATCH endpoint
+silently 400s on regardless of field name or value format, and every
+caller's best-effort `except` swallowed that into a log line with no other
+symptom (see that module's docstring for the fix — they're plain Text
+columns now). If any MS List column backing these fields is ever changed
+again, watch for the same silent-failure shape.
 
 ## Linting/type-checking notes
 

@@ -73,7 +73,10 @@ install: $(VENV_BIN)/imarina-load-researchers  ## Install package in editable mo
 
 hooks: .git/hooks/pre-commit .git/hooks/commit-msg .git/hooks/pre-push  ## Install git hooks
 
-dev: $(DEV_STAMP) hooks ## Install package and dev dependencies
+docs-init:  ## Init/update the docs git submodule (github.com/ICIQ-DMP/imarina-load-researchers-docs)
+	@git submodule update --init --recursive docs
+
+dev: $(DEV_STAMP) hooks docs-init ## Install package and dev dependencies
 
 # ---- quality --------------------------------------------------------------
 
@@ -115,7 +118,7 @@ clean:  ## Remove build/test artifacts
 
 # ---- meta -----------------------------------------------------------------
 
-.PHONY: lint fmt test run clean help dist install docker-build docker-push
+.PHONY: lint fmt test run clean help dist install docker-build docker-push docs-init
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .+$$' $(MAKEFILE_LIST) | \

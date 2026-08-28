@@ -59,9 +59,10 @@ def notify_controller(
     (publish.Jenkinsfile).
 
     On a failure status, also updates the request's Workflow State field to
-    "Error" (STEPS.md) -- notify is the common failure handler called from
-    every step's error path, so this is the single place that write happens,
-    rather than duplicating it in download/build/upload/publish.
+    "Error" -- notify is the common failure handler called from every step's
+    error path (see CLAUDE.md's "Microsoft List schema" section), so this is
+    the single place that write happens, rather than duplicating it in
+    download/build/upload/publish.
     """
 
     site_id = get_site_id(
