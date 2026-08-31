@@ -23,6 +23,7 @@ pipeline {
     }
     parameters {
         string(name: 'ID', defaultValue: '', description: 'ID operation in iMarina, whose approved output should be published to the iMarina FTP server')
+        booleanParam(name: 'DRY_RUN', defaultValue: true, description: 'If true, skip the actual FTP push (dry run). Pass false via buildWithParameters to perform a real publish.')
     }
 
     environment {
@@ -45,7 +46,7 @@ pipeline {
                     try {
                         echo "Publish process"
                         sh """
-                            \$IMARINA_CMD publish --id ${params.ID} --dry-run false
+                            \$IMARINA_CMD publish --id ${params.ID} --dry-run ${params.DRY_RUN}
                         """
                         echo "Sending published email"
                         sh """
