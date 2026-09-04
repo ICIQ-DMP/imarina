@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.14"
 
       - name: Install dependencies
         run: |
@@ -32,7 +32,7 @@ jobs:
           python -m pip install .[dev]
 
       - name: Run tests
-        run: PYTHONPATH=$PYTHONPATH:/home/runner/work/iMarina-load/iMarina-load pytest -v
+        run: PYTHONPATH=$PYTHONPATH:/home/runner/work/imarina-load-researchers/imarina-load-researchers pytest -v
 
   build:
     runs-on: ubuntu-latest
@@ -57,4 +57,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/imarina-load:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/imarina-load-researchers:latest
