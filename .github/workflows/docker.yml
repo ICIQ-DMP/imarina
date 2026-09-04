@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - "master"
-  delete:
+  pull_request:
     branches:
       - "master"
 
@@ -15,8 +15,11 @@ jobs:
       TENANT_ID: ${{ secrets.TENANT_ID }}
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      CLIENT_NAME: ${{ secrets.CLIENT_NAME }}
       SHAREPOINT_DOMAIN: ${{ secrets.SHAREPOINT_DOMAIN }}
       SITE_NAME: ${{ secrets.SITE_NAME }}
+      DRIVE_ID: ${{ secrets.DRIVE_ID }}
+      LIST_NAME: ${{ secrets.LIST_NAME }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -32,7 +35,7 @@ jobs:
           python -m pip install .[dev]
 
       - name: Run tests
-        run: PYTHONPATH=$PYTHONPATH:/home/runner/work/imarina-load-researchers/imarina-load-researchers pytest -v
+        run: make test
 
   build:
     runs-on: ubuntu-latest

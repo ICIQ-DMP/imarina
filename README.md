@@ -19,23 +19,23 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="[https://github.com/ICIQ-DMP/imarina](https://github.com/ICIQ-DMP/imarina)">
+  <a href="[https://github.com/ICIQ-DMP/imarina-load-researchers](https://github.com/ICIQ-DMP/imarina-load-researchers)">
     <img src="https://raw.githubusercontent.com/ICIQ-DMP/ICIQ-DMP.github.io/refs/heads/master/assets/images/logo-ICIQ-horizontal-catalan.png" alt="Logo" width="all" height="all">
   </a>
 
-<h3 align="center">iMarina-load</h3>
+<h3 align="center">imarina-load-researchers</h3>
 
   <p align="center">
     Scripts to obtain A3 data, transform it into iMarina load format, and upload it to iMarina server using SFTP
     <br />
-    <a href="https://iciq-dmp.github.io/_posts/iMarina/2025-07-07-iMarina-load.html"><strong>Explore the docs »</strong></a>
+    <a href="https://iciq-dmp.github.io/_posts/iMarina/2025-07-07-imarina.html"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/ICIQ-DMP/imarina">View Demo</a>
+    <a href="https://github.com/ICIQ-DMP/imarina-load-researchers">View Demo</a>
     &middot;
-    <a href="https://github.com/ICIQ-DMP/imarina/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/ICIQ-DMP/imarina-load-researchers/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
-    <a href="https://github.com/ICIQ-DMP/imarina/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/ICIQ-DMP/imarina-load-researchers/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -133,25 +133,25 @@ Follow these steps to set up the project locally.
 
 ### Prerequisites
 
-Install Python version 3.12.3 or above, `git` and other essentials for building the project. 
+Install Python version 3.14 or above, `git` and other essentials for building the project.
 
 In Ubuntu is:
 
 ```shell
- sudo apt install python3.12-venv gcc build-essential git -y
+ sudo apt install python3.14-venv gcc build-essential git -y
 ```
 
 ### Installation
 
 ###### Clone repository
 ```shell
-git clone https://github.com/ICIQ-DMP/iMarina-load.git
+git clone https://github.com/ICIQ-DMP/imarina-load-researchers.git
 ```
 
 
 ###### Initialize venv
 ```shell
-cd iMarina
+cd imarina-load-researchers
 make install
 ```
 
@@ -175,8 +175,8 @@ bash run.sh
 # The program will display a link and ask you to authenticate and paste the answered URL into the terminal
 ```
 <!-- TODO: remove specific data from share point
-After following the steps, OneDrive will be syncing the folder `Institutional Strengthening/_Projects/iMarina_load_automation/input`-->
-`Institutional Strengthening/_Projects/iMarina_load_automation/input` from Sharepoint into `services/onedrive/data`. Add 
+After following the steps, OneDrive will be syncing the folder `_Projects/imarina-load-researchers/input`-->
+`_Projects/imarina-load-researchers/input` from Sharepoint into `services/onedrive/data`. Add 
 or change the necessary arguments to read from this new source, instead of `input/`, so that data consumed by the 
 program is always updated. 
 
@@ -193,21 +193,39 @@ been deleted in Sharepoint `cleanup_local_files = "true"` and to only do downloa
 ## Usage
 ### Run program
 #### Run in host
-To start the program execute this command:
+`make install` installs the `imarina-load-researchers` console script into the virtualenv. To see the available subcommands:
 ```shell
-./venv/bin/python src/main.py 
+./venv/bin/imarina-load-researchers --help
 ```
 
+Equivalently, you can invoke it as a module:
+```shell
+./venv/bin/python -m imarina_load_researchers --help
+```
+
+The automated pipeline is `download` → `build` → `upload` (see the [Jenkinsfile](Jenkinsfile) for the exact
+invocation used in CI); `publish` is a separate, manually-triggered step. `build`, `upload` and `publish` all
+accept an optional `--id <OperationID>` so they can keep the originating request's status in sync as the
+pipeline progresses; it's not required for a standalone/local run. For example, to run the build step alone:
+```shell
+./venv/bin/imarina-load-researchers build
+```
+
+###### Example of a full execution
+```shell
+REQUEST=66
+./venv/bin/imarina-load-researchers download $REQUEST && ./venv/bin/imarina-load-researchers build --id $REQUEST && ./venv/bin/imarina-load-researchers upload --id $REQUEST
+```
 
 #### Run in Docker
 
-Use the provided `Dockerfile` and `compose.yml` to build and run the iMarina-load service in a containerized 
+Use the provided `Dockerfile` and `compose.yml` to build and run the imarina-load-researchers service in a containerized 
 environment.  
 
-`Dockerfile` Builds a lightweight Python 3.12 Alpine image that installs dependencies and 
-runs the main script with predefined input file paths.
+`Dockerfile` Builds a lightweight Python 3.14 Alpine image that installs dependencies and runs the `imarina-load-researchers`
+CLI as its entrypoint (`compose.yml` passes the subcommand to run, e.g. `command: "build"`).
 
-`compose.yml` Defines a service that builds and runs the iMarina-load container, mounts input/output folders, 
+`compose.yml` Defines a service that builds and runs the imarina-load-researchers container, mounts input/output folders, 
 and securely injects FTP credentials as secrets for automated data processing.
 
 First, you will need to create a `.env` file at the root of the project with the `UID` and `GID` of the user on your 
@@ -236,7 +254,7 @@ To build the Docker image and run it you can use:
 Other useful commands:
 ##### Build Docker image
 ```shell
-  sudo docker build . -t aleixmt/imarina-load --progress=plain
+  sudo docker build . -t aleixmt/imarina-load-researchers --progress=plain
 ```
 
 ##### Access the container shell
@@ -251,7 +269,8 @@ Other useful commands:
 ## Testing
 
 ### Prerequisites
-Install the `requirements-dev.txt` to install the dependencies for the tests.
+Install the dev dependencies declared in `pyproject.toml` (`[project.optional-dependencies].dev`: black, pytest,
+mypy, ruff, pre-commit):
 ```shell
 make dev
 ```
@@ -262,7 +281,7 @@ make dev
 <!-- convert into makefile target -->
 We have to be at the root of the project, otherwise we will get an error
 ```shell
-cd ~/Desktop/iMarina-load
+cd ~/Desktop/imarina-load-researchers
 ```
 
 After that, we can use this to run all tests at the same time:
@@ -313,7 +332,7 @@ The workflow is defined in `.github/workflows/docker.yml`
  
       
 
-See the [open issues](https://github.com/ICIQ-DMP/iMarina-load/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/ICIQ-DMP/imarina-load-researchers/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -332,7 +351,7 @@ If you’d like to report a bug, request a feature, or propose an improvement, p
 
 ### Create an Issue
 
-Create a new Issue [in here](https://github.com/ICIQ-DMP/iMarina-load/issues/new).
+Create a new Issue [in here](https://github.com/ICIQ-DMP/imarina-load-researchers/issues/new).
 
 * Title: A short, descriptive summary of the issue.
 * Description: Provide as much context as possible.
@@ -344,8 +363,8 @@ The maintainers will review it and may ask for further clarification.
 
 ### Create a Pull Request
 
-[Fork](https://github.com/ICIQ-DMP/iMarina-load/fork) the repository, implement the changes that you want on your fork 
-and create a Pull Request in [here](https://github.com/ICIQ-DMP/iMarina-load/compare).
+[Fork](https://github.com/ICIQ-DMP/imarina-load-researchers/fork) the repository, implement the changes that you want on your fork 
+and create a Pull Request in [here](https://github.com/ICIQ-DMP/imarina-load-researchers/compare).
 
 The maintainers will try to integrate it into the `master` branch.
 
@@ -376,7 +395,7 @@ The maintainers will try to integrate it into the `master` branch.
 <!-- LICENSE -->
 ## License
 
-Distributed under the GNU GPL v3. See [LICENSE](https://github.com/ICIQ-DMP/iMarina-load/blob/master/LICENSE) for more information.
+Distributed under the GNU GPL v3. See [LICENSE](https://github.com/ICIQ-DMP/imarina-load-researchers/blob/master/LICENSE) for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -393,21 +412,16 @@ Distributed under the GNU GPL v3. See [LICENSE](https://github.com/ICIQ-DMP/iMar
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/ICIQ-DMP/imarina.svg?style=for-the-badge&color=purple
-[contributors-url]: https://github.com/ICIQ-DMP/imarina/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/ICIQ-DMP/imarina.svg?style=for-the-badge&color=orange
-[forks-url]: https://github.com/ICIQ-DMP/imarina/forks
-[forks-url]: https://img.shields.io/badge/Forks-blue?style=for-the-badge
-[stars-shield]: https://img.shields.io/github/stars/ICIQ-DMP/imarina.svg?style=for-the-badge&color=yellow
-[stars-url]: https://github.com/ICIQ-DMP/imarina/stargazers
-[issues-shield]: https://img.shields.io/github/issues/ICIQ-DMP/imarina.svg?style=for-the-badge&color=brightgreen
-[issues-url]: https://github.com/ICIQ-DMP/imarina/issues
-[issues-url]: https://img.shields.io/badge/Issues-red?style=for-the-badge&logo=github&logoColor=white
-[license-shield]: https://img.shields.io/github/license/ICIQ-DMP/imarina.svg?style=for-the-badge
-[license-url]: https://github.com/ICIQ-DMP/imarina/blob/master/LICENSE
-
-[license-shield]: https://img.shields.io/github/license/ICIQ-DMP/imarina.svg?style=for-the-badge&color=red
-[license-url]:https://github.com/ICIQ-DMP/imarina/blob/master
+[contributors-shield]: https://img.shields.io/github/contributors/ICIQ-DMP/imarina-load-researchers.svg?style=for-the-badge&color=purple
+[contributors-url]: https://github.com/ICIQ-DMP/imarina-load-researchers/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ICIQ-DMP/imarina-load-researchers.svg?style=for-the-badge&color=orange
+[forks-url]: https://github.com/ICIQ-DMP/imarina-load-researchers/forks
+[stars-shield]: https://img.shields.io/github/stars/ICIQ-DMP/imarina-load-researchers.svg?style=for-the-badge&color=yellow
+[stars-url]: https://github.com/ICIQ-DMP/imarina-load-researchers/stargazers
+[issues-shield]: https://img.shields.io/github/issues/ICIQ-DMP/imarina-load-researchers.svg?style=for-the-badge&color=brightgreen
+[issues-url]: https://github.com/ICIQ-DMP/imarina-load-researchers/issues
+[license-shield]: https://img.shields.io/github/license/ICIQ-DMP/imarina-load-researchers.svg?style=for-the-badge&color=red
+[license-url]:https://github.com/ICIQ-DMP/imarina-load-researchers/blob/master/LICENSE
 
 [linkedin-shield]: https://img.shields.io/badge/LinkedIn-blue?style=for-the-badge&logo=linkedin&logoColor=white
 [linkedin-url]: https://es.linkedin.com/company/iciq

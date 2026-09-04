@@ -1,0 +1,39 @@
+repos:
+  # Commit message validation
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+
+  # License header insertion (runs before fmt so headers get formatted too)
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        files: \.py$
+        args:
+          - --license-filepath
+          - LICENSE_HEADER
+
+  # Format, lint, and test via Makefile (single source of truth)
+  - repo: local
+    hooks:
+      - id: fmt
+        name: fmt
+        entry: make fmt
+        language: system
+        pass_filenames: false
+
+      - id: lint
+        name: lint
+        entry: make lint
+        language: system
+        pass_filenames: false
+
+      - id: test
+        name: test
+        entry: make test
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

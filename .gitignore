@@ -210,16 +210,18 @@ __marimo__/
 # My own gitignore rules
 *.xlsx
 data
-input
+runtime/input
 logs
-output
+runtime/output
 secrets
-services/onedrive/conf
+services/onedrive/conf/*
+!services/onedrive/conf/.gitignore
+!services/onedrive/conf/config.template
 services/onedrive/data
 services/onedrive/logs
 uploads
 !uploads/.gitignore
 sensibles
 !sensibles/.gitignore
-!src/imarina/commands/build
+!src/imarina_load_researchers/commands/build
 .idea

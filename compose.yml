@@ -1,15 +1,14 @@
 services:
   app:
-    image: mariopique/imarina-load:latest
+    image: aleixmt/imarina-load-researchers:latest
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: iMarina_docker
     user: "${UID:-1002}:${GID:-1002}"  # Make the container run as the user 1000:1000 or load values from UID/GID
     volumes:
     - ./input:/app/input
     - ./output:/app/output
-    - ./logs:/app/logs  # folder logs of the process
+    - ./logs:/app/logs
     secrets:
       - FTP_HOST
       - FTP_PASSWORD
@@ -29,15 +28,19 @@ services:
 
   onedrive:
    image: docker.io/driveone/onedrive:edge
-   container_name: onedrive
+   container_name: onedrive_imarina_load_researchers
    userns_mode: keep-id
+   entrypoint: ["/entrypoint-wrapper.sh"]
    volumes:
      - ./services/onedrive/conf:/onedrive/conf
      - ./services/onedrive/data:/onedrive/data
      - ./services/onedrive/logs:/onedrive/logs
+     - ./services/onedrive/entrypoint-wrapper.sh:/entrypoint-wrapper.sh:ro
+   secrets:
+     - DRIVE_ID
    restart: unless-stopped
    networks:
-     - imarina_net
+     - imarina_load_researchers_net
    healthcheck:
      test: sh -c '[ -s /onedrive/conf/items.sqlite3-wal ]'
      interval: 60s
@@ -71,7 +74,7 @@ secrets:
     file: ./secrets/DRIVE_ID
 
 networks:
-  imarina_net:
+  imarina_load_researchers_net:
 
 
 

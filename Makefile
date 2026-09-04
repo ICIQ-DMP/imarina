@@ -1,4 +1,4 @@
-# Makefile for imarina
+# Makefile for imarina-load-researchers
 # Usage examples:
 #   make venv
 #   make lint
@@ -26,8 +26,8 @@ VENV_BIN   ?= $(VENV_DIR)/bin
 PYTHON     := $(VENV_BIN)/python
 PIP        := $(VENV_BIN)/pip
 
-PKG_NAME   := imarina
-DOCKER_IMAGE := mariopique/imarina-load
+PKG_NAME   := imarina_load_researchers
+DOCKER_IMAGE := aleixmt/imarina-load-researchers
 
 DEV_STAMP := $(VENV_DIR)/.dev-installed
 
@@ -39,8 +39,8 @@ $(VENV_BIN)/python:
 	@$(PYTHON_BIN) -m venv "$(VENV_DIR)"
 	@$(PYTHON_BIN) -m pip install --upgrade pip
 
-# Install runtime dependencies (creates imarina executable)
-$(VENV_BIN)/imarina: $(VENV_BIN)/python pyproject.toml
+# Install runtime dependencies (creates imarina-load-researchers executable)
+$(VENV_BIN)/imarina-load-researchers: $(VENV_BIN)/python pyproject.toml
 	@$(PIP) install -e .
 
 # Install dev dependencies
@@ -52,6 +52,15 @@ $(DEV_STAMP): pyproject.toml $(VENV_BIN)/python
 	@$(PIP) install -e ".[dev]"
 	@touch $(DEV_STAMP)
 
+.git/hooks/pre-commit: $(DEV_STAMP)
+	@$(VENV_BIN)/pre-commit install
+
+.git/hooks/commit-msg: $(DEV_STAMP)
+	@$(VENV_BIN)/pre-commit install --hook-type commit-msg
+
+.git/hooks/pre-push: $(DEV_STAMP)
+	@$(VENV_BIN)/pre-commit install --hook-type pre-push
+
 # Install build tool
 $(VENV_BIN)/pyproject-build: $(VENV_BIN)/python
 	@$(PIP) install build
@@ -60,9 +69,14 @@ $(VENV_BIN)/pyproject-build: $(VENV_BIN)/python
 venv: $(VENV_BIN)/python  ## Create virtualenv
 	@echo "✅ venv ready at $(VENV_DIR)"
 
-install: $(VENV_BIN)/imarina  ## Install package in editable mode
+install: $(VENV_BIN)/imarina-load-researchers  ## Install package in editable mode
 
-dev: $(DEV_STAMP)  ## Install package and dev dependencies
+hooks: .git/hooks/pre-commit .git/hooks/commit-msg .git/hooks/pre-push  ## Install git hooks
+
+docs-init:  ## Init/update the docs git submodule (github.com/ICIQ-DMP/imarina-load-researchers-docs)
+	@git submodule update --init --recursive docs
+
+dev: $(DEV_STAMP) hooks docs-init ## Install package and dev dependencies
 
 # ---- quality --------------------------------------------------------------
 
@@ -82,8 +96,12 @@ test: dev  ## Run tests
 # Pass arguments to the CLI via CMD, e.g.:
 #   make run CMD="run -f demo.nds --debug"
 CMD ?= --help
-run: install  ## Run the imarina CLI (python -m imarina)
+run: install  ## Run the imarina-load-researchers CLI (python -m imarina_load_researchers)
 	@$(PYTHON) -m $(PKG_NAME) $(CMD)
+
+run-build: install
+	@$(PYTHON) -m $(PKG_NAME) build --input-dir "services/onedrive/data/_Projects/imarina-load-researchers/runtime/input" --a3-input "services/onedrive/data/_Projects/imarina-load-researchers/runtime/a3/2026-07-17_12-00-00__listado_personal_A3.xlsx" --imarina-input "services/onedrive/data/_Projects/imarina-load-researchers/runtime/uploads/2026-07-27_12-00-00__icl_ag_personal_12539.xlsx
+
 
 # ---- docker ---------------------------------------------------------------
 
@@ -100,7 +118,7 @@ clean:  ## Remove build/test artifacts
 
 # ---- meta -----------------------------------------------------------------
 
-.PHONY: lint fmt test run clean help dist install docker-build docker-push
+.PHONY: lint fmt test run clean help dist install docker-build docker-push docs-init
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .+$$' $(MAKEFILE_LIST) | \
