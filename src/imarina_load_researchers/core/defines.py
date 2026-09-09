@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import enum
 import pathlib
 from zoneinfo import ZoneInfo
 
@@ -131,7 +132,24 @@ DEFAULT_SEX_PATH = LOCAL_INPUT_DIR / REQUIRED_INPUT_FILES["sex"]
 # None => publish_controller falls back to select_file_to_upload(), which
 # autodetects the latest build output in SHAREPOINT_LOCAL_OUTPUT_DIR.
 DEFAULT_PUBLISH_FILE_PATH = None
-DEFAULT_DRY_RUN = True
+
+
+class DryRun(enum.StrEnum):
+    """Accepted values for `publish --dry-run`.
+
+    `--dry-run` takes an explicit value (`--dry-run true` / `--dry-run
+    false`) rather than being a bare flag: Typer always renders a `bool`
+    option as a `--flag/--no-flag` pair, so a value-taking "dry run"
+    switch has to go through a small choice type instead.
+    """
+
+    TRUE = "true"
+    FALSE = "false"
+
+
+# Dry run by default: `publish` must be told `--dry-run false` explicitly to
+# perform the real FTP upload.
+DEFAULT_DRY_RUN = DryRun.TRUE
 
 # --- upload ---
 

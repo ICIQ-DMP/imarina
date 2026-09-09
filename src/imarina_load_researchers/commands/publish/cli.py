@@ -24,6 +24,7 @@ from imarina_load_researchers.core.defines import (
     FTP_UPLOAD_PATH,
     SHAREPOINT_LOCAL_OUTPUT_DIR,
     SHAREPOINT_REMOTE_PUBLISHED_DIR,
+    DryRun,
 )
 from imarina_load_researchers.core.exceptions import OutputLinkMissingError
 from imarina_load_researchers.core.file_select import select_file_to_upload
@@ -139,6 +140,8 @@ def publish_controller(
     a warning is shown in that case.
     """
 
+    is_dry_run = dry_run is DryRun.TRUE
+
     file_path = _resolve_file_path(file_path, id_element)
 
     if id_element is not None:
@@ -161,7 +164,7 @@ def publish_controller(
         upload_file_ftp(
             path=file_path,
             credentials=credentials,
-            dry_run=dry_run,
+            dry_run=is_dry_run,
             upload_filename=FTP_UPLOAD_PATH,
         )
     # Broad on purpose: CLI boundary turns any failure into a clean exit(1).
@@ -169,7 +172,7 @@ def publish_controller(
         logger.exception("Error publishing file to iMarina FTP server")
         raise typer.Exit(code=1) from e
 
-    if dry_run:
+    if is_dry_run:
         # upload_file_ftp() returns normally without uploading on a dry run --
         # nothing was actually published, so there is nothing to archive or
         # record.

@@ -32,6 +32,7 @@ from typing import Annotated
 
 import typer
 
+from imarina_load_researchers.core.defines import DryRun
 from imarina_load_researchers.core.mail import WorkflowStatus
 
 # Argument to send a directory
@@ -139,7 +140,16 @@ PublishFilePathOpt = Annotated[
     typer.Option(help="Path to the iMarina Excel file to upload to the SFTP server"),
 ]
 DryRunOpt = Annotated[
-    bool, typer.Option("--dry-run", help="Dry run, connect to FTP server but do not upload files")
+    DryRun,
+    typer.Option(
+        "--dry-run",
+        "-d",
+        case_sensitive=False,
+        help=(
+            "Dry run: 'true' connects to the FTP server but uploads nothing, "
+            "'false' performs the real upload"
+        ),
+    ),
 ]
 
 # --- upload ---
