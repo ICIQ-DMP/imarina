@@ -341,6 +341,9 @@ Copy the public key into .env.
 
 Enter into jenkins, create or modify agent, and select 
 
+```shell
+docker compose -f compose.prod.yml up --build --remove-orphans 
+```
 
 
 <!-- ROADMAP for issues -->
