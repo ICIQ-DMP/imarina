@@ -139,7 +139,7 @@ PublishFilePathOpt = Annotated[
     typer.Option(help="Path to the iMarina Excel file to upload to the SFTP server"),
 ]
 DryRunOpt = Annotated[
-    bool, typer.Option(help="Dry run, connect to FTP server but do not upload files")
+    bool, typer.Option("--dry-run", help="Dry run, connect to FTP server but do not upload files")
 ]
 
 # --- upload ---
