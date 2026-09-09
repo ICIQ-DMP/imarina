@@ -334,7 +334,7 @@ The workflow is defined in `.github/workflows/docker.yml`
 
 Generate keys:
 ```shell
-ssh-keygen -t ed25519 -C "imarina-load-researchers@agent" -N "" -f $AGENT_SSH_PRIVATE_KEY_PATH
+ssh-keygen -t ed25519 -C "imarina-load-researchers@imarina-load-researcher-agent" -N "" -f $AGENT_SSH_PRIVATE_KEY_PATH
 ```
 
 Copy the public key into .env.
