@@ -46,6 +46,7 @@ _SECRET_MAP: dict[SecretName, tuple[str, str]] = {
     SecretName.SHAREPOINT_DOMAIN: ("runtime/sharepoint", "domain"),
     SecretName.SITE_NAME: ("runtime/sharepoint", "site_name"),
     SecretName.TENANT_ID: ("runtime/sharepoint", "tenant_id"),
+    SecretName.LIST_NAME: ("runtime/sharepoint", "list_name"),
     # ftp (secret/imarina/runtime/ftp)
     SecretName.FTP_HOST: ("runtime/ftp", "host"),
     SecretName.FTP_PASSWORD: ("runtime/ftp", "password"),

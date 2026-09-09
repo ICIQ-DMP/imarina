@@ -36,7 +36,7 @@ class LogLevel(StrEnum):
     QUIET = "quiet"
 
     @classmethod
-    def parse(cls, value: str | None) -> LogLevel | None:
+    def parse(cls, value: str | None):# -> LogLevel | None:
         """Parse case-insensitively; returns None if value is falsy."""
         if not value:
             return None
@@ -48,7 +48,7 @@ class LogLevel(StrEnum):
             raise UnknownLogLevelError(value, valid) from exc
 
     @classmethod
-    def get_default_log_level(cls) -> LogLevel:
+    def get_default_log_level(cls):# -> LogLevel:
         """
         Returns the log level used when none is configured.
 
