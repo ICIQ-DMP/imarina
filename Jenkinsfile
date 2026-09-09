@@ -28,7 +28,7 @@ pipeline {
                 script {
                     try {
                         sh """
-                            \$IMARINA_CMD download ${params.ID}
+                            \$IMARINA_CMD -v download ${params.ID}
                         """
                     }
                     catch (Exception e) {
