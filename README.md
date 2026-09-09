@@ -334,7 +334,7 @@ The workflow is defined in `.github/workflows/docker.yml`
 
 Generate keys:
 ```shell
-ssh-keygen -t ed25519 -C "imarina-load-researchers@imarina-load-researchers-agent" -N "" -f services/jenkins_agent_keys/imarina-load-researchers-agent-key
+ssh-keygen -t ed25519 -C "jenkins@imarina-load-researchers-agent" -N "" -f services/jenkins_agent_keys/id_rsa
 ```
 
 Copy the public key into .env.

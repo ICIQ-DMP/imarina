@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'agent jenkins'
+        label 'imarina-load-researchers agent'
     }
     options {
         disableConcurrentBuilds() // one execution only

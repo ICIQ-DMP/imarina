@@ -226,5 +226,5 @@ sensibles
 !src/imarina_load_researchers/commands/build
 .idea
 
-services/jenkins_agent_keys/imarina-load-researchers-agent-key
-services/jenkins_agent_keys/imarina-load-researchers-agent-key.pub
+services/jenkins_agent_keys/*
+services/jenkins_agent_keys
