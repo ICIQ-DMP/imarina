@@ -41,7 +41,7 @@ DEV_STAMP := $(VENV_DIR)/.dev-installed
 # Create virtualenv
 $(VENV_BIN)/$(PYTHON_BIN):
 	@$(PYTHON_BIN) -m venv "$(VENV_DIR)"
-	@$(PYTHON_BIN) -m pip install --upgrade pip
+	@$(PIP) install --upgrade pip
 
 # Install runtime dependencies (creates imarina-load-researchers executable)
 $(VENV_BIN)/imarina-load-researchers: $(VENV_BIN)/$(PYTHON_BIN) pyproject.toml
