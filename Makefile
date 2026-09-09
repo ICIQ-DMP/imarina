@@ -39,7 +39,7 @@ DEV_STAMP := $(VENV_DIR)/.dev-installed
 # ---- helpers --------------------------------------------------------------
 
 # Create virtualenv
-$(VENV_BIN)/python:
+$(VENV_BIN)/$(PYTHON_BIN):
 	@$(PYTHON_BIN) -m venv "$(VENV_DIR)"
 	@$(PYTHON_BIN) -m pip install --upgrade pip
 
