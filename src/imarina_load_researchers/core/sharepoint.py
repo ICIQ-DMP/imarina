@@ -143,6 +143,7 @@ def download_item_content(
     headers = {"Authorization": f"Bearer {token_manager.get_token()}"}
     response = requests.get(url, headers=headers, timeout=300)
     response.raise_for_status()
+    destination.parent.mkdir(parents=True, exist_ok=True)
     with open(destination, "wb") as f:
         f.write(response.content)
 
@@ -165,6 +166,7 @@ def download_shared_link_content(
         download_url, headers=headers, allow_redirects=True, timeout=300
     )
     response.raise_for_status()
+    destination.parent.mkdir(parents=True, exist_ok=True)
     with open(destination, "wb") as f:
         f.write(response.content)
 
