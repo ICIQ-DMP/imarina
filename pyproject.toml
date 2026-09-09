@@ -7,7 +7,7 @@ name = "imarina-load-researchers"
 dynamic = ["version"]
 description = "imarina-load-researchers automated excel build"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 authors = [{name="AleixMT"}, {name="MarioPiqué"}]
 license = {text="GPL-3.0-or-later"}
 dependencies = [
@@ -76,8 +76,8 @@ testpaths = ["tests"]
 pythonpath = "src"
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.13"
 strict = true
 
 [tool.black]
-target-version = ["py314"]
+target-version = ["py313"]

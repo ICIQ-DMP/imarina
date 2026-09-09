@@ -612,13 +612,13 @@ again, watch for the same silent-failure shape.
   `assert`) via `[tool.ruff.lint.per-file-ignores]`. Run
   `ruff check --show-settings <file>` if you need to check exactly what's
   enabled for a given file.
-- `[tool.black] target-version = ["py314"]` is pinned explicitly rather than
-  left to Black's auto-detection. With `requires-python = ">=3.14"`
+- `[tool.black] target-version = ["py313"]` is pinned explicitly rather than
+  left to Black's auto-detection. With `requires-python = ">=3.13"`
   (unbounded) and no pinned target, Black infers the target version from
-  that specifier as "3.14 or newer," which can include a Python version
+  that specifier as "3.13 or newer," which can include a Python version
   newer than the interpreter actually running Black — producing "Python
-  3.14 cannot parse code formatted for Python 3.15" warnings even though
-  nothing in the code needs 3.15.
+  3.13 cannot parse code formatted for Python 3.14" warnings even though
+  nothing in the code needs 3.14.
 - `[tool.mypy] strict = true` includes `no_implicit_reexport`: if module
   `A` does `from B import name` and module `C` does
   `from A import name`, mypy treats that as an error unless `A` explicitly

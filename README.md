@@ -133,12 +133,12 @@ Follow these steps to set up the project locally.
 
 ### Prerequisites
 
-Install Python version 3.14 or above, `git` and other essentials for building the project.
+Install Python version 3.13 or above, `git` and other essentials for building the project.
 
 In Ubuntu is:
 
 ```shell
- sudo apt install python3.14-venv gcc build-essential git -y
+ sudo apt install python3.13-venv gcc build-essential git -y
 ```
 
 ### Installation
