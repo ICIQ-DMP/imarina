@@ -7,9 +7,9 @@ services:
     expose:
       - ${AGENT_PORT_INTERNAL}
     volumes:
-      - ./service/onedrive_data:/home/jenkins/agent/onedrive_data
+      - ./services/onedrive_data:/home/jenkins/agent/onedrive_data
       - type: bind
-        source: ./service/jenkins_agent_keys
+        source: ./services/jenkins_agent_keys
         target: /home/jenkins/.ssh
         read_only: false
     environment:
