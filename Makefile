@@ -27,7 +27,7 @@ endif
 
 VENV_DIR   ?= venv
 VENV_BIN   ?= $(VENV_DIR)/bin
-PYTHON     := $(VENV_BIN)/python
+PYTHON     := $(VENV_BIN)/$(PYTHON_BIN)
 PIP        := $(VENV_BIN)/pip
 
 PKG_NAME   := imarina_load_researchers
@@ -44,14 +44,14 @@ $(VENV_BIN)/python:
 	@$(PYTHON_BIN) -m pip install --upgrade pip
 
 # Install runtime dependencies (creates imarina-load-researchers executable)
-$(VENV_BIN)/imarina-load-researchers: $(VENV_BIN)/python pyproject.toml
+$(VENV_BIN)/imarina-load-researchers: $(VENV_BIN)/$(PYTHON_BIN) pyproject.toml
 	@$(PIP) install -e .
 
 # Install dev dependencies
 # We use PKG-INFO as the target because pip updates it when dependencies change.
 # This avoids the loop where 'make fmt && make lint' rebuilds twice because binaries
 # like 'bin/ruff' might not have their timestamp updated by pip if they are already present.
-$(DEV_STAMP): pyproject.toml $(VENV_BIN)/python
+$(DEV_STAMP): pyproject.toml $(VENV_BIN)/$(PYTHON_BIN)
 	@$(PIP) install -e "."
 	@$(PIP) install -e ".[dev]"
 	@touch $(DEV_STAMP)
@@ -66,11 +66,11 @@ $(DEV_STAMP): pyproject.toml $(VENV_BIN)/python
 	@$(VENV_BIN)/pre-commit install --hook-type pre-push
 
 # Install build tool
-$(VENV_BIN)/pyproject-build: $(VENV_BIN)/python
+$(VENV_BIN)/pyproject-build: $(VENV_BIN)/$(PYTHON_BIN)
 	@$(PIP) install build
 
 # Phony aliases
-venv: $(VENV_BIN)/python  ## Create virtualenv
+venv: $(VENV_BIN)/$(PYTHON_BIN)  ## Create virtualenv
 	@echo "✅ venv ready at $(VENV_DIR)"
 
 install: $(VENV_BIN)/imarina-load-researchers  ## Install package in editable mode
