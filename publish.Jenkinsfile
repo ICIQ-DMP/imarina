@@ -16,14 +16,14 @@
 // job configuration, not something a Jenkinsfile can declare.
 pipeline {
     agent {
-        label 'agent jenkins'
+        label 'imarina-load-researchers-agent'
     }
     options {
         disableConcurrentBuilds() // one execution only
     }
     parameters {
         string(name: 'ID', defaultValue: '', description: 'ID operation in iMarina, whose approved output should be published to the iMarina FTP server')
-        booleanParam(name: 'DRY_RUN', defaultValue: true, description: 'If true, skip the actual FTP push (dry run). Pass false via buildWithParameters to perform a real publish.')
+        booleanParam(name: 'DRY_RUN', defaultValue: 'true', description: 'If true, skip the actual FTP push (dry run). Pass false via buildWithParameters to perform a real publish.')
     }
 
     environment {
