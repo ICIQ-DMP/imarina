@@ -262,6 +262,12 @@ Other useful commands:
   docker compose run --rm app sh
 ```
 
+#####
+Run production:
+```shell
+docker compose -f compose.prod.yml up --build --remove-orphans
+```
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -323,6 +329,17 @@ The workflow is defined in `.github/workflows/docker.yml`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+
+## Deploy to production
+
+Generate keys:
+```shell
+ssh-keygen -t ed25519 -C "imarina-load-researchers@agent" -N "" -f $AGENT_SSH_PRIVATE_KEY_PATH
+```
+
+Copy the public key into .env.
+
+Enter into jenkins, create or modify agent, and select 
 
 
 
